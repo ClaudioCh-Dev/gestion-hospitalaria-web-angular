@@ -1,0 +1,56 @@
+<aside
+  [tuiNavigationAside]="expanded()"
+  class="h-full"
+  style="
+    background: linear-gradient(
+      180deg,
+      rgb(15, 23, 42),
+      rgb(30, 41, 59)
+    );
+  "
+>
+  @for (group of groupsOptions(); track group.item.route) {
+    @if (group.children?.length) {
+      <tui-aside-group>
+        <button
+          tuiAsideItem
+          tuiChevron
+          tuiTextfieldSize="s"
+          type="button"
+          [iconStart]="group.item.icon"
+        >
+          {{ group.item.label }}
+
+          <ng-template>
+            @for (child of group.children; track child.route) {
+              <a tuiAsideItem tuiTextfieldSize="s" [routerLink]="child.route">
+                {{ child.label }}
+              </a>
+            }
+          </ng-template>
+        </button>
+      </tui-aside-group>
+    } @else {
+      <a
+        tuiAsideItem
+        tuiTextfieldSize="s"
+        [iconStart]="group.item.icon"
+        [routerLink]="group.item.route"
+      >
+        {{ group.item.label }}
+      </a>
+    }
+  }
+
+  <footer>
+    <button
+      tuiAsideItem
+      tuiTextfieldSize="s"
+      type="button"
+      [iconStart]="expanded() ? '@tui.chevron-left' : '@tui.chevron-right'"
+      (click)="handleToggle()"
+    >
+      {{ expanded() ? 'Collapse' : 'Expand' }}
+    </button>
+  </footer>
+</aside>

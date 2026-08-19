@@ -1,0 +1,37 @@
+<div class="flex w-full flex-col gap-5">
+  <div class="flex w-full items-center gap-4">
+    <!-- Filtros + Creación -->
+    <div class="flex-1">
+      <app-patient-filters (filtersChange)="onFiltersChange($event)" />
+    </div>
+
+    <!-- Crear paciente -->
+    <button
+      tuiButton
+      type="button"
+      iconStart="@tui.plus"
+      size="s"
+      appearance="primary"
+      (click)="createPatientModal()"
+    >
+      Nuevo paciente
+    </button>
+  </div>
+
+  <!-- Tabla -->
+  <app-patient-table
+    [patients]="data()"
+    [(selected)]="selected"
+    (edit)="editPatientModal($event)"
+  />
+
+  <!-- Paginación -->
+  <tui-table-pagination
+    [items]="sizeOptions"
+    [total]="total()"
+    [size]="size()"
+    [page]="page()"
+    (pageChange)="changePage($event)"
+    (sizeChange)="changeSize($event)"
+  />
+</div>

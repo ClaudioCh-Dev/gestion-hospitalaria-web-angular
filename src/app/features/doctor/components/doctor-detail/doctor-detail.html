@@ -1,0 +1,202 @@
+<tui-drawer *tuiPopup="doctor() !== null">
+  <header>
+    <div tuiHeader="body-l">
+      @if (doctor(); as currentDoctor) {
+        <div class="flex w-full items-center justify-between gap-4 p-4">
+          <!-- Información -->
+
+          <div tuiTitle>
+            <span>
+              {{ currentDoctor.firstName }}
+              {{ currentDoctor.lastName }}
+            </span>
+
+            <span tuiSubtitle> CMP: {{ currentDoctor.licenseNumber }} </span>
+          </div>
+
+          <!-- Avatar -->
+
+          <div
+            tuiAvatar
+            [tuiAvatar]="currentDoctor.firstName + ' ' + currentDoctor.lastName | tuiInitials"
+            class="shrink-0"
+          ></div>
+        </div>
+      }
+
+      <!-- Cerrar -->
+
+      <div tuiAccessories>
+        <button
+          appearance="icon"
+          iconStart="@tui.x"
+          tuiIconButton
+          type="button"
+          (click)="close.emit()"
+        >
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </header>
+
+  @if (doctor(); as currentDoctor) {
+    <div class="flex flex-col gap-6 p-4">
+      <!-- ================================================= -->
+      <!-- INFORMACIÓN PROFESIONAL -->
+      <!-- ================================================= -->
+
+      <section class="flex flex-col gap-3">
+        <h3 class="font-semibold">Información profesional</h3>
+
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Licencia -->
+
+          <div>
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.id-card" />
+
+              Licencia
+            </span>
+
+            <p class="ml-6">
+              {{ currentDoctor.licenseNumber }}
+            </p>
+          </div>
+
+          <!-- Especialidad -->
+
+          <div>
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.stethoscope" />
+
+              Especialidad
+            </span>
+
+            <p class="ml-6">
+              {{ currentDoctor.specialty.name }}
+            </p>
+          </div>
+
+          <!-- Estado -->
+
+          <div>
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.circle-check" />
+
+              Estado
+            </span>
+
+            <p class="ml-6">
+              {{ currentDoctor.active ? 'Activo' : 'Inactivo' }}
+            </p>
+          </div>
+
+          <!-- Registro -->
+
+          <div>
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.calendar" />
+
+              Fecha de registro
+            </span>
+
+            <p class="ml-6">
+              {{ currentDoctor.createdAt }}
+            </p>
+          </div>
+
+          <!-- Descripción especialidad -->
+
+          <div class="col-span-2">
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.info" />
+
+              Especialidad
+            </span>
+
+            <p class="ml-6">
+              {{ currentDoctor.specialty.description }}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================= -->
+      <!-- CONTACTO -->
+      <!-- ================================================= -->
+
+      <section class="flex flex-col gap-3">
+        <h3 class="font-semibold">Contacto</h3>
+
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Teléfono -->
+
+          <div>
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.phone" />
+
+              Teléfono
+            </span>
+
+            <p class="ml-6">
+              {{ currentDoctor.phone || 'No especificado' }}
+            </p>
+          </div>
+
+          <!-- Correo -->
+
+          <div>
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.mail" />
+
+              Correo
+            </span>
+
+            <p class="ml-6">
+              {{ currentDoctor.email || 'No especificado' }}
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================================================= -->
+      <!-- HORARIO -->
+      <!-- ================================================= -->
+
+      <section class="flex flex-col gap-3">
+        <h3 class="font-semibold">Horario de atención</h3>
+
+        <div class="grid grid-cols-2 gap-4">
+          <!-- Inicio -->
+
+          <div>
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.clock" />
+
+              Hora de inicio
+            </span>
+
+            <p class="ml-6">
+              {{ currentDoctor.scheduleStart || 'No especificado' }}
+            </p>
+          </div>
+
+          <!-- Fin -->
+
+          <div>
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.clock" />
+
+              Hora de salida
+            </span>
+
+            <p class="ml-6">
+              {{ currentDoctor.scheduleEnd || 'No especificado' }}
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+  }
+</tui-drawer>

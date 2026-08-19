@@ -1,0 +1,109 @@
+<div class="flex flex-col gap-5">
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    @for (field of fields(); track field.name) {
+      <div class="flex flex-col gap-1">
+        <label tuiLabel>
+          {{ field.label }}
+        </label>
+
+        <!-- TEXT / EMAIL -->
+
+        @if (field.type === 'text' || field.type === 'email') {
+          <tui-textfield tuiTextfieldSize="s" [invalid]="isInvalid(field.name)">
+            <input
+              tuiInput
+              [type]="field.type"
+              [placeholder]="field.placeholder"
+              [formControl]="getControl(field.name)"
+            />
+          </tui-textfield>
+
+          @if (hasError(field.name, 'required')) {
+            <div tuiBadge appearance="negative">
+              {{ getRequiredMessage(field) }}
+            </div>
+          }
+
+          @if (hasError(field.name, 'pattern')) {
+            <div tuiBadge appearance="negative">
+              {{ getPatternMessage(field) }}
+            </div>
+          }
+
+          @if (hasError(field.name, 'email')) {
+            <div tuiBadge appearance="negative">
+              {{ getEmailMessage(field) }}
+            </div>
+          }
+        }
+
+        <!-- DATE -->
+
+        @if (field.type === 'date') {
+          <tui-textfield tuiTextfieldSize="s" [invalid]="isInvalid(field.name)">
+            <input
+              tuiInputDate
+              [placeholder]="field.placeholder"
+              [formControl]="getControl(field.name)"
+            />
+
+            <tui-calendar *tuiDropdown />
+          </tui-textfield>
+
+          @if (hasError(field.name, 'required')) {
+            <div tuiBadge appearance="negative">
+              {{ getRequiredMessage(field) }}
+            </div>
+          }
+        }
+
+        <!-- CHECKBOX -->
+
+        @if (field.type === 'checkbox') {
+          <label class="flex items-center gap-3">
+            <input tuiCheckbox type="checkbox" [formControl]="getControl(field.name)" />
+
+            <span>
+              {{ field.label }}
+            </span>
+          </label>
+        }
+
+        <!-- SELECT -->
+
+        @if (field.type === 'select') {
+          <tui-textfield
+            tuiChevron
+            tuiTextfieldSize="s"
+            [tuiTextfieldCleaner]="false"
+            [invalid]="isInvalid(field.name)"
+          >
+            <input
+              tuiSelect
+              [placeholder]="field.placeholder"
+              [formControl]="getControl(field.name)"
+            />
+
+            <tui-data-list-wrapper *tuiDropdown [items]="field.options ?? []" />
+          </tui-textfield>
+
+          @if (hasError(field.name, 'required')) {
+            <div tuiBadge appearance="negative">
+              {{ getRequiredMessage(field) }}
+            </div>
+          }
+        }
+      </div>
+    }
+  </div>
+
+  <!-- ACTIONS -->
+
+  <div class="flex justify-end gap-3">
+    <button tuiButton type="button" appearance="secondary" size="s" (click)="cancelForm()">
+      Cancelar
+    </button>
+
+    <button tuiButton type="button" size="s" (click)="submitForm()">Guardar</button>
+  </div>
+</div>

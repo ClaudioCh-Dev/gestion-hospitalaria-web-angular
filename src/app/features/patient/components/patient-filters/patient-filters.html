@@ -1,0 +1,24 @@
+<div class="flex w-full flex-col gap-4 sm:flex-row">
+  <!-- Buscar -->
+
+  <label tuiLabel class="flex-1">
+    <tui-textfield iconStart="@tui.search" tuiTextfieldSize="s">
+      <input
+        tuiInput
+        placeholder="Buscar paciente..."
+        [(ngModel)]="search"
+        (ngModelChange)="applyFilters()"
+      />
+    </tui-textfield>
+  </label>
+
+  <!-- Género -->
+
+  <label tuiLabel class="flex-1">
+    <tui-textfield tuiChevron tuiTextfieldSize="s" [tuiTextfieldCleaner]="false">
+      <input tuiSelect [(ngModel)]="gender" (ngModelChange)="applyFilters()" />
+
+      <tui-data-list-wrapper *tuiDropdown [items]="genders" />
+    </tui-textfield>
+  </label>
+</div>

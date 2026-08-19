@@ -1,0 +1,45 @@
+<div class="flex w-full flex-col gap-5">
+
+  <div class="flex w-full items-center gap-4">
+
+    <!-- Filtros + Creación -->
+    <div class="flex-1">
+      <app-doctor-filters
+        (filtersChange)="onFiltersChange($event)"
+      />
+    </div>
+
+    <!-- Crear doctor -->
+    <button
+      tuiButton
+      type="button"
+      iconStart="@tui.plus"
+      size="s"
+      appearance="primary"
+      (click)="createDoctorModal()"
+    >
+      Nuevo doctor
+    </button>
+
+  </div>
+
+
+  <!-- Tabla -->
+  <app-doctor-table
+    [doctors]="data()"
+    [(selected)]="selected"
+    (edit)="editDoctorModal($event)"
+  />
+
+
+  <!-- Paginación -->
+  <tui-table-pagination
+    [items]="sizeOptions"
+    [total]="total()"
+    [size]="size()"
+    [page]="page()"
+    (pageChange)="changePage($event)"
+    (sizeChange)="changeSize($event)"
+  />
+
+</div>

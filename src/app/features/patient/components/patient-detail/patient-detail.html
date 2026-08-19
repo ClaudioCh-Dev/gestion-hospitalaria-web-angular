@@ -1,0 +1,275 @@
+<tui-drawer *tuiPopup="patient() !== null">
+  <header >
+    <div tuiHeader="body-l">
+
+      @if (patient(); as currentPatient) {
+
+        <div class="flex w-full items-center justify-between gap-4 p-4">
+
+          <!-- Información -->
+          <div tuiTitle>
+            <span>
+              {{ currentPatient.firstName }}
+              {{ currentPatient.lastName }}
+            </span>
+
+            <span tuiSubtitle>
+              DNI: {{ currentPatient.documentNumber }}
+            </span>
+          </div>
+
+          <!-- Foto -->
+          @if (currentPatient.photo) {
+
+            <div
+              tuiAvatar
+              [style.background-image]="'url(' + currentPatient.photo + ')'"
+              class="shrink-0 bg-cover bg-center"
+            ></div>
+
+          } @else {
+
+            <div
+              tuiAvatar
+              [tuiAvatar]="currentPatient.firstName + ' ' + currentPatient.lastName | tuiInitials"
+              class="shrink-0"
+            ></div>
+
+          }
+
+        </div>
+
+      }
+
+      <!-- Cerrar -->
+      <div tuiAccessories>
+
+        <button
+          appearance="icon"
+          iconStart="@tui.x"
+          tuiIconButton
+          type="button"
+          (click)="close.emit()"
+        >
+          Cerrar
+        </button>
+
+      </div>
+
+    </div>
+  </header>
+
+
+  @if (patient(); as currentPatient) {
+
+    <div class="flex flex-col gap-6 p-4">
+
+
+      <!-- ================================================= -->
+      <!-- INFORMACIÓN PERSONAL -->
+      <!-- ================================================= -->
+
+      <section class="flex flex-col gap-3">
+
+        <h3 class="font-semibold">
+          Información personal
+        </h3>
+
+
+        <div class="grid grid-cols-2 gap-4">
+
+
+          <!-- DNI -->
+
+          <div>
+
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.id-card" />
+              DNI
+            </span>
+
+            <p class="ml-6">
+              {{ currentPatient.documentNumber }}
+            </p>
+
+          </div>
+
+
+          <!-- Género -->
+
+          <div>
+
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.user" />
+              Género
+            </span>
+
+            <p class="ml-6">
+              {{ currentPatient.gender || 'No especificado' }}
+            </p>
+
+          </div>
+
+
+          <!-- Fecha -->
+
+          <div>
+
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.calendar" />
+              Fecha de nacimiento
+            </span>
+
+            <p class="ml-6">
+              {{ currentPatient.birthDate }}
+            </p>
+
+          </div>
+
+
+          <!-- Estado -->
+
+          <div>
+
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.circle-check" />
+              Estado
+            </span>
+
+            <p class="ml-6">
+              {{ currentPatient.active ? 'Activo' : 'Inactivo' }}
+            </p>
+
+          </div>
+
+
+        </div>
+
+      </section>
+
+
+
+      <!-- ================================================= -->
+      <!-- CONTACTO -->
+      <!-- ================================================= -->
+
+      <section class="flex flex-col gap-3">
+
+        <h3 class="font-semibold">
+          Contacto
+        </h3>
+
+
+        <div class="grid grid-cols-2 gap-4">
+
+
+          <!-- Teléfono -->
+
+          <div>
+
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.phone" />
+              Teléfono
+            </span>
+
+            <p class="ml-6">
+              {{ currentPatient.phone || 'No especificado' }}
+            </p>
+
+          </div>
+
+
+          <!-- Correo -->
+
+          <div>
+
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.mail" />
+              Correo
+            </span>
+
+            <p class="ml-6">
+              {{ currentPatient.email || 'No especificado' }}
+            </p>
+
+          </div>
+
+
+          <!-- Dirección -->
+
+          <div class="col-span-2">
+
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.map-pin" />
+              Dirección
+            </span>
+
+            <p class="ml-6">
+              {{ currentPatient.address || 'No especificada' }}
+            </p>
+
+          </div>
+
+
+        </div>
+
+      </section>
+
+
+
+      <!-- ================================================= -->
+      <!-- INFORMACIÓN MÉDICA -->
+      <!-- ================================================= -->
+
+      <section class="flex flex-col gap-3">
+
+        <h3 class="font-semibold">
+          Información médica
+        </h3>
+
+
+        <div class="grid grid-cols-2 gap-4">
+
+
+          <!-- Tipo de sangre -->
+
+          <div>
+
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.droplet" />
+              Tipo de sangre
+            </span>
+
+            <p class="ml-6">
+              {{ currentPatient.bloodType || 'No especificado' }}
+            </p>
+
+          </div>
+
+
+          <!-- Alergias -->
+
+          <div>
+
+            <span class="flex items-center gap-1 text-sm text-gray-500">
+              <tui-icon icon="@tui.triangle-alert" />
+              Alergias
+            </span>
+
+            <p class="ml-6">
+              {{ currentPatient.allergies || 'Ninguna registrada' }}
+            </p>
+
+          </div>
+
+
+        </div>
+
+      </section>
+
+
+    </div>
+
+  }
+
+</tui-drawer>

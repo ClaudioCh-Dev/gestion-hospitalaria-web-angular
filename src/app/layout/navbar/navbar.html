@@ -1,0 +1,45 @@
+<header tuiNavigationHeader class="flex items-center justify-between"  style="
+    background: linear-gradient(
+      90deg,
+      rgb(15, 23, 42),
+      rgb(30, 41, 59)
+    );">
+  
+  <span tuiNavigationLogo>
+    <tui-icon icon="@tui.home" />
+    <span tuiFade>A very very long product name</span>
+  </span>
+  <div class="flex items-center gap-2">
+    <button
+      iconStart="@tui.bell"
+      tuiIconButton
+      type="button"
+      type="button"
+      [attr.aria-expanded]="open()"
+      [tuiDropdown]="dropdownContent"
+      [tuiDropdownManual]="open()"
+      [tuiObscuredEnabled]="open()"
+      (click)="onClick()"
+      (tuiActiveZoneChange)="onActiveZone($event)"
+      (tuiObscured)="onObscured($event)"
+    >
+      <ng-template #dropdownContent>
+        <tui-data-list>
+          @for (action of actions; track action.title) {
+            <button tuiOption type="button" (click)="onSelect(action)">
+              <span tuiTitle>
+                {{ action.title }}
+                <span tuiSubtitle>{{ action.description }}</span>
+              </span>
+            </button>
+          }
+        </tui-data-list>
+      </ng-template>
+       <tui-badge-notification/>
+    </button>
+
+    <button tuiIconButton type="button">
+      <tui-avatar tuiAvatar="AI" />
+    </button>
+  </div>
+</header>

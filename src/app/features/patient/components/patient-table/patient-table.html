@@ -1,0 +1,123 @@
+<div class="w-full overflow-x-auto rounded-xl justify-items-center py-1" >
+  <table tuiTable [size]="'s'" [style.width.rem]="58" [(ngModel)]="selected">
+    <thead>
+      <tr>
+        <th tuiTh>
+          <div [tuiCell]="'s'">
+            <input tuiCheckbox tuiCheckboxTable type="checkbox" [size]="'s'" />
+          </div>
+        </th>
+
+        <th tuiTh>Paciente</th>
+        <th tuiTh>DNI</th>
+        <th tuiTh>Contacto</th>
+        <th tuiTh>Estado</th>
+        <th tuiTh>Acciones</th>
+      </tr>
+    </thead>
+
+    <tbody tuiTbody>
+      @for (patient of patients(); track patient.id) {
+        <tr>
+          <!-- Selección -->
+
+          <td tuiTd>
+            <div [tuiCell]="'s'">
+              <input tuiCheckbox type="checkbox" [size]="'s'" [tuiCheckboxRow]="patient" />
+            </div>
+          </td>
+
+          <!-- Paciente -->
+
+          <td tuiTd>
+            <div [tuiCell]="'s'">
+              <div
+                [style.background]="patient.firstName + ' ' + patient.lastName | tuiAutoColor"
+                [tuiAvatar]="patient.firstName + ' ' + patient.lastName | tuiInitials"
+              ></div>
+
+              <span tuiTitle>
+                {{ patient.firstName }} {{ patient.lastName }}
+
+                <span tuiSubtitle>
+                  {{ patient.gender || 'Sin género especificado' }}
+                  ·
+                  {{ patient.birthDate }}
+                </span>
+              </span>
+            </div>
+          </td>
+
+          <!-- Documento -->
+
+          <td tuiTd>
+            <div [tuiCell]="'s'">
+              <span tuiTitle>
+                {{ patient.documentNumber }}
+              </span>
+            </div>
+          </td>
+
+          <!-- Contacto -->
+
+          <td tuiTd>
+            <div [tuiCell]="'s'">
+              <span tuiTitle>
+                {{ patient.phone || 'Sin teléfono' }}
+
+                <span tuiSubtitle>
+                  {{ patient.email || 'Sin correo' }}
+                </span>
+              </span>
+            </div>
+          </td>
+
+          <!-- Estado -->
+
+          <td tuiTd>
+            <span
+              [tuiStatus]="
+                patient.active ? 'var(--tui-status-positive)' : 'var(--tui-status-negative)'
+              "
+            >
+              {{ patient.active ? 'Activo' : 'Inactivo' }}
+            </span>
+          </td>
+
+          <!-- Acciones -->
+
+          <td tuiTd>
+            <span tuiStatus>
+              <button
+                appearance="action"
+                iconStart="@tui.pencil"
+                size="xs"
+                tuiIconButton
+                type="button"
+                (click)="edit.emit(patient)"
+              >
+                Editar
+              </button>
+
+              <button
+                appearance="action"
+                iconStart="@tui.ellipsis"
+                size="xs"
+                tuiIconButton
+                type="button"
+                (click)="morePatient(patient)"
+              >
+                Más
+              </button>
+            </span>
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>
+
+<app-patient-detail
+  [patient]="selectedPatient()"
+  (close)="selectedPatient.set(null)"
+/>

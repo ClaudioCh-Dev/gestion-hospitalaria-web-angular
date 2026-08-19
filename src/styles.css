@@ -1,3 +1,145 @@
-/* You can add global styles to this file, and also import other style files */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
 @import 'tailwindcss';
+
+:root {
+  --tui-typography-family-display: 'Plus Jakarta Sans', sans-serif;
+  --tui-typography-family-text: 'Plus Jakarta Sans', sans-serif;
+
+  /* =========================
+     TEXTOS
+     ========================= */
+
+  --tui-text-primary: #1e293b;
+  --tui-text-secondary: rgba(30, 41, 59, 0.68);
+  --tui-text-tertiary: rgba(30, 41, 59, 0.45);
+
+  --tui-text-primary-on-accent-1: #ffffff;
+  --tui-text-primary-on-accent-2: #ffffff;
+
+  /* =========================
+     ACCIONES
+     ========================= */
+
+  --tui-text-action: #2563eb;
+  --tui-text-action-hover: #1d4ed8;
+
+  /* =========================
+     ESTADOS
+     ========================= */
+
+  --tui-text-negative: #dc2626;
+  --tui-text-negative-hover: #b91c1c;
+
+  --tui-text-positive: #059669;
+  --tui-text-positive-hover: #047857;
+
+   /* =========================
+     BACKGROUND BASE
+     ========================= */
+
+  --tui-background-base: #ffffff;
+  --tui-background-base-alt: #f8fafc;
+
+  /* =========================
+     NEUTRAL
+     ========================= */
+
+  --tui-background-neutral-1: rgba(15, 23, 42, 0.04);
+  --tui-background-neutral-1-hover: rgba(15, 23, 42, 0.08);
+  --tui-background-neutral-1-pressed: rgba(15, 23, 42, 0.12);
+
+  --tui-background-neutral-2: rgba(15, 23, 42, 0.08);
+  --tui-background-neutral-2-hover: rgba(15, 23, 42, 0.12);
+  --tui-background-neutral-2-pressed: rgba(15, 23, 42, 0.16);
+
+  /* =========================
+     PRIMARY / MEDICAL BLUE
+     ========================= */
+
+  --tui-background-accent-1: #2563eb;
+  --tui-background-accent-1-hover: #1d4ed8;
+  --tui-background-accent-1-pressed: #1e40af;
+
+  /* =========================
+     SECONDARY / MEDICAL TEAL
+     ========================= */
+
+  --tui-background-accent-2: #0d9488;
+  --tui-background-accent-2-hover: #0f766e;
+  --tui-background-accent-2-pressed: #115e59;
+
+  /* =========================
+     CONTRASTE
+     ========================= */
+
+  --tui-background-accent-opposite: #ffffff;
+  --tui-background-accent-opposite-hover: #f8fafc;
+  --tui-background-accent-opposite-pressed: #f1f5f9;
+
+  /* =========================
+     ELEVATIONS / CARDS
+     ========================= */
+
+  --tui-background-elevation-1: #ffffff;
+  --tui-background-elevation-2: #ffffff;
+  --tui-background-elevation-3: #ffffff;
+
+    /* =========================
+     NEGATIVE / ERROR
+     ========================= */
+
+  --tui-status-negative: #dc2626;
+  --tui-status-negative-pale: rgba(220, 38, 38, 0.12);
+  --tui-status-negative-pale-hover: rgba(220, 38, 38, 0.20);
+
+  /* =========================
+     POSITIVE / SUCCESS
+     ========================= */
+
+  --tui-status-positive: #059669;
+  --tui-status-positive-pale: rgba(5, 150, 105, 0.12);
+  --tui-status-positive-pale-hover: rgba(5, 150, 105, 0.20);
+
+  /* =========================
+     WARNING
+     ========================= */
+
+  --tui-status-warning: #d97706;
+  --tui-status-warning-pale: rgba(217, 119, 6, 0.12);
+  --tui-status-warning-pale-hover: rgba(217, 119, 6, 0.20);
+
+  /* =========================
+     INFO
+     ========================= */
+
+  --tui-status-info: #2563eb;
+  --tui-status-info-pale: rgba(37, 99, 235, 0.12);
+  --tui-status-info-pale-hover: rgba(37, 99, 235, 0.20);
+
+  /* =========================
+     NEUTRAL
+     ========================= */
+
+  --tui-status-neutral: #64748b;
+
+    /* =========================
+     BORDERS
+     ========================= */
+
+  --tui-border-normal: rgba(15, 23, 42, 0.10);
+  --tui-border-hover: rgba(15, 23, 42, 0.18);
+  --tui-border-focus: rgba(37, 99, 235, 0.64);
+
+  /* =========================
+     SERVICES
+     ========================= */
+
+  --tui-service-autofill-background: #eff6ff;
+
+  --tui-service-selection-background: rgba(37, 99, 235, 0.12);
+
+  --tui-service-backdrop: rgba(15, 23, 42, 0.65);
+
+   --tui-theme-color: #0f2a43;
+}
