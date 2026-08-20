@@ -26,7 +26,6 @@ import { TuiNavigation} from '@taiga-ui/layout';
     TuiButton,
     TuiDataList,
     TuiDropdown,
-    TuiFade,
     TuiIcon,
     TuiInput,
     TuiNavigation,
