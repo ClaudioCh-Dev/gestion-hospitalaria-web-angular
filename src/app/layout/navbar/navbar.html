@@ -1,14 +1,27 @@
-<header tuiNavigationHeader class="flex items-center justify-between"  style="
-    background: linear-gradient(
-      90deg,
-      rgb(15, 23, 42),
-      rgb(30, 41, 59)
-    );">
-  
-  <span tuiNavigationLogo>
-    <tui-icon icon="@tui.home" />
-    <span tuiFade>A very very long product name</span>
+<header
+  tuiNavigationHeader
+  class="flex items-center justify-between"
+  style="background: linear-gradient(90deg, rgb(15, 23, 42), rgb(30, 41, 59))"
+>
+<span tuiNavigationLogo class="flex items-center gap-3">
+  <tui-icon
+    icon="@tui.heart-pulse"
+    class="text-white"
+    style="font-size: 28px;"
+  />
+
+  <span class="flex items-baseline gap-2">
+    <span class="text-xl font-semibold tracking-tight text-white">
+      Aura
+    </span>
+
+    <span
+      class="text-xs font-semibold uppercase tracking-[0.25em] text-slate-300"
+    >
+      Bioclinic
+    </span>
   </span>
+</span>
   <div class="flex items-center gap-2">
     <button
       iconStart="@tui.bell"
@@ -35,7 +48,7 @@
           }
         </tui-data-list>
       </ng-template>
-       <tui-badge-notification/>
+      <tui-badge-notification />
     </button>
 
     <button tuiIconButton type="button">

@@ -1,0 +1,180 @@
+<div class="flex w-full flex-col gap-5">
+  <!-- Header -->
+  <div class="flex w-full items-center justify-between">
+    <div>
+      <h1 class="text-xl font-semibold text-slate-900">Nueva cita</h1>
+
+      <p class="text-sm text-slate-500">Registra una nueva cita médica</p>
+    </div>
+
+    <button
+      tuiButton
+      type="button"
+      appearance="secondary"
+      size="s"
+      [routerLink]="['/appointments']"
+    >
+      Cancelar
+    </button>
+  </div>
+
+  <!-- Formulario -->
+  <form
+    [formGroup]="form"
+    (ngSubmit)="create()"
+    class="w-full rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
+  >
+    <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
+      <!-- ====================================== -->
+      <!-- ESPECIALIDAD -->
+      <!-- ====================================== -->
+
+      <tui-textfield tuiChevron tuiTextfieldSize="s">
+        <label tuiLabel> Especialidad </label>
+
+        <input tuiSelect formControlName="specialtyId" placeholder="Selecciona una especialidad" />
+
+        <tui-data-list *tuiDropdown>
+          @for (specialty of specialties; track specialty.id) {
+            <button tuiOption type="button" [value]="specialty.id">
+              {{ specialty.name }}
+            </button>
+          }
+        </tui-data-list>
+      </tui-textfield>
+
+      <!-- ====================================== -->
+      <!-- PACIENTE -->
+      <!-- ====================================== -->
+
+      <tui-textfield tuiChevron tuiTextfieldSize="s">
+        <label tuiLabel> Paciente </label>
+
+        <input tuiSelect formControlName="patientId" placeholder="Selecciona un paciente" />
+
+        <tui-data-list *tuiDropdown>
+          @for (patient of patients; track patient.id) {
+            <button tuiOption type="button" [value]="patient.id">
+              {{ patient.name }}
+            </button>
+          }
+        </tui-data-list>
+      </tui-textfield>
+
+      <!-- ====================================== -->
+      <!-- MÉDICO -->
+      <!-- ====================================== -->
+
+      <tui-textfield tuiChevron tuiTextfieldSize="s">
+        <label tuiLabel> Médico </label>
+
+        <input tuiSelect formControlName="doctorId" placeholder="Selecciona un médico" />
+
+        <tui-data-list *tuiDropdown>
+          @for (doctor of doctors; track doctor.id) {
+            <button tuiOption type="button" [value]="doctor.id">
+              {{ doctor.name }}
+            </button>
+          }
+        </tui-data-list>
+      </tui-textfield>
+
+      <!-- ====================================== -->
+      <!-- TIPO DE CITA -->
+      <!-- ====================================== -->
+
+      <tui-textfield tuiChevron tuiTextfieldSize="s">
+        <label tuiLabel> Tipo de cita </label>
+
+        <input
+          tuiSelect
+          formControlName="appointmentTypeId"
+          placeholder="Selecciona el tipo de cita"
+        />
+
+        <tui-data-list *tuiDropdown>
+          <button tuiOption type="button" [value]="1">Consulta general</button>
+
+          <button tuiOption type="button" [value]="2">Consulta especializada</button>
+
+          <button tuiOption type="button" [value]="3">Control médico</button>
+        </tui-data-list>
+      </tui-textfield>
+
+      <!-- ====================================== -->
+      <!-- DURACIÓN -->
+      <!-- ====================================== -->
+
+      <tui-textfield tuiTextfieldSize="s">
+        <label tuiLabel> Duración </label>
+
+        <input tuiInput type="number" formControlName="durationMinutes" placeholder="Minutos" />
+      </tui-textfield>
+
+      <!-- ====================================== -->
+      <!-- FECHA -->
+      <!-- ====================================== -->
+
+      <tui-textfield tuiTextfieldSize="s">
+        <label tuiLabel> Fecha </label>
+
+        <input tuiInputDate type="date" formControlName="scheduledDate" />
+
+        <tui-calendar *tuiDropdown />
+      </tui-textfield>
+
+      <!-- ====================================== -->
+      <!-- HORA -->
+      <!-- ====================================== -->
+
+      <tui-textfield tuiTextfieldSize="s">
+        <label tuiLabel> Hora </label>
+
+        <input mode="HH:MM AA" tuiInputTime formControlName="scheduledTime" />
+      </tui-textfield>
+      <div></div>
+
+      <!-- MOTIVO -->
+      <tui-textfield iconStart="@tui.pencil" tuiTextfieldSize="s" [tuiTextfieldCleaner]="false">
+        <label tuiLabel>Escribe tu motivo</label>
+        <textarea
+          required
+          tuiTextarea
+          [max]="4"
+          [min]="4"
+          formControlName="reason"
+        ></textarea>
+      </tui-textfield>
+
+      <!-- NOTAS -->
+      <tui-textfield iconStart="@tui.pencil" tuiTextfieldSize="s" [tuiTextfieldCleaner]="false">
+        <label tuiLabel>Escribe tus notas</label>
+        <textarea
+          required
+          tuiTextarea
+          [max]="4"
+          [min]="4"
+          formControlName="notes"
+        ></textarea>
+      </tui-textfield>
+    </div>
+
+    <!-- ====================================== -->
+    <!-- ACCIONES -->
+    <!-- ====================================== -->
+
+    <div class="mt-6 flex justify-end gap-3 border-t border-slate-100 pt-5">
+      <button
+        tuiButton
+        type="button"
+        appearance="secondary"
+        size="s"
+        [routerLink]="['/appointments']"
+      >
+        Cancelar
+      </button>
+
+      <button tuiButton type="submit" appearance="primary" size="s">Crear cita</button>
+    </div>
+  </form>
+</div>

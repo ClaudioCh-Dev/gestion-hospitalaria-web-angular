@@ -1,26 +1,31 @@
 <app-navbar></app-navbar>
-<!-- Añadimos min-height para que calcule el 100% de la pantalla menos el alto aproximado del header (ej. 60px) -->
+
 <div [style.display]="'flex'" [style.min-height]="'calc(100vh - 40px)'">
-  <app-sidebar [groupsOptions]="sidebarItems()" ></app-sidebar>
-  <main tuiNavigationMain class="w-full">
-    <nav compact tuiSubheader [style.position]="'sticky'" class="pl-6 pt-3 mb-1">
-      <tui-breadcrumbs [itemsLimit]="10">
-        @for (item of breadcrumbs; track item) {
-          @if ($last) {
-            <strong *tuiItem tuiFade>
-              {{ item }}
-            </strong>
+  <app-sidebar [groupsOptions]="sidebarItems()"></app-sidebar>
+
+  <main tuiNavigationMain class="flex-1 min-w-0 flex flex-col">
+    @if (breadcrumbs().length > 0) {
+      <nav compact tuiSubheader [style.position]="'sticky'" class="pl-6 pt-3 mb-1">
+        <tui-breadcrumbs [itemsLimit]="10">
+          @for (item of breadcrumbs(); track item.url) {
+            @if ($last) {
+              <strong *tuiItem tuiFade>
+                {{ item.label }}
+              </strong>
+            }
+
+            @if (!$last) {
+              <a *tuiItem tuiLink [routerLink]="item.url">
+                {{ item.label }}
+              </a>
+            }
           }
-          @if (!$last) {
-            <button *tuiItem tuiLink type="button">
-              {{ item }}
-            </button>
-          }
-        }
-      </tui-breadcrumbs>
-    </nav>
-    <main class="container mx-auto p-6">
+        </tui-breadcrumbs>
+      </nav>
+    }
+
+    <main class="container mx-auto p-6 overflow-x-auto">
       <router-outlet />
-    </main> 
+    </main>
   </main>
 </div>

@@ -1,25 +1,42 @@
-import { Component, ChangeDetectionStrategy, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  signal,
+} from '@angular/core';
 
-import { TuiItem} from '@taiga-ui/cdk';
+import {
+  NavigationEnd,
+  Router,
+  RouterLink,
+  RouterOutlet,
+} from '@angular/router';
 
-import {TuiBreadcrumbs, TuiFade } from '@taiga-ui/kit';
+import {filter} from 'rxjs';
 
-import { SidebarGroup } from './types';
-import { RouterOutlet } from '@angular/router';
-import { Sidebar } from './sidebar/sidebar';
-import { Navbar } from './navbar/navbar';
+import {TuiItem} from '@taiga-ui/cdk';
+import {TuiBreadcrumbs, TuiFade} from '@taiga-ui/kit';
+
+import {SidebarGroup} from './types';
+import {Sidebar} from './sidebar/sidebar';
+import {Navbar} from './navbar/navbar';
+
+interface Breadcrumb {
+  label: string;
+  url: string;
+}
 
 @Component({
   selector: 'app-dashboard',
+  standalone: true,
   imports: [
     Sidebar,
     Navbar,
     TuiBreadcrumbs,
     TuiFade,
     TuiItem,
+    RouterLink,
     RouterOutlet,
   ],
-  standalone: true,
   templateUrl: 'layout.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -67,8 +84,46 @@ export class Layout {
         icon: '@tui.credit-card',
         route: '/billing',
       },
-    }
+    },
   ]);
 
-  protected readonly breadcrumbs = ['Inicio', 'Dashboard'];
+  protected readonly breadcrumbs = signal<Breadcrumb[]>([]);
+
+  constructor(private readonly router: Router) {
+
+    this.router.events
+      .pipe(
+        filter(
+          (event) => event instanceof NavigationEnd
+        )
+      )
+      .subscribe((event) => {
+
+        const url = (event as NavigationEnd).urlAfterRedirects;
+
+        const segments = url
+          .split('/')
+          .filter(Boolean);
+
+        if (segments.length < 2) {
+          this.breadcrumbs.set([]);
+          return;
+        }
+
+        this.breadcrumbs.set(
+          segments.map((segment, index) => ({
+            label: this.formatBreadcrumb(segment),
+            url: '/' + segments
+              .slice(0, index + 1)
+              .join('/'),
+          }))
+        );
+      });
+  }
+
+  private formatBreadcrumb(value: string): string {
+    return value
+      .replace(/-/g, ' ')
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+  }
 }

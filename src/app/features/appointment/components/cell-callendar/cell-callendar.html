@@ -1,0 +1,112 @@
+<div class="rounded-xl border border-slate-200 bg-white shadow-sm">
+  <!-- Header -->
+  <div class="flex items-center justify-between border-b border-slate-200 px-4 py-3">
+    <div>
+      <h2 class="text-base font-semibold text-slate-900">Agenda médica</h2>
+
+      <p class="text-xs text-slate-500">Agosto 2026</p>
+    </div>
+
+    <div class="flex items-center gap-1.5">
+      <button class="rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs hover:bg-slate-50">
+        Hoy
+      </button>
+
+      <button
+        class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-sm hover:bg-slate-50"
+      >
+        ‹
+      </button>
+
+      <button
+        class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-sm hover:bg-slate-50"
+      >
+        ›
+      </button>
+
+      <tui-textfield tuiChevron tuiTextfieldSize="s" class="w-36" [tuiTextfieldCleaner]="false">
+        <input tuiSelect [(ngModel)]="selectedView" />
+
+        <tui-data-list *tuiDropdown>
+          @for (view of calendarViews; track view) {
+            <button tuiOption type="button" [value]="view">
+              {{ view }}
+            </button>
+          }
+        </tui-data-list>
+      </tui-textfield>
+    </div>
+  </div>
+
+  <!-- Calendar -->
+  <div class="overflow-x-auto">
+    <div class="min-w-200">
+      <!-- Days header -->
+      <div class="grid grid-cols-[60px_repeat(5,1fr)] border-b border-slate-200">
+        <div></div>
+
+        @for (day of days; track day.date) {
+          <div class="border-l border-slate-200 px-2 py-2 text-center">
+            <p class="text-[11px] font-medium uppercase text-slate-400">
+              {{ day.name }}
+            </p>
+
+            <p class="mt-0.5 text-base font-semibold text-slate-900">
+              {{ day.date }}
+            </p>
+          </div>
+        }
+      </div>
+
+      <!-- Scroll area -->
+      <div class="max-h-162.5 overflow-y-auto scrollbar-gutter-stable">
+        <!-- Hours -->
+        @for (hour of hours; track hour) {
+          <div class="grid grid-cols-[60px_repeat(5,1fr)]">
+            <!-- Time -->
+            <div class="relative h-12 border-b border-slate-200 px-2 pt-1.5 text-right">
+              <span class="text-[10px] text-slate-400">
+                {{ hour }}
+              </span>
+            </div>
+
+            <!-- Cells -->
+            @for (day of days; track day.date) {
+              <div class="relative h-12 border-b border-l border-slate-200 hover:bg-slate-50">
+                @if (getAppointment(day.date, hour); as appointment) {
+                  <div
+                    appearance="floating"
+                    tuiCardMedium
+                    class="absolute left-0 right-0 top-0 z-10 h-full w-full cursor-pointer rounded-none! p-2!"
+                    [style.height]="
+                      'calc(100% * ' + getAppointmentCells(appointment.start, appointment.end) + ')'
+                    "
+                    [style.width]="'100%'"
+                  >
+                    <tui-avatar-stack direction="start">
+                      <div
+                        size="s"
+                        tuiAvatar="@tui.user"
+                        [style.background]="appointment.avatar | tuiAutoColor"
+                      >
+                        <img alt="" [src]="appointment.avatar" />
+                      </div>
+                    </tui-avatar-stack>
+
+                    <h2 tuiTitle class="!text-xs">
+                      {{ appointment.patient }}
+
+                      <span tuiSubtitle class="!text-[10px]">
+                        {{ appointment.type }}
+                      </span>
+                    </h2>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

@@ -25,6 +25,18 @@ export const routes: Routes = [
           import('./features/doctor/pages/doctor.crud/doctor.crud')
             .then((m) => m.DoctorCrud),
       },
+      {
+        path: 'appointments',
+        loadComponent: () =>
+          import('./features/appointment/pages/appointment-page')
+            .then((m) => m.AppointmentPage),
+      },
+      {
+        path: 'appointments/create',
+        loadComponent: () =>
+          import('./features/appointment/pages/appointment-create-page/appointment-create-page')
+            .then((m) => m.AppointmentCreatePage),
+      },
     ],
   },
   {

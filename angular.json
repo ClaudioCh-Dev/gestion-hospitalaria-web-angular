@@ -29,6 +29,9 @@
             "styles": [
               "node_modules/@taiga-ui/styles/taiga-ui-theme.less",
               "node_modules/@taiga-ui/styles/taiga-ui-fonts.less",
+              "@fullcalendar/angular/skeleton.css",
+              "@fullcalendar/angular/themes/monarch/theme.css",
+              "@fullcalendar/angular/themes/monarch/palettes/purple.css",
               "src/styles.css"
             ]
           },
