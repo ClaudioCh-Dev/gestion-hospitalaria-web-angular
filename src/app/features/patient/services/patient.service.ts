@@ -1,10 +1,7 @@
 import {Observable} from 'rxjs';
 
-import {
-  PageResponse,
-  PatientRequest,
-  PatientResponse,
-} from '../model/patient.dtos';
+import {PageResponse} from '../../../shared/models/types.dto';
+import {PatientRequest, PatientResponse} from '../model/patient.dtos';
 
 export abstract class PatientService {
 

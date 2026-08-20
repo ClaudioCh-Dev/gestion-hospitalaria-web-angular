@@ -29,7 +29,8 @@ import {
 
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 
-import { PageResponse, PatientRequest, PatientResponse } from '../../model/patient.dtos';
+import {PageResponse} from '../../../../shared/models/types.dto';
+import {PatientRequest, PatientResponse} from '../../model/patient.dtos';
 
 import { PatientService } from '../../services/patient.service';
 

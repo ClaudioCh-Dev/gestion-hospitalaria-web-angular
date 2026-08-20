@@ -1,4 +1,5 @@
-import { PageResponse, DoctorResponse } from '../model/doctor.dtos';
+import { PageResponse } from '../../../shared/models/types.dto';
+import { DoctorResponse } from '../model/doctor.dtos';
 
 export const DOCTORS_MOCK: PageResponse<DoctorResponse> = {
   content: [

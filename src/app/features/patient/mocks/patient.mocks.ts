@@ -1,6 +1,7 @@
-import {PageResponse, PatientResponse} from '../model/patient.dtos';
+import {PatientResponse} from '../model/patient.dtos';
+import {PageResponse as PageResponseDto} from '../../../shared/models/types.dto';
 
-export const PATIENTS_MOCK: PageResponse<PatientResponse> = {
+export const PATIENTS_MOCK: PageResponseDto<PatientResponse> = {
   content: [
     {
       id: 1,

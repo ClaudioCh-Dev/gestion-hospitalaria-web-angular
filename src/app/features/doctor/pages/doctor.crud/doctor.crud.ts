@@ -6,9 +6,10 @@ import { TuiTable, TuiTablePagination } from '@taiga-ui/addon-table';
 
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 
+import { PageResponse } from '../../../../shared/models/types.dto';
+
 import {
   DoctorResponse,
-  PageResponse,
   CreateDoctorRequest,
   UpdateDoctorRequest,
 } from '../../model/doctor.dtos';

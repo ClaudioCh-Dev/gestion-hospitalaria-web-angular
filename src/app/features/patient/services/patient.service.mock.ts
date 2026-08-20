@@ -1,11 +1,8 @@
 import {Injectable, signal} from '@angular/core';
 import {Observable, of} from 'rxjs';
 
-import {
-  PageResponse,
-  PatientRequest,
-  PatientResponse,
-} from '../model/patient.dtos';
+import {PatientRequest, PatientResponse} from '../model/patient.dtos';
+import {PageResponse} from '../../../shared/models/types.dto';
 
 import {PatientService} from './patient.service';
 import {PATIENTS_MOCK} from '../mocks/patient.mocks';
