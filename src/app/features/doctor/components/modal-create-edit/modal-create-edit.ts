@@ -37,7 +37,6 @@ export class ModalCreateEdit {
   protected submitted = false;
 
   protected readonly isEdit = !!this.context.data;
-
   // =====================================================
   // Form
   // =====================================================
@@ -201,33 +200,33 @@ export class ModalCreateEdit {
       // por las especialidades del backend.
 
       options: [
-        'Cardiología',
-        'Pediatría',
-        'Dermatología',
-        'Neurología',
-        'Traumatología',
-        'Medicina Interna',
-        'Cirugía General',
-        'Ginecología',
-        'Oncología',
-        'Oftalmología',
-        'Otorrinolaringología',
-        'Psiquiatría',
-        'Radiología',
-        'Urología',
-        'Anestesiología',
-        'Cirugía Plástica',
-        'Dental',
-        'Nutrición',
-        'Fisioterapia',
-        'Terapia Ocupacional',
-        'Psicología',
-        'Podología',
-        'Farmacia',
-        'Laboratorio',
-        'Imagenología',
-        'Servicio Social',
-        'Otro',
+        {key: 'Cardiologia', value: 1},
+        {key: 'Pediatría', value: 2},
+        {key: 'Dermatología', value: 3},
+        {key: 'Neurología', value: 4},
+        {key: 'Traumatología', value: 5},
+        {key: 'Medicina Interna', value: 6},
+        {key: 'Cirugía General', value: 7},
+        {key: 'Ginecología', value: 8},
+        {key: 'Oncología', value: 9},
+        {key: 'Oftalmología', value: 10},
+        {key: 'Otorrinolaringología', value: 11},
+        {key: 'Psiquiatría', value: 12},
+        {key: 'Radiología', value: 13},
+        {key: 'Urología', value: 14},
+        {key: 'Anestesiología', value: 15},
+        {key: 'Cirugía Plástica', value: 16},
+        {key: 'Dental', value: 17},
+        {key: 'Nutrición', value: 18},
+        {key: 'Fisioterapia', value: 19},
+        {key: 'Terapia Ocupacional', value: 20},
+        {key: 'Psicología', value: 21},
+        {key: 'Podología', value: 22},
+        {key: 'Farmacia', value: 23},
+        {key: 'Laboratorio', value: 24},
+        {key: 'Imagenología', value: 25},
+        {key: 'Servicio Social', value: 26},
+        {key: 'Otro', value: 27},
       ],
 
       errorMessages: {

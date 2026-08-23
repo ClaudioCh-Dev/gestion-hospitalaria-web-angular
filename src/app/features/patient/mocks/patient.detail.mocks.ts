@@ -1,0 +1,36 @@
+import {PatientDetailResponse} from '../model/patient.dtos';
+
+export const PATIENT_DETAILS_MOCK: PatientDetailResponse[] = [
+  {
+    id: 1,
+    documentNumber: '12345678',
+    firstName: 'Juan',
+    lastName: 'Pérez',
+    birthDate: '1995-05-10',
+    gender: 'Masculino',
+    phone: '987654321',
+    email: 'juan.perez@gmail.com',
+    address: 'Av. Arequipa 1250, Lima',
+    bloodType: 'O+',
+    allergies: 'Ninguna',
+    active: true,
+    createdAt: '2026-08-01T10:00:00',
+    updatedAt: '2026-08-01T10:00:00',
+  },
+  {
+    id: 2,
+    documentNumber: '87654321',
+    firstName: 'María',
+    lastName: 'García',
+    birthDate: '1998-03-20',
+    gender: 'Femenino',
+    phone: '912345678',
+    email: 'maria.garcia@gmail.com',
+    address: 'Av. Larco 850, Miraflores',
+    bloodType: 'A+',
+    allergies: 'Polen',
+    active: true,
+    createdAt: '2026-08-01T10:05:00',
+    updatedAt: '2026-08-01T10:05:00',
+  },
+];

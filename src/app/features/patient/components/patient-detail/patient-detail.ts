@@ -8,7 +8,7 @@ import {
 import { TuiButton, TuiIcon, TuiPopup, TuiTitle, TuiAppearance } from '@taiga-ui/core';
 import { TuiAvatar, TuiBadge, TuiDrawer, TuiInitialsPipe, TuiTabs } from '@taiga-ui/kit';
 
-import { PatientResponse } from '../../model/patient.dtos';
+import { PatientDetailResponse, PatientResponse } from '../../model/patient.dtos';
 
 @Component({
   selector: 'app-patient-detail',
@@ -33,7 +33,7 @@ import { PatientResponse } from '../../model/patient.dtos';
 })
 export class PatientDetailComponent {
 
-  readonly patient = input<PatientResponse | null>(null);
+  readonly patient = input<PatientDetailResponse | null>(null);
 
   readonly close = output<void>();
 }

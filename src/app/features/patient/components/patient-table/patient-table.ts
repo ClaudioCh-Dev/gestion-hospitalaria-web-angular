@@ -1,6 +1,8 @@
-import { ChangeDetectionStrategy, Component, input, model, output, signal } from '@angular/core';
-import { PatientDetailComponent } from '../patient-detail/patient-detail';
-import { FormsModule } from '@angular/forms';
+import {ChangeDetectionStrategy, Component, inject, input, model, output, signal} from '@angular/core';
+
+import {PatientDetailComponent} from '../patient-detail/patient-detail';
+
+import {FormsModule} from '@angular/forms';
 
 import {
   TuiButton,
@@ -24,15 +26,19 @@ import {
   TuiStatus,
 } from '@taiga-ui/kit';
 
-import { PatientResponse } from '../../model/patient.dtos';
-import { TuiTable, TuiTableControl, TuiTablePagination } from '@taiga-ui/addon-table';
+import {
+  PatientDetailResponse,
+  PatientResponse,
+} from '../../model/patient.dtos';
+
+import {TuiTable, TuiTableControl, TuiTablePagination} from '@taiga-ui/addon-table';
+
+import {PatientService} from '../../services/patient.service';
 
 @Component({
   selector: 'app-patient-table',
-
   imports: [
     FormsModule,
-
     TuiAutoColorPipe,
     TuiAvatar,
     TuiButton,
@@ -51,12 +57,13 @@ import { TuiTable, TuiTableControl, TuiTablePagination } from '@taiga-ui/addon-t
     TuiTitle,
     PatientDetailComponent,
   ],
-
   templateUrl: './patient-table.html',
-
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PatientTableComponent {
+
+  private readonly patientService = inject(PatientService);
+
   readonly patients = input<PatientResponse[]>([]);
 
   readonly selected = model<PatientResponse[]>([]);
@@ -65,10 +72,24 @@ export class PatientTableComponent {
 
   readonly more = output<PatientResponse>();
 
-  protected readonly selectedPatient = signal<PatientResponse | null>(null);
+  protected readonly selectedPatient =
+    signal<PatientDetailResponse | null>(null);
 
   protected morePatient(patient: PatientResponse): void {
-    console.log('Paciente seleccionado:', patient);
-    this.selectedPatient.set(patient);
+
+    console.log('Buscando detalle del paciente:', patient.id);
+
+    this.patientService
+      .findById(patient.id)
+      .subscribe({
+        next: detail => {
+          console.log('Detalle recibido:', detail);
+
+          this.selectedPatient.set(detail);
+        },
+        error: error => {
+          console.error('Error obteniendo paciente:', error);
+        },
+      });
   }
 }

@@ -1,5 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { AuthService } from '../../../../core/services/auth.service';
 
 import {
   TuiButton,
@@ -8,30 +10,42 @@ import {
 
 @Component({
   selector: 'app-login',
+  standalone: true,
   imports: [
     FormsModule,
     TuiTextfield,
     TuiButton,
   ],
   templateUrl: './login.html',
-  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Login {
-  protected email = '';
-  protected password = '';
 
-  protected clearEmail(): void {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+
+  email = '';
+  password = '';
+
+  login(): void {
+
+    this.authService.login({
+      username: this.email,
+      password: this.password,
+    }).subscribe({
+      next: () => {
+        this.router.navigate(['/']);
+      },
+      error: error => {
+        console.error('Error al iniciar sesión', error);
+      },
+    });
+  }
+
+  clearEmail(): void {
     this.email = '';
   }
 
-  protected clearPassword(): void {
+  clearPassword(): void {
     this.password = '';
-  }
-
-  protected login(): void {
-    console.log({
-      email: this.email,
-      password: this.password,
-    });
   }
 }

@@ -1,24 +1,30 @@
 import {Injectable, signal} from '@angular/core';
 import {Observable, of} from 'rxjs';
 
-import {PatientRequest, PatientResponse} from '../model/patient.dtos';
-import {PageResponse} from '../../../shared/models/types.dto';
+import {
+  PatientDetailResponse,
+  PatientRequest,
+  PatientResponse,
+} from '../model/patient.dtos';
 
+import { PageResponse } from '../../../shared/models/page.type';
 import {PatientService} from './patient.service';
-import {PATIENTS_MOCK} from '../mocks/patient.mocks';
 
+import {PATIENTS_MOCK} from '../mocks/patient.mocks';
+import {PATIENT_DETAILS_MOCK} from '../mocks/patient.detail.mocks';
 
 @Injectable()
 export class PatientMockService extends PatientService {
 
-  private readonly _patients =
-    signal<PageResponse<PatientResponse>>(
-      structuredClone(PATIENTS_MOCK),
-    );
+  private readonly _patients = signal<PageResponse<PatientResponse>>(
+    structuredClone(PATIENTS_MOCK),
+  );
 
-  readonly patients =
-    this._patients.asReadonly();
+  private readonly _patientDetails = signal<PatientDetailResponse[]>(
+    structuredClone(PATIENT_DETAILS_MOCK),
+  );
 
+  readonly patients = this._patients.asReadonly();
 
   // ============================
   // Obtener pacientes
@@ -29,70 +35,45 @@ export class PatientMockService extends PatientService {
     size: number = 10,
   ): Observable<PageResponse<PatientResponse>> {
 
-    const patients =
-      this._patients().content;
+    const patients = this._patients().content;
 
-    const totalElements =
-      patients.length;
+    const totalElements = patients.length;
+    const totalPages = Math.ceil(totalElements / size);
 
-    const totalPages =
-      Math.ceil(totalElements / size);
+    const start = page * size;
+    const end = start + size;
 
-    const start =
-      page * size;
-
-    const end =
-      start + size;
-
-    const content =
-      patients.slice(start, end);
+    const content = patients.slice(start, end);
 
     const response: PageResponse<PatientResponse> = {
-
       content,
-
       totalElements,
-
       totalPages,
-
       size,
-
       number: page,
-
       first: page === 0,
-
       last: page >= totalPages - 1,
-
-      numberOfElements:
-        content.length,
+      numberOfElements: content.length,
     };
 
     return of(response);
   }
 
-
   // ============================
   // Buscar por ID
   // ============================
 
-  findById(
-    id: number,
-  ): Observable<PatientResponse> {
+  findById(id: number): Observable<PatientDetailResponse> {
 
-    const patient =
-      this._patients()
-        .content
-        .find(item => item.id === id);
+    const patient = this._patientDetails()
+      .find(item => item.id === id);
 
     if (!patient) {
-      throw new Error(
-        `Paciente ${id} no encontrado`,
-      );
+      throw new Error(`Paciente ${id} no encontrado`);
     }
 
     return of(patient);
   }
-
 
   // ============================
   // Buscar por DNI
@@ -100,77 +81,75 @@ export class PatientMockService extends PatientService {
 
   findByDocumentNumber(
     documentNumber: string,
-  ): Observable<PatientResponse> {
+  ): Observable<PatientDetailResponse> {
 
-    const patient =
-      this._patients()
-        .content
-        .find(
-          item =>
-            item.documentNumber === documentNumber,
-        );
+    const patient = this._patientDetails()
+      .find(item => item.documentNumber === documentNumber);
 
     if (!patient) {
-      throw new Error(
-        `Paciente ${documentNumber} no encontrado`,
-      );
+      throw new Error(`Paciente ${documentNumber} no encontrado`);
     }
 
     return of(patient);
   }
-
 
   // ============================
   // Crear
   // ============================
 
   create(
-    request: PatientRequest,
-  ): Observable<PatientResponse> {
+    patient: PatientRequest,
+  ): Observable<PatientDetailResponse> {
 
-    const current =
-      this._patients();
+    const id = Date.now();
+    const now = new Date().toISOString();
 
-    const now =
-      new Date().toISOString();
-
-    const patient: PatientResponse = {
-
-      ...request,
-
-      id: Date.now(),
-
-      birthDate:
-        request.birthDate ?? '',
-
+    const newPatient: PatientResponse = {
+      id,
+      documentNumber: patient.documentNumber,
+      firstName: patient.firstName,
+      lastName: patient.lastName,
+      birthDate: patient.birthDate,
+      gender: patient.gender,
+      phone: patient.phone,
+      email: patient.email,
       active: true,
+    };
 
+    const newPatientDetail: PatientDetailResponse = {
+      id,
+      documentNumber: patient.documentNumber,
+      firstName: patient.firstName,
+      lastName: patient.lastName,
+      birthDate: patient.birthDate ?? '',
+      gender: patient.gender,
+      phone: patient.phone,
+      email: patient.email,
+      address: patient.address,
+      bloodType: patient.bloodType,
+      allergies: patient.allergies,
+      active: true,
       createdAt: now,
-
       updatedAt: now,
     };
 
-
-    this._patients.set({
-
+    this._patients.update(current => ({
       ...current,
-
       content: [
         ...current.content,
-        patient,
+        newPatient,
       ],
+      totalElements: current.totalElements + 1,
+      numberOfElements: current.numberOfElements + 1,
+    }));
 
-      totalElements:
-        current.totalElements + 1,
+    this._patientDetails.update(current => [
+      ...current,
+      newPatientDetail,
+    ]);
 
-      numberOfElements:
-        current.numberOfElements + 1,
-    });
-
-
-    return of(patient);
+    return of(newPatientDetail);
   }
-
 
   // ============================
   // Actualizar
@@ -178,84 +157,91 @@ export class PatientMockService extends PatientService {
 
   update(
     id: number,
-    request: PatientRequest,
-  ): Observable<PatientResponse> {
+    patient: PatientRequest,
+  ): Observable<PatientDetailResponse> {
 
-    const current =
-      this._patients();
-
-    const existing =
-      current.content
-        .find(item => item.id === id);
+    const existing = this._patientDetails()
+      .find(item => item.id === id);
 
     if (!existing) {
-      throw new Error(
-        `Paciente ${id} no encontrado`,
-      );
+      throw new Error(`Paciente ${id} no encontrado`);
     }
 
-
-    const updated: PatientResponse = {
-
+    const updatedPatient: PatientDetailResponse = {
       ...existing,
-
-      ...request,
-
-      birthDate:
-        request.birthDate ??
-        existing.birthDate,
-
-      updatedAt:
-        new Date().toISOString(),
+      documentNumber: patient.documentNumber,
+      firstName: patient.firstName,
+      lastName: patient.lastName,
+      birthDate: patient.birthDate ?? '',
+      gender: patient.gender,
+      phone: patient.phone,
+      email: patient.email,
+      address: patient.address,
+      bloodType: patient.bloodType,
+      allergies: patient.allergies,
+      updatedAt: new Date().toISOString(),
     };
 
+    // Actualizar detalle
+    this._patientDetails.update(current =>
+      current.map(item =>
+        item.id === id
+          ? updatedPatient
+          : item,
+      ),
+    );
 
-    this._patients.set({
-
+    // Actualizar listado
+    this._patients.update(current => ({
       ...current,
+      content: current.content.map(item =>
+        item.id === id
+          ? {
+              ...item,
+              documentNumber: updatedPatient.documentNumber,
+              firstName: updatedPatient.firstName,
+              lastName: updatedPatient.lastName,
+              birthDate: updatedPatient.birthDate,
+              gender: updatedPatient.gender,
+              phone: updatedPatient.phone,
+              email: updatedPatient.email,
+            }
+          : item,
+      ),
+    }));
 
-      content:
-        current.content.map(
-          item =>
-            item.id === id
-              ? updated
-              : item,
-        ),
-    });
-
-
-    return of(updated);
+    return of(updatedPatient);
   }
-
 
   // ============================
   // Eliminar
   // ============================
 
-  delete(
-    id: number,
-  ): Observable<void> {
+  delete(id: number): Observable<void> {
 
-    const current =
-      this._patients();
+    const exists = this._patients()
+      .content
+      .some(item => item.id === id);
 
+    if (!exists) {
+      throw new Error(`Paciente ${id} no encontrado`);
+    }
 
-    this._patients.set({
+    this._patients.update(current => {
+      const content = current.content
+        .filter(item => item.id !== id);
 
-      ...current,
-
-      content:
-        current.content.filter(
-          item => item.id !== id,
-        ),
-
-      totalElements:
-        current.totalElements - 1,
-
-      numberOfElements:
-        current.numberOfElements - 1,
+      return {
+        ...current,
+        content,
+        totalElements: content.length,
+        numberOfElements: content.length,
+      };
     });
 
+    this._patientDetails.update(current =>
+      current.filter(item => item.id !== id),
+    );
 
     return of(void 0);
   }

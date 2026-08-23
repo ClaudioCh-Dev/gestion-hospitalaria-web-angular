@@ -1,10 +1,20 @@
 import {inject, Injectable, signal} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
-import {catchError, Observable, tap, throwError} from 'rxjs';
 
-import {PatientRequest, PatientResponse} from '../model/patient.dtos';
-import {PageResponse} from '../../../shared/models/types.dto';
+import {
+  catchError,
+  Observable,
+  tap,
+  throwError,
+} from 'rxjs';
 
+import {
+  PatientDetailResponse,
+  PatientRequest,
+  PatientResponse,
+} from '../model/patient.dtos';
+
+import { PageResponse } from '../../../shared/models/page.type';
 import {PatientService} from './patient.service';
 
 @Injectable()
@@ -20,126 +30,151 @@ export class PatientHttpService implements PatientService {
 
   readonly patients = this._patients.asReadonly();
 
-findAll(
-  page: number = 0,
-  size: number = 10,
-): Observable<PageResponse<PatientResponse>> {
+  // ============================
+  // Obtener pacientes
+  // ============================
 
-  const params = new HttpParams()
-    .set('page', page)
-    .set('size', size);
+  findAll(
+    page: number = 0,
+    size: number = 10,
+  ): Observable<PageResponse<PatientResponse>> {
 
-  console.log('📤 GET pacientes:', this.apiUrl);
-  console.log('📤 Params:', params.toString());
+    const params = new HttpParams()
+      .set('page', page)
+      .set('size', size);
 
-  return this.http
-    .get<PageResponse<PatientResponse>>(
-      this.apiUrl,
-      {params},
-    )
-    .pipe(
+    return this.http
+      .get<PageResponse<PatientResponse>>(
+        this.apiUrl,
+        {params},
+      )
+      .pipe(
+        tap(response => {
+          this._patients.set(response);
+        }),
+        catchError(error => {
+          console.error('❌ Error GET pacientes:', error);
+          return throwError(() => error);
+        }),
+      );
+  }
 
-      tap(response => {
-        console.log('📥 PatientHttpService recibió:', response);
-
-        this._patients.set(response);
-      }),
-
-      catchError(error => {
-
-        console.error('❌ Error GET pacientes:', error);
-        console.error('📄 Status:', error.status);
-        console.error('📄 Body:', error.error);
-
-        return throwError(() => error);
-      }),
-    );
-}
+  // ============================
+  // Buscar por ID
+  // ============================
 
   findById(
     id: number,
-  ): Observable<PatientResponse> {
+  ): Observable<PatientDetailResponse> {
 
-    return this.http.get<PatientResponse>(
+    return this.http.get<PatientDetailResponse>(
       `${this.apiUrl}/${id}`,
     );
   }
 
+  // ============================
+  // Buscar por DNI
+  // ============================
+
   findByDocumentNumber(
     documentNumber: string,
-  ): Observable<PatientResponse> {
+  ): Observable<PatientDetailResponse> {
 
-    return this.http.get<PatientResponse>(
+    return this.http.get<PatientDetailResponse>(
       `${this.apiUrl}/document/${documentNumber}`,
     );
   }
 
-  create(patient: PatientRequest): Observable<PatientResponse> {
-  console.log('📤 Enviando paciente:', patient);
+  // ============================
+  // Crear
+  // ============================
 
-  return this.http
-    .post<PatientResponse>(this.apiUrl, patient)
-    .pipe(
-      tap(created => {
-        console.log('✅ Paciente creado:', created);
+  create(
+    patient: PatientRequest,
+  ): Observable<PatientDetailResponse> {
 
-        const current = this._patients();
+    return this.http
+      .post<PatientDetailResponse>(
+        this.apiUrl,
+        patient,
+      )
+      .pipe(
+        tap(created => {
 
-        if (!current) {
-          return;
-        }
+          this._patients.update(current => {
 
-        this._patients.set({
-          ...current,
-          content: [
-            ...current.content,
-            created,
-          ],
-          totalElements: current.totalElements + 1,
-        });
-      }),
+            if (!current) {
+              return current;
+            }
 
-      catchError(error => {
-        console.error('❌ Error al crear paciente:', error);
-        console.error('📄 Status:', error.status);
-        console.error('📄 Error body:', error.error);
+            return {
+              ...current,
+              content: [
+                ...current.content,
+                created,
+              ],
+              totalElements: current.totalElements + 1,
+              numberOfElements: current.numberOfElements + 1,
+            };
+          });
 
-        return throwError(() => error);
-      }),
-    );
-}
+        }),
+        catchError(error => {
+          console.error('❌ Error al crear paciente:', error);
+          return throwError(() => error);
+        }),
+      );
+  }
+
+  // ============================
+  // Actualizar
+  // ============================
 
   update(
     id: number,
     patient: PatientRequest,
-  ): Observable<PatientResponse> {
+  ): Observable<PatientDetailResponse> {
 
     return this.http
-      .put<PatientResponse>(
+      .put<PatientDetailResponse>(
         `${this.apiUrl}/${id}`,
         patient,
       )
       .pipe(
         tap(updated => {
 
-          const current = this._patients();
+          this._patients.update(current => {
 
-          if (!current) {
-            return;
-          }
+            if (!current) {
+              return current;
+            }
 
-          this._patients.set({
-            ...current,
-            content: current.content.map(
-              item =>
+            return {
+              ...current,
+              content: current.content.map(item =>
                 item.id === id
-                  ? updated
+                  ? {
+                      ...item,
+                      documentNumber: updated.documentNumber,
+                      firstName: updated.firstName,
+                      lastName: updated.lastName,
+                      birthDate: updated.birthDate,
+                      gender: updated.gender,
+                      phone: updated.phone,
+                      email: updated.email,
+                    }
                   : item,
-            ),
+              ),
+            };
           });
+
         }),
       );
   }
+
+  // ============================
+  // Eliminar
+  // ============================
 
   delete(
     id: number,
@@ -152,20 +187,24 @@ findAll(
       .pipe(
         tap(() => {
 
-          const current = this._patients();
+          this._patients.update(current => {
 
-          if (!current) {
-            return;
-          }
+            if (!current) {
+              return current;
+            }
 
-          this._patients.set({
-            ...current,
-            content: current.content.filter(
+            const content = current.content.filter(
               item => item.id !== id,
-            ),
-            totalElements:
-              current.totalElements - 1,
+            );
+
+            return {
+              ...current,
+              content,
+              totalElements: current.totalElements - 1,
+              numberOfElements: content.length,
+            };
           });
+
         }),
       );
   }

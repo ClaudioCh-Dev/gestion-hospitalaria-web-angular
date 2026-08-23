@@ -1,0 +1,39 @@
+<ng-template
+  [tuiNotificationMiddleOptions]="{closable: true}"
+  [tuiNotificationMiddle]="open()"
+  (tuiNotificationMiddleChange)="open.set($event)"
+>
+  @if (status() === 'loading') {
+
+    <tui-loader tuiAnimated />
+
+    <div tuiAnimated>
+      Procesando...
+    </div>
+
+  } @else if (status() === 'success') {
+
+    <div
+      appearance="positive"
+      tuiAnimated
+      tuiAvatar="@tui.check"
+    ></div>
+
+    <div tuiAnimated>
+      {{ message() }}
+    </div>
+
+  } @else if (status() === 'error') {
+
+    <div
+      appearance="negative"
+      tuiAnimated
+      tuiAvatar="@tui.octagon-alert"
+    ></div>
+
+    <div tuiAnimated>
+      {{ messageProblem() }}
+    </div>
+
+  }
+</ng-template>

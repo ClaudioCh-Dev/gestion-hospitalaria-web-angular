@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 
-import { PageResponse } from '../../../shared/models/types.dto';
+import { PageResponse } from '../../../shared/models/page.type';
 import {
   CreateDoctorRequest,
   UpdateDoctorRequest,

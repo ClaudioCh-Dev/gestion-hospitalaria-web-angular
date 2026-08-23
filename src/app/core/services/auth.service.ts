@@ -1,13 +1,39 @@
-import {Injectable, signal} from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
+import { Observable, tap } from 'rxjs';
+
+export interface LoginRequest {
+  username: string;
+  password: string;
+}
+
+export interface TokenResponse {
+  accessToken: string;
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
 
-  private readonly _accessToken = signal<string | null>("eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiJhZG1pbiIsInJvbGUiOiJBRE1JTiIsInVzZXJJZCI6MSwiaWF0IjoxNzg3MDc4NTk3LCJleHAiOjE3ODcwODIxOTd9.LoVhc5VbcDh11yeZkCaEZ6gwvuwZSbp-j_6-IUHZVR4D-EuYplpMnmjeG96hbUbUIKGchW28uGi2VRiwuvoO9vLffOuzwlZOHt5UqukiyplvTuHOFFigj99ynUgzuWom3rQQeqlUPaK-5yaZseoeOpAqG04WgZIG5YUk2pY0w84Az7Q_91tmSVqKafIpyJl0tmThwKbfcY6mqUAPQ6LvCaK_j2UX_cIsXv060XoINEb02iHub2Y4hF7ePhAuERXZ37AkATMjhWaUbUe0WqfxVntkiXVDAitHejCab_4zh_YbkuvLytW4yqSk__DThePf3KYokf7y17EAM4KCazCtZw");
+  private readonly http = inject(HttpClient);
 
-  readonly accessToken = this._accessToken.asReadonly()
+  private readonly _accessToken = signal<string | null>(null);
+
+  readonly accessToken = this._accessToken.asReadonly();
+
+  login(credentials: LoginRequest): Observable<TokenResponse> {
+    return this.http
+      .post<TokenResponse>(
+        'http://localhost:3000/auth-server/auth/login',
+        credentials
+      )
+      .pipe(
+        tap(response => {
+          this._accessToken.set(response.accessToken);
+        })
+      );
+  }
 
   setAccessToken(token: string): void {
     this._accessToken.set(token);

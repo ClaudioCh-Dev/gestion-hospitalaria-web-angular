@@ -71,7 +71,7 @@
 
         <!-- SELECT -->
 
-        @if (field.type === 'select') {
+        <!--        @if (field.type === 'select') {
           <tui-textfield
             tuiChevron
             tuiTextfieldSize="s"
@@ -92,6 +92,34 @@
               {{ getRequiredMessage(field) }}
             </div>
           }
+        }
+          -->
+        @if (field.type === 'select') {
+          <tui-textfield tuiChevron tuiTextfieldSize="s" [invalid]="isInvalid(field.name)">
+            <input
+              tuiSelect
+              [placeholder]="field.placeholder"
+              [formControl]="getControl(field.name)"
+            />
+
+            <cdk-virtual-scroll-viewport
+              *tuiDropdown
+              tuiScrollRef
+              [itemSize]="2"
+             [style.block-size.rem]="Math.min((field.options?.length ?? 0) * 2, 10)"
+            >
+              <tui-data-list>
+                <button
+                  *cdkVirtualFor="let item of field.options"
+                  tuiOption
+                  type="button"
+                  [value]="item.value"
+                >
+                  {{ item.key }}
+                </button>
+              </tui-data-list>
+            </cdk-virtual-scroll-viewport>
+          </tui-textfield>
         }
       </div>
     }

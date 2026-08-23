@@ -8,12 +8,14 @@ import { injectContext } from '@taiga-ui/polymorpheus';
 
 import { BLOOD_TYPES, GENDERS } from '../../constans/patient-options';
 
-import { PatientRequest, PatientResponse } from '../../model/patient.dtos';
+import { PatientDetailResponse, PatientRequest, PatientResponse } from '../../model/patient.dtos';
 
 import { PatientService } from '../../services/patient.service';
 
 import { ModalForm } from '../../../../shared/components/modal-form/modal-form';
 import { TuiDay } from '@taiga-ui/cdk';
+import { NotificationService } from '../../../../shared/services/alert-notification-service/alert-notification-service';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-modal-create',
@@ -25,12 +27,13 @@ import { TuiDay } from '@taiga-ui/cdk';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ModalCreateEdit {
+  private readonly notificationService = inject(NotificationService);
   // ─────────────────────────────────────────────
   // Dependencies
   // ─────────────────────────────────────────────
 
   private readonly context =
-    injectContext<TuiDialogContext<PatientRequest | null, PatientResponse | null>>();
+    injectContext<TuiDialogContext<PatientRequest | null, PatientDetailResponse | null>>();
 
   protected readonly isEdit = !!this.context.data;
 
@@ -255,12 +258,16 @@ export class ModalCreateEdit {
 
     if (this.isEdit) {
       // UPDATE
+      this.notificationService.showLoading();
+
       this.patientService.update(this.context.data!.id, patient).subscribe({
         next: (updatedPatient) => {
+          this.notificationService.showSuccess('Paciente actualizado correctamente');
+
           this.context.completeWith(updatedPatient);
         },
-        error: (error) => {
-          console.error('Error al actualizar paciente:', error);
+        error: (response: HttpErrorResponse) => {
+          this.notificationService.showError(response.error);
         },
       });
 
@@ -268,12 +275,16 @@ export class ModalCreateEdit {
     }
 
     // CREATE
+    this.notificationService.showLoading();
+    console.log('Creating patient:', patient);
     this.patientService.create(patient).subscribe({
       next: (createdPatient) => {
+        this.notificationService.showSuccess('Paciente creado correctamente');
+
         this.context.completeWith(createdPatient);
       },
-      error: (error) => {
-        console.error('Error al crear paciente:', error);
+      error: (response: HttpErrorResponse) => {
+        this.notificationService.showError(response.error);
       },
     });
   }
