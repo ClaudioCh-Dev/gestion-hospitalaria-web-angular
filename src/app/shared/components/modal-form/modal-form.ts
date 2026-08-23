@@ -29,6 +29,10 @@ import {
   TuiSelect,
 } from '@taiga-ui/kit';
 
+// =====================================================
+// TYPES
+// =====================================================
+
 export type FormFieldType =
   | 'text'
   | 'email'
@@ -41,12 +45,19 @@ export interface FormOption {
   value: string | number;
 }
 
+export type SimpleOption = string;
+
+export type SelectOption =
+  | FormOption
+  | SimpleOption;
+
 export interface FormField {
   name: string;
   label: string;
   placeholder: string;
   type: FormFieldType;
-  options?: readonly FormOption[];
+
+  options?: readonly SelectOption[];
 
   errorMessages?: {
     required?: string;
@@ -55,8 +66,13 @@ export interface FormField {
   };
 }
 
+// =====================================================
+// COMPONENT
+// =====================================================
+
 @Component({
   selector: 'app-modal-form',
+
   imports: [
     ReactiveFormsModule,
 
@@ -69,11 +85,14 @@ export interface FormField {
     TuiInputDate,
 
     ScrollingModule,
+
     TuiChevron,
     TuiDataList,
     TuiScrollRef,
   ],
+
   templateUrl: './modal-form.html',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ModalForm {
@@ -86,7 +105,8 @@ export class ModalForm {
 
   readonly form = input.required<FormGroup>();
 
-  readonly fields = input.required<readonly FormField[]>();
+  readonly fields =
+    input.required<readonly FormField[]>();
 
   readonly submitted = input(false);
 
@@ -100,19 +120,64 @@ export class ModalForm {
 
   // =====================================================
   // CONTROLES AUXILIARES DE LOS SELECTS
+  //
+  // SOLO SE UTILIZAN PARA:
+  //
+  // {
+  //   key: 'Dermatología',
+  //   value: 3
+  // }
+  //
+  // NO SE CREAN PARA:
+  //
+  // ['Mañana', 'Tarde', 'Noche']
   // =====================================================
 
-  private readonly selectControls = new Map<
-    string,
-    FormControl<string>
-  >();
+  private readonly selectControls =
+    new Map<string, FormControl<string>>();
 
   // =====================================================
   // GET CONTROL REAL
   // =====================================================
 
-  protected getControl(name: string): FormControl {
+  protected getControl(
+    name: string,
+  ): FormControl {
     return this.form().get(name) as FormControl;
+  }
+
+  // =====================================================
+  // SABER SI LAS OPCIONES SON KEY/VALUE
+  // =====================================================
+
+  protected isKeyValueOptions(
+    field: FormField,
+  ): boolean {
+
+    const options = field.options;
+
+    if (!options?.length) {
+      return false;
+    }
+
+    return typeof options[0] === 'object';
+  }
+
+  // =====================================================
+  // SABER SI LAS OPCIONES SON STRINGS
+  // =====================================================
+
+  protected isStringOptions(
+    field: FormField,
+  ): boolean {
+
+    const options = field.options;
+
+    if (!options?.length) {
+      return false;
+    }
+
+    return typeof options[0] === 'string';
   }
 
   // =====================================================
@@ -121,77 +186,202 @@ export class ModalForm {
 
   protected getSelectControl(
     field: FormField,
-  ): FormControl<string> {
+  ): FormControl {
 
-    let control = this.selectControls.get(field.name);
+    // ===================================================
+    // OPCIONES SIMPLES
+    //
+    // ['Mañana', 'Tarde', 'Noche']
+    //
+    // NO CREAMOS AUXILIAR
+    // ===================================================
+
+    if (this.isStringOptions(field)) {
+
+      return this.getControl(field.name);
+    }
+
+    // ===================================================
+    // OPCIONES KEY/VALUE
+    //
+    // [
+    //   { key: 'Dermatología', value: 3 },
+    //   { key: 'Cardiología', value: 4 }
+    // ]
+    //
+    // AQUÍ SÍ CREAMOS AUXILIAR
+    // ===================================================
+
+    let control =
+      this.selectControls.get(field.name);
 
     if (control) {
       return control;
     }
 
-    // Creamos el control auxiliar
+    // ===================================================
+    // CREAR CONTROL AUXILIAR
+    // ===================================================
+
     control = new FormControl('', {
       nonNullable: true,
     });
 
-    this.selectControls.set(field.name, control);
+    this.selectControls.set(
+      field.name,
+      control,
+    );
 
-    // Control real del formulario
-    const realControl = this.form().get(field.name);
+    // ===================================================
+    // CONTROL REAL
+    // ===================================================
 
-    // =================================================
+    const realControl =
+      this.form().get(field.name);
+
+    // ===================================================
     // EDIT MODE
-    // =================================================
+    //
+    // El formulario tiene:
+    //
+    // specialtyId = 3
+    //
+    // Pero el SELECT necesita mostrar:
+    //
+    // Dermatología
+    // ===================================================
 
-    if (realControl && field.options) {
+    if (
+      realControl &&
+      field.options
+    ) {
 
-      const currentValue = realControl.value;
+      const currentValue =
+        realControl.value;
 
-      const option = field.options.find(
-        option => option.value === currentValue,
+      const option = (
+        field.options as readonly FormOption[]
+      ).find(
+        option =>
+          option.value === currentValue,
       );
 
       if (option) {
-        control.setValue(option.key, {
-          emitEvent: false,
-        });
+
+        control.setValue(
+          option.key,
+          {
+            emitEvent: false,
+          },
+        );
+
+        console.log(
+          '🔄 SELECT INICIALIZADO:',
+          {
+            field: field.name,
+            key: option.key,
+            value: option.value,
+          },
+        );
       }
     }
 
-    // =================================================
+    // ===================================================
     // CUANDO EL USUARIO CAMBIA EL SELECT
-    // =================================================
+    // ===================================================
 
-    control.valueChanges.subscribe(key => {
+    control.valueChanges.subscribe(
+      key => {
 
-      const option = field.options?.find(
-        option => option.key === key,
-      );
+        const option = (
+          field.options as readonly FormOption[]
+        ).find(
+          option =>
+            option.key === key,
+        );
 
-      if (!option) {
-        return;
-      }
+        if (!option) {
+          return;
+        }
 
-      // Guardamos el VALUE REAL
-      realControl?.setValue(option.value);
+        // ===============================================
+        // GUARDAMOS EL VALUE REAL
+        // ===============================================
 
-      console.log('🔄 SELECT:', {
-        field: field.name,
-        key: option.key,
-        value: option.value,
-      });
-    });
+        realControl?.setValue(
+          option.value,
+        );
+
+        console.log(
+          '🔄 SELECT KEY/VALUE:',
+          {
+            field: field.name,
+            key: option.key,
+            value: option.value,
+          },
+        );
+      },
+    );
 
     return control;
+  }
+
+  // =====================================================
+  // OBTENER TEXTO DE OPTION
+  // =====================================================
+
+  protected getOptionLabel(
+    option: SelectOption,
+  ): string {
+
+    // ===============================================
+    // STRING
+    // ===============================================
+
+    if (typeof option === 'string') {
+      return option;
+    }
+
+    // ===============================================
+    // KEY/VALUE
+    // ===============================================
+
+    return option.key;
+  }
+
+  // =====================================================
+  // OBTENER VALUE DE OPTION
+  // =====================================================
+
+  protected getOptionValue(
+    option: SelectOption,
+  ): string {
+
+    // ===============================================
+    // STRING
+    // ===============================================
+
+    if (typeof option === 'string') {
+      return option;
+    }
+
+    // ===============================================
+    // KEY/VALUE
+    // ===============================================
+
+    return option.key;
   }
 
   // =====================================================
   // VALIDATION
   // =====================================================
 
-  protected isInvalid(name: string): boolean {
+  protected isInvalid(
+    name: string,
+  ): boolean {
 
-    const control = this.getControl(name);
+    const control =
+      this.getControl(name);
 
     return !!(
       control &&
@@ -200,12 +390,17 @@ export class ModalForm {
     );
   }
 
+  // =====================================================
+  // HAS ERROR
+  // =====================================================
+
   protected hasError(
     name: string,
     error: string,
   ): boolean {
 
-    const control = this.getControl(name);
+    const control =
+      this.getControl(name);
 
     return !!(
       control &&
