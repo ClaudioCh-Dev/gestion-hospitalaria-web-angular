@@ -12,6 +12,7 @@ import {
 
 import { DoctorService } from './doctor.service';
 import { DOCTORS_MOCK } from '../mocks/doctor.mocks';
+import { SPECIALTIES_MOCK } from '../constans/doctor-options';
 
 @Injectable()
 export class DoctorMockService extends DoctorService {
@@ -137,7 +138,8 @@ export class DoctorMockService extends DoctorService {
 
       specialty: {
         id: request.specialtyId,
-        name: 'Especialidad',
+        name:
+          SPECIALTIES_MOCK.find((s) => s.value === request.specialtyId)?.key || 'Especialidad',
         description: '',
       },
 
@@ -190,6 +192,8 @@ export class DoctorMockService extends DoctorService {
       specialty: {
         ...existing.specialty,
         id: request.specialtyId,
+        name:
+          SPECIALTIES_MOCK.find((s) => s.value === request.specialtyId)?.key || 'Especialidad',
       },
 
       scheduleStart: request.scheduleStart,

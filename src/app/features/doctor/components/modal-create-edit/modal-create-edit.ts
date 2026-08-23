@@ -10,6 +10,7 @@ import { CreateDoctorRequest, DoctorResponse, UpdateDoctorRequest } from '../../
 import { DoctorService } from '../../services/doctor.service';
 
 import { ModalForm } from '../../../../shared/components/modal-form/modal-form';
+import { SPECIALTIES_MOCK } from '../../constans/doctor-options';
 
 @Component({
   selector: 'app-modal-create-edit',
@@ -191,45 +192,15 @@ export class ModalCreateEdit {
     },
 
     {
-      name: 'specialty',
+      name: 'specialtyId',
       label: 'Especialidad',
       placeholder: 'Seleccione especialidad',
       type: 'select' as const,
 
-      valueField: 'specialtyId',
-
       // Después podemos reemplazar esto
       // por las especialidades del backend.
 
-      options: [
-        {key: 'Cardiologia', value: 1},
-        {key: 'Pediatría', value: 2},
-        {key: 'Dermatología', value: 3},
-        {key: 'Neurología', value: 4},
-        {key: 'Traumatología', value: 5},
-        {key: 'Medicina Interna', value: 6},
-        {key: 'Cirugía General', value: 7},
-        {key: 'Ginecología', value: 8},
-        {key: 'Oncología', value: 9},
-        {key: 'Oftalmología', value: 10},
-        {key: 'Otorrinolaringología', value: 11},
-        {key: 'Psiquiatría', value: 12},
-        {key: 'Radiología', value: 13},
-        {key: 'Urología', value: 14},
-        {key: 'Anestesiología', value: 15},
-        {key: 'Cirugía Plástica', value: 16},
-        {key: 'Dental', value: 17},
-        {key: 'Nutrición', value: 18},
-        {key: 'Fisioterapia', value: 19},
-        {key: 'Terapia Ocupacional', value: 20},
-        {key: 'Psicología', value: 21},
-        {key: 'Podología', value: 22},
-        {key: 'Farmacia', value: 23},
-        {key: 'Laboratorio', value: 24},
-        {key: 'Imagenología', value: 25},
-        {key: 'Servicio Social', value: 26},
-        {key: 'Otro', value: 27},
-      ],
+      options: SPECIALTIES_MOCK,
 
       errorMessages: {
         required: 'La especialidad es requerida',
@@ -269,15 +240,26 @@ export class ModalCreateEdit {
   // =====================================================
 
   protected save(): void {
+    console.log('🚀 SAVE INICIADO');
+
     this.submitted = true;
 
+    console.log('📋 FORM:', this.form.getRawValue());
+    console.log('✅ FORM VALID:', this.form.valid);
+    console.log('✏️ IS EDIT:', this.isEdit);
+
     if (this.form.invalid) {
+      console.log('❌ FORMULARIO INVÁLIDO');
+      console.log('⚠️ ERRORS:', this.form.errors);
+
       this.form.markAllAsTouched();
 
       return;
     }
 
     const value = this.form.getRawValue();
+
+    console.log('📦 FORM VALUE:', value);
 
     // =================================================
     // UPDATE
@@ -286,29 +268,27 @@ export class ModalCreateEdit {
     if (this.isEdit) {
       const request: UpdateDoctorRequest = {
         firstName: value.firstName,
-
         lastName: value.lastName,
-
         email: value.email || undefined,
-
         phone: value.phone || undefined,
-
         specialtyId: value.specialtyId!,
-
         scheduleStart: value.scheduleStart || undefined,
-
         scheduleEnd: value.scheduleEnd || undefined,
-
         active: value.active,
       };
 
+      console.log('📤 UPDATE REQUEST:', request);
+      console.log('🆔 DOCTOR ID:', this.context.data!.id);
+
       this.doctorService.update(this.context.data!.id, request).subscribe({
         next: (doctor) => {
+          console.log('✅ UPDATE EXITOSO:', doctor);
+
           this.context.completeWith(doctor);
         },
 
         error: (error) => {
-          console.error('Error al actualizar doctor:', error);
+          console.error('❌ ERROR AL ACTUALIZAR DOCTOR:', error);
         },
       });
 
