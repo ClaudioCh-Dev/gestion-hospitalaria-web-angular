@@ -1,15 +1,22 @@
 <div class="flex flex-col gap-5">
+
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
     @for (field of fields(); track field.name) {
+
       <div class="flex flex-col gap-1">
+
         <label tuiLabel>
           {{ field.label }}
         </label>
 
         <!-- TEXT / EMAIL -->
-
         @if (field.type === 'text' || field.type === 'email') {
-          <tui-textfield tuiTextfieldSize="s" [invalid]="isInvalid(field.name)">
+
+          <tui-textfield
+            tuiTextfieldSize="s"
+            [invalid]="isInvalid(field.name)"
+          >
             <input
               tuiInput
               [type]="field.type"
@@ -35,12 +42,16 @@
               {{ getEmailMessage(field) }}
             </div>
           }
+
         }
 
         <!-- DATE -->
-
         @if (field.type === 'date') {
-          <tui-textfield tuiTextfieldSize="s" [invalid]="isInvalid(field.name)">
+
+          <tui-textfield
+            tuiTextfieldSize="s"
+            [invalid]="isInvalid(field.name)"
+          >
             <input
               tuiInputDate
               [placeholder]="field.placeholder"
@@ -55,47 +66,37 @@
               {{ getRequiredMessage(field) }}
             </div>
           }
+
         }
 
         <!-- CHECKBOX -->
-
         @if (field.type === 'checkbox') {
+
           <label class="flex items-center gap-3">
-            <input tuiCheckbox type="checkbox" [formControl]="getControl(field.name)" />
+
+            <input
+              tuiCheckbox
+              type="checkbox"
+              [formControl]="getControl(field.name)"
+            />
 
             <span>
               {{ field.label }}
             </span>
+
           </label>
+
         }
 
         <!-- SELECT -->
+        @if (field.type === 'select') {
 
-        <!--        @if (field.type === 'select') {
           <tui-textfield
             tuiChevron
             tuiTextfieldSize="s"
-            [tuiTextfieldCleaner]="false"
             [invalid]="isInvalid(field.name)"
           >
-            <input
-              tuiSelect
-              [placeholder]="field.placeholder"
-              [formControl]="getControl(field.name)"
-            />
 
-            <tui-data-list-wrapper *tuiDropdown [items]="field.options ?? []" />
-          </tui-textfield>
-
-          @if (hasError(field.name, 'required')) {
-            <div tuiBadge appearance="negative">
-              {{ getRequiredMessage(field) }}
-            </div>
-          }
-        }
-          -->
-        @if (field.type === 'select') {
-          <tui-textfield tuiChevron tuiTextfieldSize="s" [invalid]="isInvalid(field.name)">
             <input
               tuiSelect
               [placeholder]="field.placeholder"
@@ -106,32 +107,65 @@
               *tuiDropdown
               tuiScrollRef
               [itemSize]="2"
-             [style.block-size.rem]="Math.min((field.options?.length ?? 0) * 2, 10)"
+              [style.block-size.rem]="
+                Math.min((field.options?.length ?? 0) * 2, 10)
+              "
             >
+
               <tui-data-list>
+
                 <button
                   *cdkVirtualFor="let item of field.options"
                   tuiOption
                   type="button"
-                  [value]="item.value"
+                  [value]="item.key"
                 >
                   {{ item.key }}
                 </button>
+
               </tui-data-list>
+
             </cdk-virtual-scroll-viewport>
+
           </tui-textfield>
+
+          @if (hasError(field.name, 'required')) {
+            <div tuiBadge appearance="negative">
+              {{ getRequiredMessage(field) }}
+            </div>
+          }
+
         }
+
       </div>
+
     }
+
   </div>
 
   <!-- ACTIONS -->
 
   <div class="flex justify-end gap-3">
-    <button tuiButton type="button" appearance="secondary" size="s" (click)="cancelForm()">
+
+    <button
+      tuiButton
+      type="button"
+      appearance="secondary"
+      size="s"
+      (click)="cancelForm()"
+    >
       Cancelar
     </button>
 
-    <button tuiButton type="button" size="s" (click)="submitForm()">Guardar</button>
+    <button
+      tuiButton
+      type="button"
+      size="s"
+      (click)="submitForm()"
+    >
+      Guardar
+    </button>
+
   </div>
+
 </div>

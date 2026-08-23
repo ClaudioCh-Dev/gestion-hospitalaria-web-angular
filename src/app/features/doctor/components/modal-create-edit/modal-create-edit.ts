@@ -191,10 +191,12 @@ export class ModalCreateEdit {
     },
 
     {
-      name: 'specialtyId',
+      name: 'specialty',
       label: 'Especialidad',
       placeholder: 'Seleccione especialidad',
       type: 'select' as const,
+
+      valueField: 'specialtyId',
 
       // Después podemos reemplazar esto
       // por las especialidades del backend.
