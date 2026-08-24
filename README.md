@@ -24,7 +24,7 @@ Módulo encargado de administrar la información de los pacientes registrados en
 
 Permite consultar, crear, editar y gestionar la información asociada a cada paciente.
 
-<img width="2128" height="1241" alt="Gestión de pacientes" src="https://github.com/user-attachments/assets/ddadbf78-7f5b-456b-8b5b-7bd237e8ce22" />
+<img width="2126" height="1241" alt="image" src="https://github.com/user-attachments/assets/73e75790-d9fc-4fe6-8b18-c3bf233a9a97" />
 
 ---
 
