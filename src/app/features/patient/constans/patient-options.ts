@@ -1,15 +1,15 @@
 export const BLOOD_TYPES = [
-  { key: 'A+', value: 'A_POSITIVE' },
-  { key: 'A-', value: 'A_NEGATIVE' },
-  { key: 'B+', value: 'B_POSITIVE' },
-  { key: 'B-', value: 'B_NEGATIVE' },
-  { key: 'AB+', value: 'AB_POSITIVE' },
-  { key: 'AB-', value: 'AB_NEGATIVE' },
-  { key: 'O+', value: 'O_POSITIVE' },
-  { key: 'O-', value: 'O_NEGATIVE' },
+  { value: 'A+', id: 'A_POSITIVE' },
+  { value: 'A-', id: 'A_NEGATIVE' },
+  { value: 'B+', id: 'B_POSITIVE' },
+  { value: 'B-', id: 'B_NEGATIVE' },
+  { value: 'AB+', id: 'AB_POSITIVE' },
+  { value: 'AB-', id: 'AB_NEGATIVE' },
+  { value: 'O+', id: 'O_POSITIVE' },
+  { value: 'O-', id: 'O_NEGATIVE' },
 ] as const;
 
 export const GENDERS = [
-  { key: 'Masculino', value: 'MALE' },
-  { key: 'Femenino', value: 'FEMALE' },
+  { value: 'Masculino', id: 'MALE' },
+  { value: 'Femenino', id: 'FEMALE' },
 ] as const;

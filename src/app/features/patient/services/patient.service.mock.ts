@@ -24,6 +24,7 @@ import { PATIENTS_MOCK } from '../mocks/patient.mocks';
 import { PATIENT_DETAILS_MOCK } from '../mocks/patient.detail.mocks';
 
 import { NotificationInfoService } from '@shared/services/notification-service';
+import { GENDERS } from '@patients/constans/patient-options';
 
 @Injectable()
 export class PatientMockService extends PatientService {
@@ -187,6 +188,7 @@ export class PatientMockService extends PatientService {
       birthDate: patient.birthDate,
       phone: patient.phone,
       email: patient.email,
+      gender: GENDERS.find(gender => gender.id === patient.gender)?.value || 'MALE',
     };
 
     this._patients.update(current => ({

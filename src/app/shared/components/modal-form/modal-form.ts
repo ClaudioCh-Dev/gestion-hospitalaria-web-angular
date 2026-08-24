@@ -5,13 +5,20 @@ import {
   output,
 } from '@angular/core';
 
-import { ScrollingModule } from '@angular/cdk/scrolling';
+import {ScrollingModule} from '@angular/cdk/scrolling';
 
 import {
   FormControl,
   FormGroup,
   ReactiveFormsModule,
 } from '@angular/forms';
+
+import {
+  TuiBadge,
+  TuiChevron,
+  TuiInputDate,
+  TuiSelect,
+} from '@taiga-ui/kit';
 
 import {
   TuiButton,
@@ -22,17 +29,6 @@ import {
   TuiTextfield,
 } from '@taiga-ui/core';
 
-import {
-  TuiBadge,
-  TuiChevron,
-  TuiInputDate,
-  TuiSelect,
-} from '@taiga-ui/kit';
-
-// =====================================================
-// TYPES
-// =====================================================
-
 export type FormFieldType =
   | 'text'
   | 'email'
@@ -41,8 +37,8 @@ export type FormFieldType =
   | 'checkbox';
 
 export interface FormOption {
-  key: string;
-  value: string | number;
+  value: string;
+  id: string | number;
 }
 
 export type SimpleOption = string;
@@ -66,29 +62,23 @@ export interface FormField {
   };
 }
 
-// =====================================================
-// COMPONENT
-// =====================================================
-
 @Component({
   selector: 'app-modal-form',
 
   imports: [
     ReactiveFormsModule,
+    ScrollingModule,
 
     TuiBadge,
     TuiButton,
-    TuiCheckbox,
-    TuiSelect,
-    TuiTextfield,
     TuiCalendar,
-    TuiInputDate,
-
-    ScrollingModule,
-
+    TuiCheckbox,
     TuiChevron,
     TuiDataList,
+    TuiInputDate,
     TuiScrollRef,
+    TuiSelect,
+    TuiTextfield,
   ],
 
   templateUrl: './modal-form.html',
@@ -96,12 +86,7 @@ export interface FormField {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ModalForm {
-
   protected readonly Math = Math;
-
-  // =====================================================
-  // INPUTS
-  // =====================================================
 
   readonly form = input.required<FormGroup>();
 
@@ -110,34 +95,12 @@ export class ModalForm {
 
   readonly submitted = input(false);
 
-  // =====================================================
-  // OUTPUTS
-  // =====================================================
-
   readonly submit = output<void>();
 
   readonly cancel = output<void>();
 
   // =====================================================
-  // CONTROLES AUXILIARES DE LOS SELECTS
-  //
-  // SOLO SE UTILIZAN PARA:
-  //
-  // {
-  //   key: 'Dermatología',
-  //   value: 3
-  // }
-  //
-  // NO SE CREAN PARA:
-  //
-  // ['Mañana', 'Tarde', 'Noche']
-  // =====================================================
-
-  private readonly selectControls =
-    new Map<string, FormControl<string>>();
-
-  // =====================================================
-  // GET CONTROL REAL
+  // GET CONTROL
   // =====================================================
 
   protected getControl(
@@ -147,229 +110,61 @@ export class ModalForm {
   }
 
   // =====================================================
-  // SABER SI LAS OPCIONES SON KEY/VALUE
+  // STRINGIFY
   // =====================================================
 
-  protected isKeyValueOptions(
+  protected stringify(
     field: FormField,
-  ): boolean {
-
-    const options = field.options;
-
-    if (!options?.length) {
-      return false;
-    }
-
-    return typeof options[0] === 'object';
-  }
-
-  // =====================================================
-  // SABER SI LAS OPCIONES SON STRINGS
-  // =====================================================
-
-  protected isStringOptions(
-    field: FormField,
-  ): boolean {
-
-    const options = field.options;
-
-    if (!options?.length) {
-      return false;
-    }
-
-    return typeof options[0] === 'string';
-  }
-
-  // =====================================================
-  // GET CONTROL DEL SELECT
-  // =====================================================
-
-  protected getSelectControl(
-    field: FormField,
-  ): FormControl {
-
-    // ===================================================
-    // OPCIONES SIMPLES
-    //
-    // ['Mañana', 'Tarde', 'Noche']
-    //
-    // NO CREAMOS AUXILIAR
-    // ===================================================
-
-    if (this.isStringOptions(field)) {
-
-      return this.getControl(field.name);
-    }
-
-    // ===================================================
-    // OPCIONES KEY/VALUE
-    //
-    // [
-    //   { key: 'Dermatología', value: 3 },
-    //   { key: 'Cardiología', value: 4 }
-    // ]
-    //
-    // AQUÍ SÍ CREAMOS AUXILIAR
-    // ===================================================
-
-    let control =
-      this.selectControls.get(field.name);
-
-    if (control) {
-      return control;
-    }
-
-    // ===================================================
-    // CREAR CONTROL AUXILIAR
-    // ===================================================
-
-    control = new FormControl('', {
-      nonNullable: true,
-    });
-
-    this.selectControls.set(
-      field.name,
-      control,
-    );
-
-    // ===================================================
-    // CONTROL REAL
-    // ===================================================
-
-    const realControl =
-      this.form().get(field.name);
-
-    // ===================================================
-    // EDIT MODE
-    //
-    // El formulario tiene:
-    //
-    // specialtyId = 3
-    //
-    // Pero el SELECT necesita mostrar:
-    //
-    // Dermatología
-    // ===================================================
-
-    if (
-      realControl &&
-      field.options
-    ) {
-
-      const currentValue =
-        realControl.value;
-
-      const option = (
-        field.options as readonly FormOption[]
-      ).find(
-        option =>
-          option.value === currentValue,
-      );
-
-      if (option) {
-
-        control.setValue(
-          option.key,
-          {
-            emitEvent: false,
-          },
-        );
-
-        console.log(
-          '🔄 SELECT INICIALIZADO:',
-          {
-            field: field.name,
-            key: option.key,
-            value: option.value,
-          },
-        );
+  ): (value: string | number | null) => string {
+    return (value) => {
+      if (value === null || value === undefined) {
+        return '';
       }
-    }
 
-    // ===================================================
-    // CUANDO EL USUARIO CAMBIA EL SELECT
-    // ===================================================
-
-    control.valueChanges.subscribe(
-      key => {
-
-        const option = (
-          field.options as readonly FormOption[]
-        ).find(
-          option =>
-            option.key === key,
-        );
-
-        if (!option) {
-          return;
+      const option = field.options?.find((item) => {
+        if (typeof item === 'string') {
+          return item === value;
         }
 
-        // ===============================================
-        // GUARDAMOS EL VALUE REAL
-        // ===============================================
+        return item.id === value;
+      });
 
-        realControl?.setValue(
-          option.value,
-        );
+      if (!option) {
+        return '';
+      }
 
-        console.log(
-          '🔄 SELECT KEY/VALUE:',
-          {
-            field: field.name,
-            key: option.key,
-            value: option.value,
-          },
-        );
-      },
-    );
-
-    return control;
+      return typeof option === 'string'
+        ? option
+        : option.value;
+    };
   }
 
   // =====================================================
-  // OBTENER TEXTO DE OPTION
+  // OPTION LABEL
   // =====================================================
 
   protected getOptionLabel(
     option: SelectOption,
   ): string {
-
-    // ===============================================
-    // STRING
-    // ===============================================
-
     if (typeof option === 'string') {
       return option;
     }
 
-    // ===============================================
-    // KEY/VALUE
-    // ===============================================
-
-    return option.key;
+    return option.value;
   }
 
   // =====================================================
-  // OBTENER VALUE DE OPTION
+  // OPTION VALUE
   // =====================================================
 
   protected getOptionValue(
     option: SelectOption,
-  ): string {
-
-    // ===============================================
-    // STRING
-    // ===============================================
-
+  ): string | number {
     if (typeof option === 'string') {
       return option;
     }
 
-    // ===============================================
-    // KEY/VALUE
-    // ===============================================
-
-    return option.key;
+    return option.id;
   }
 
   // =====================================================
@@ -379,9 +174,7 @@ export class ModalForm {
   protected isInvalid(
     name: string,
   ): boolean {
-
-    const control =
-      this.getControl(name);
+    const control = this.getControl(name);
 
     return !!(
       control &&
@@ -390,17 +183,11 @@ export class ModalForm {
     );
   }
 
-  // =====================================================
-  // HAS ERROR
-  // =====================================================
-
   protected hasError(
     name: string,
     error: string,
   ): boolean {
-
-    const control =
-      this.getControl(name);
+    const control = this.getControl(name);
 
     return !!(
       control &&
@@ -416,7 +203,6 @@ export class ModalForm {
   protected getRequiredMessage(
     field: FormField,
   ): string {
-
     return (
       field.errorMessages?.required ??
       `${field.label} es requerido`
@@ -426,7 +212,6 @@ export class ModalForm {
   protected getPatternMessage(
     field: FormField,
   ): string {
-
     return (
       field.errorMessages?.pattern ??
       `${field.label} no tiene un formato válido`
@@ -436,7 +221,6 @@ export class ModalForm {
   protected getEmailMessage(
     field: FormField,
   ): string {
-
     return (
       field.errorMessages?.email ??
       'Ingrese un correo electrónico válido'
@@ -444,11 +228,10 @@ export class ModalForm {
   }
 
   // =====================================================
-  // SUBMIT
+  // ACTIONS
   // =====================================================
 
   protected submitForm(): void {
-
     console.log(
       '📤 FORMULARIO FINAL:',
       this.form().getRawValue(),
@@ -457,12 +240,7 @@ export class ModalForm {
     this.submit.emit();
   }
 
-  // =====================================================
-  // CANCEL
-  // =====================================================
-
   protected cancelForm(): void {
-
     this.cancel.emit();
   }
 }

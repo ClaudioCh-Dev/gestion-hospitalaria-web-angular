@@ -139,7 +139,7 @@ export class DoctorMockService extends DoctorService {
       specialty: {
         id: request.specialtyId,
         name:
-          SPECIALTIES_MOCK.find((s) => s.value === request.specialtyId)?.key || 'Especialidad',
+          SPECIALTIES_MOCK.find((s) => s.id === request.specialtyId)?.value || 'Especialidad',
         description: '',
       },
 
@@ -193,7 +193,7 @@ export class DoctorMockService extends DoctorService {
         ...existing.specialty,
         id: request.specialtyId,
         name:
-          SPECIALTIES_MOCK.find((s) => s.value === request.specialtyId)?.key || 'Especialidad',
+          SPECIALTIES_MOCK.find((s) => s.id === request.specialtyId)?.value || 'Especialidad',
       },
 
       scheduleStart: request.scheduleStart,
