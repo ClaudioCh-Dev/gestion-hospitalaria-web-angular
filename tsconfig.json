@@ -1,6 +1,8 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
     "noImplicitOverride": true,
     "noPropertyAccessFromIndexSignature": true,
     "noImplicitReturns": true,
@@ -72,7 +74,12 @@
       "@spartan-ng/helm/toggle": ["./libs/ui/toggle/src/index.ts"],
       "@spartan-ng/helm/toggle-group": ["./libs/ui/toggle-group/src/index.ts"],
       "@spartan-ng/helm/tooltip": ["./libs/ui/tooltip/src/index.ts"],
-      "@spartan-ng/helm/typography": ["./libs/ui/typography/src/index.ts"]
+      "@spartan-ng/helm/typography": ["./libs/ui/typography/src/index.ts"],
+
+      "@environments/*": ["./src/environments/*"],
+      "@patients/*": ["./src/app/features/patient/*"],
+      "@doctors/*": ["./src/app/features/doctor/*"],
+      "@shared/*": ["./src/app/shared/*"]
     }
   },
   "angularCompilerOptions": {

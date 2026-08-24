@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-import { ProblemDetailMicroservice } from '../../models/problem.type';
+import { ProblemDetailMicroservice } from '../models/problem.type';
 
 export type NotificationStatus = 'loading' | 'success' | 'error';
 

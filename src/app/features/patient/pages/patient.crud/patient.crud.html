@@ -22,7 +22,11 @@
   <app-patient-table
     [patients]="data()"
     [(selected)]="selected"
+    [loadingPatientId]="loadingPatientId()"
+    [selectedPatient]="selectedPatient()"
     (edit)="editPatientModal($event)"
+    (more)="morePatient($event)"
+    (closeDetail)="selectedPatient.set(null)"
   />
 
   <!-- Paginación -->

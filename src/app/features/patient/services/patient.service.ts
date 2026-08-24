@@ -1,7 +1,10 @@
-import {Observable} from 'rxjs';
-
-import { PageResponse } from '../../../shared/models/page.type';
-import {PatientDetailResponse, PatientRequest, PatientResponse} from '../model/patient.dtos';
+import { Observable } from 'rxjs';
+import { PageResponse } from '@shared/models/page.type';
+import {
+  PatientDetailResponse,
+  PatientRequest,
+  PatientResponse,
+} from '../model';
 
 export abstract class PatientService {
 
@@ -16,16 +19,16 @@ export abstract class PatientService {
 
   abstract findByDocumentNumber(
     documentNumber: string,
-  ): Observable<PatientDetailResponse>;
+  ): Observable<PatientResponse>;
 
   abstract create(
     patient: PatientRequest,
-  ): Observable<PatientDetailResponse>;
+  ): Observable<PatientResponse>;
 
   abstract update(
     id: number,
     patient: PatientRequest,
-  ): Observable<PatientDetailResponse>;
+  ): Observable<PatientResponse>;
 
   abstract delete(
     id: number,

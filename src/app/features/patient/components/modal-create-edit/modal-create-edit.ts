@@ -8,14 +8,15 @@ import { injectContext } from '@taiga-ui/polymorpheus';
 
 import { BLOOD_TYPES, GENDERS } from '../../constans/patient-options';
 
-import { PatientDetailResponse, PatientRequest, PatientResponse } from '../../model/patient.dtos';
+import { PatientDetailResponse, PatientRequest } from '../../model';
 
 import { PatientService } from '../../services/patient.service';
 
 import { ModalForm } from '../../../../shared/components/modal-form/modal-form';
 import { TuiDay } from '@taiga-ui/cdk';
-import { NotificationService } from '../../../../shared/services/alert-notification-service/alert-notification-service';
+import { NotificationService } from '../../../../shared/services/alert-notification-service';
 import { HttpErrorResponse } from '@angular/common/http';
+import { withNotification } from '../../../../shared/operators/with-notification';
 
 @Component({
   selector: 'app-modal-create',
@@ -239,7 +240,6 @@ export class ModalCreateEdit {
   // ─────────────────────────────────────────────
 
   protected save(): void {
-    // validación
     this.submitted = true;
 
     if (this.form.invalid) {
@@ -251,42 +251,43 @@ export class ModalCreateEdit {
 
     const patient: PatientRequest = {
       ...value,
+
       birthDate: value.birthDate
-        ? `${value.birthDate.year}-${String(value.birthDate.month + 1).padStart(2, '0')}-${String(value.birthDate.day).padStart(2, '0')}`
+        ? `${value.birthDate.year}-${String(value.birthDate.month + 1).padStart(2, '0')}-${String(
+            value.birthDate.day,
+          ).padStart(2, '0')}`
         : undefined,
     };
 
     if (this.isEdit) {
-      // UPDATE
-      this.notificationService.showLoading();
-
-      this.patientService.update(this.context.data!.id, patient).subscribe({
-        next: (updatedPatient) => {
-          this.notificationService.showSuccess('Paciente actualizado correctamente');
-
-          this.context.completeWith(updatedPatient);
-        },
-        error: (response: HttpErrorResponse) => {
-          this.notificationService.showError(response.error);
-        },
-      });
+      this.patientService
+        .update(this.context.data!.id, patient)
+        .pipe(
+          withNotification(this.notificationService, {
+            success: 'Paciente actualizado correctamente',
+          }),
+        )
+        .subscribe({
+          next: (updatedPatient) => {
+            this.context.completeWith(updatedPatient);
+          },
+        });
 
       return;
     }
 
-    // CREATE
-    this.notificationService.showLoading();
-    console.log('Creating patient:', patient);
-    this.patientService.create(patient).subscribe({
-      next: (createdPatient) => {
-        this.notificationService.showSuccess('Paciente creado correctamente');
-
-        this.context.completeWith(createdPatient);
-      },
-      error: (response: HttpErrorResponse) => {
-        this.notificationService.showError(response.error);
-      },
-    });
+    this.patientService
+      .create(patient)
+      .pipe(
+        withNotification(this.notificationService, {
+          success: 'Paciente creado correctamente',
+        }),
+      )
+      .subscribe({
+        next: (createdPatient) => {
+          this.context.completeWith(createdPatient);
+        },
+      });
   }
 
   protected cancel(): void {

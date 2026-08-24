@@ -1,4 +1,4 @@
-import {PatientDetailResponse} from '../model/patient.dtos';
+import {PatientDetailResponse} from '../model';
 
 export const PATIENT_DETAILS_MOCK: PatientDetailResponse[] = [
   {
@@ -7,11 +7,11 @@ export const PATIENT_DETAILS_MOCK: PatientDetailResponse[] = [
     firstName: 'Juan',
     lastName: 'Pérez',
     birthDate: '1995-05-10',
-    gender: 'Masculino',
+    gender: 'MALE',
     phone: '987654321',
     email: 'juan.perez@gmail.com',
     address: 'Av. Arequipa 1250, Lima',
-    bloodType: 'O+',
+    bloodType: 'O_POSITIVE',
     allergies: 'Ninguna',
     active: true,
     createdAt: '2026-08-01T10:00:00',
@@ -23,11 +23,11 @@ export const PATIENT_DETAILS_MOCK: PatientDetailResponse[] = [
     firstName: 'María',
     lastName: 'García',
     birthDate: '1998-03-20',
-    gender: 'Femenino',
+    gender: 'FEMALE',
     phone: '912345678',
     email: 'maria.garcia@gmail.com',
     address: 'Av. Larco 850, Miraflores',
-    bloodType: 'A+',
+    bloodType: 'A_POSITIVE',
     allergies: 'Polen',
     active: true,
     createdAt: '2026-08-01T10:05:00',

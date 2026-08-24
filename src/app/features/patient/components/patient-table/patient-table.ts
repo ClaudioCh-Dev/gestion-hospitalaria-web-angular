@@ -1,8 +1,16 @@
-import {ChangeDetectionStrategy, Component, inject, input, model, output, signal} from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  input,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 
-import {PatientDetailComponent} from '../patient-detail/patient-detail';
+import { PatientDetailComponent } from '../patient-detail/patient-detail';
 
-import {FormsModule} from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 
 import {
   TuiButton,
@@ -11,6 +19,7 @@ import {
   TuiDropdown,
   TuiIcon,
   TuiInput,
+  TuiLoader,
   TuiTitle,
 } from '@taiga-ui/core';
 
@@ -26,14 +35,11 @@ import {
   TuiStatus,
 } from '@taiga-ui/kit';
 
-import {
-  PatientDetailResponse,
-  PatientResponse,
-} from '../../model/patient.dtos';
+import { PatientDetailResponse, PatientResponse } from '../../model';
 
-import {TuiTable, TuiTableControl, TuiTablePagination} from '@taiga-ui/addon-table';
+import { TuiTable, TuiTableControl, TuiTablePagination } from '@taiga-ui/addon-table';
 
-import {PatientService} from '../../services/patient.service';
+import { PatientService } from '../../services/patient.service';
 
 @Component({
   selector: 'app-patient-table',
@@ -56,12 +62,12 @@ import {PatientService} from '../../services/patient.service';
     TuiTableControl,
     TuiTitle,
     PatientDetailComponent,
+    TuiLoader,
   ],
   templateUrl: './patient-table.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PatientTableComponent {
-
   private readonly patientService = inject(PatientService);
 
   readonly patients = input<PatientResponse[]>([]);
@@ -72,24 +78,21 @@ export class PatientTableComponent {
 
   readonly more = output<PatientResponse>();
 
-  protected readonly selectedPatient =
-    signal<PatientDetailResponse | null>(null);
+  readonly selectedPatient = input<PatientDetailResponse | null>(null);
+
+  readonly loadingPatientId = input<number | null>(null);
+
+  readonly loadingAction = signal<string | null>(null);
+
+  readonly closeDetail = output<void>();
 
   protected morePatient(patient: PatientResponse): void {
+    this.loadingAction.set('more');
+    this.more.emit(patient);
+  }
 
-    console.log('Buscando detalle del paciente:', patient.id);
-
-    this.patientService
-      .findById(patient.id)
-      .subscribe({
-        next: detail => {
-          console.log('Detalle recibido:', detail);
-
-          this.selectedPatient.set(detail);
-        },
-        error: error => {
-          console.error('Error obteniendo paciente:', error);
-        },
-      });
+  protected editPatient(patient: PatientResponse): void {
+    this.loadingAction.set('edit');
+    this.edit.emit(patient);
   }
 }

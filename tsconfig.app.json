@@ -3,6 +3,12 @@
   "compilerOptions": {
     "types": []
   },
-  "include": ["src/**/*.ts", "libs/ui/**/src/**/*.ts", "src/app/features/patient/components/patient-filters"],
-  "exclude": ["src/**/*.spec.ts"]
+  "include": [
+    "src/**/*.ts",
+    "libs/ui/**/src/**/*.ts",
+    "src/app/features/patient/components/patient-filters"
+  ],
+  "exclude": [
+    "src/**/*.spec.ts"
+  ]
 }

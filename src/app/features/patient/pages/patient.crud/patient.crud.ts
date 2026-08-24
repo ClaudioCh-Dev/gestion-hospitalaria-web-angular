@@ -4,16 +4,7 @@ import { FormsModule } from '@angular/forms';
 
 import { TuiTable, TuiTableControl, TuiTablePagination } from '@taiga-ui/addon-table';
 
-import {
-  TuiButton,
-  TuiCell,
-  TuiCheckbox,
-  TuiDialogService,
-  TuiDropdown,
-  TuiIcon,
-  TuiInput,
-  TuiTitle,
-} from '@taiga-ui/core';
+import { TuiButton, TuiDialogService, TuiDropdown, TuiInput, TuiLoader } from '@taiga-ui/core';
 
 import {
   TuiAutoColorPipe,
@@ -29,14 +20,17 @@ import {
 
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 
-import { PageResponse } from '../../../../shared/models/page.type';
-import { PatientRequest, PatientResponse } from '../../model/patient.dtos';
+import { PageResponse } from '@shared/models/page.type';
+import { PatientDetailResponse, PatientRequest, PatientResponse } from '../../model';
 
-import { PatientService } from '../../services/patient.service';
+import { PatientService } from '@patients/services/patient.service';
 
 import { ModalCreateEdit } from '../../components/modal-create-edit/modal-create-edit';
 
-import { PatientFilters, PatientFiltersComponent } from '../../components/patient-filters/patient-filters';
+import {
+  PatientFilters,
+  PatientFiltersComponent,
+} from '../../components/patient-filters/patient-filters';
 
 import { PatientTableComponent } from '../../components/patient-table/patient-table';
 
@@ -72,6 +66,8 @@ export class PatientCrud implements OnInit {
 
   private readonly dialogs = inject(TuiDialogService);
 
+  protected readonly loadingPatientId = signal<number | null>(null);
+
   // ============================
   // Tabla
   // ============================
@@ -79,6 +75,8 @@ export class PatientCrud implements OnInit {
   protected readonly data = signal<PatientResponse[]>([]);
 
   protected readonly selected = signal<PatientResponse[]>([]);
+
+  protected readonly selectedPatient = signal<PatientDetailResponse | null>(null);
 
   protected total = signal(0);
 
@@ -143,23 +141,87 @@ export class PatientCrud implements OnInit {
   // ============================
   // Editar paciente
   // ============================
+protected editPatientModal(patient: PatientResponse): void {
+  console.log('🟢 EDITAR PACIENTE - INICIO');
+  console.log('👤 Paciente recibido:', patient);
+  console.log('🆔 Patient ID:', patient.id);
 
-  protected editPatientModal(patient: PatientResponse): void {
-    this.dialogs
-      .open<PatientRequest | null>(new PolymorpheusComponent(ModalCreateEdit), {
-        label: 'Editar paciente',
-        size: 'm',
-        data: patient,
-      })
-      .subscribe((patient) => {
-        if (patient === null) {
-          return;
-        }
+  this.loadingPatientId.set(patient.id);
 
-        this.loadPatients();
-      });
+  console.log('⏳ loadingPatientId:', this.loadingPatientId());
+
+  console.log('📡 Buscando detalle del paciente...');
+
+  this.patientService.findById(patient.id).subscribe({
+    next: (detail) => {
+      console.log('✅ Detalle del paciente recibido:', detail);
+      console.log('📦 Detail:', JSON.stringify(detail, null, 2));
+
+      this.loadingPatientId.set(null);
+
+      console.log('⏳ loadingPatientId después de obtener detalle:', this.loadingPatientId());
+
+      console.log('🪟 Abriendo modal de edición...');
+
+      this.dialogs
+        .open<PatientRequest | null>(
+          new PolymorpheusComponent(ModalCreateEdit),
+          {
+            label: 'Editar paciente',
+            size: 'm',
+            data: detail,
+          },
+        )
+        .subscribe((result) => {
+          console.log('📥 Resultado recibido del modal:', result);
+
+          if (result === null) {
+            console.log('❌ Modal cerrado/cancelado sin guardar');
+            return;
+          }
+
+          console.log('✅ Paciente editado correctamente');
+          console.log('📦 Resultado del formulario:', result);
+
+          console.log('🔄 Recargando lista de pacientes...');
+          this.loadPatients();
+        });
+    },
+
+    error: (error) => {
+      console.error('❌ Error al obtener detalle del paciente');
+      console.error('💥 Error:', error);
+
+      this.loadingPatientId.set(null);
+
+      console.log(
+        '⏳ loadingPatientId después del error:',
+        this.loadingPatientId(),
+      );
+    },
+  });
+
+  console.log('🔵 EDITAR PACIENTE - findById() ejecutado');
+}
+
+  // ============================
+  // Ver más paciente
+  // ============================
+  protected morePatient(patient: PatientResponse): void {
+    this.loadingPatientId.set(patient.id);
+
+    this.patientService.findById(patient.id).subscribe({
+      next: (detail) => {
+        this.loadingPatientId.set(null);
+        this.selectedPatient.set(detail);
+      },
+
+      error: (error) => {
+        this.loadingPatientId.set(null);
+        console.error('Error al obtener detalle del paciente', error);
+      },
+    });
   }
-  
   // ============================
   // Filtros
   // ============================
@@ -168,7 +230,6 @@ export class PatientCrud implements OnInit {
     console.log('Filtros cambiados:', filters);
     this.loadPatients();
   }
-
 
   // ============================
   // Cambiar página

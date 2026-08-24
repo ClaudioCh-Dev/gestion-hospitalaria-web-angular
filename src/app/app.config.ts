@@ -8,31 +8,39 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { PatientMockService } from './features/patient/services/patient.service.mock';
 import { PatientHttpService } from './features/patient/services/patient.service.http';
 import { PatientService } from './features/patient/services/patient.service';
-import { environment } from '../enviroment';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
 import { DoctorService } from './features/doctor/services/doctor.service';
 import { DoctorMockService } from './features/doctor/services/doctor.service.mock';
 import { DoctorHttpService } from './features/doctor/services/doctor.service.http';
+import { environment } from '../environments/environment';
 
 export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
     provideTaiga(),
+
     {
       provide: TUI_LANGUAGE,
       useValue: signal(TUI_SPANISH_LANGUAGE),
     },
-    provideHttpClient(withInterceptors([authInterceptor])),
+
+    provideHttpClient(
+      withInterceptors([authInterceptor]),
+    ),
+
     {
       provide: PatientService,
-
-      useClass: environment.useMocks ? PatientMockService : PatientHttpService,
+      useClass: environment.useMocks
+        ? PatientMockService
+        : PatientHttpService,
     },
+
     {
       provide: DoctorService,
-
-      useClass: environment.useMocks ? DoctorMockService : DoctorHttpService,
+      useClass: environment.useMocks
+        ? DoctorMockService
+        : DoctorHttpService,
     },
   ],
 };
