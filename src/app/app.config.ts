@@ -13,6 +13,7 @@ import { DoctorService } from './features/doctor/services/doctor.service';
 import { DoctorMockService } from './features/doctor/services/doctor.service.mock';
 import { DoctorHttpService } from './features/doctor/services/doctor.service.http';
 import { environment } from '../environments/environment';
+import { errorInterceptor } from './core/interceptors/error.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -26,7 +27,7 @@ export const appConfig: ApplicationConfig = {
     },
 
     provideHttpClient(
-      withInterceptors([authInterceptor]),
+      withInterceptors([authInterceptor,errorInterceptor]),
     ),
 
     {

@@ -15,7 +15,6 @@ export interface TokenResponse {
   providedIn: 'root',
 })
 export class AuthService {
-
   private readonly http = inject(HttpClient);
 
   private readonly _accessToken = signal<string | null>(null);
@@ -24,14 +23,11 @@ export class AuthService {
 
   login(credentials: LoginRequest): Observable<TokenResponse> {
     return this.http
-      .post<TokenResponse>(
-        'http://localhost:3000/auth-server/auth/login',
-        credentials
-      )
+      .post<TokenResponse>('http://localhost:3000/auth-server/auth/login', credentials)
       .pipe(
-        tap(response => {
+        tap((response) => {
           this._accessToken.set(response.accessToken);
-        })
+        }),
       );
   }
 

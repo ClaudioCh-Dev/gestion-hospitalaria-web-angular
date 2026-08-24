@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
 
-import { ProblemDetailMicroservice } from '../models/problem.type';
+import { ProblemDetailMicroservice } from '../../shared/models/problem.type';
 
 export type NotificationStatus = 'loading' | 'success' | 'error';
 
@@ -8,7 +8,6 @@ export type NotificationStatus = 'loading' | 'success' | 'error';
   providedIn: 'root',
 })
 export class NotificationService {
-
   readonly open = signal(false);
 
   readonly status = signal<NotificationStatus>('loading');

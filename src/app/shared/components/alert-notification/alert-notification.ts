@@ -15,7 +15,7 @@ import {
   TuiNotificationMiddle,
 } from '@taiga-ui/kit';
 
-import { NotificationService } from '@shared/services/alert-notification-service';
+import { NotificationService } from 'src/app/core/services/alert-notification.service';
 import { getProblemMessage } from '../error/error-get-function';
 
 @Component({

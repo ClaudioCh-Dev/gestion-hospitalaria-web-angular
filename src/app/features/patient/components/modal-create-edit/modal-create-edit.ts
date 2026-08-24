@@ -14,7 +14,7 @@ import { PatientService } from '../../services/patient.service';
 
 import { ModalForm } from '../../../../shared/components/modal-form/modal-form';
 import { TuiDay } from '@taiga-ui/cdk';
-import { NotificationService } from '../../../../shared/services/alert-notification-service';
+import { NotificationService } from '../../../../core/services/alert-notification.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { withNotification } from '../../../../shared/operators/with-notification';
 

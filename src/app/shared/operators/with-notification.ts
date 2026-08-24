@@ -7,7 +7,7 @@ import {
 } from 'rxjs';
 
 import { HttpErrorResponse } from '@angular/common/http';
-import { NotificationService } from '../services/alert-notification-service'; 
+import { NotificationService } from '../../core/services/alert-notification.service'; 
 
 interface NotificationConfig {
   success?: string;

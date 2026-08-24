@@ -79,7 +79,8 @@
       "@environments/*": ["./src/environments/*"],
       "@patients/*": ["./src/app/features/patient/*"],
       "@doctors/*": ["./src/app/features/doctor/*"],
-      "@shared/*": ["./src/app/shared/*"]
+      "@shared/*": ["./src/app/shared/*"],
+      "@core/*": ["./src/app/core/*"]
     }
   },
   "angularCompilerOptions": {
