@@ -8,6 +8,22 @@ El frontend puede trabajar con una **API REST** o con **datos Mock**, permitiend
 
 ---
 
+# 🏥 Gestión Hospitalaria — Frontend
+
+Descripción...
+
+---
+
+## 🔗 Backend
+
+Este proyecto frontend consume el backend de Gestión Hospitalaria,
+desarrollado con Spring Boot y arquitectura de microservicios.
+
+👉 Repositorio del Backend:
+https://github.com/ClaudioCh-Dev/gestion-hospitalaria-microservicio-springboot
+
+---
+
 # ⚡ Inicio rápido
 
 ## 1. Clonar el proyecto
