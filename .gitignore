@@ -2,6 +2,7 @@
 .env
 .env.*
 !.env.example
+!.env.template
 
 # Angular
 /.angular/
@@ -78,3 +79,7 @@ docker-compose.override.yml
 .history/
 __screenshots__/
 connect.lock
+
+
+
+src/environments/*

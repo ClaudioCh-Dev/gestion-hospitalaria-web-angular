@@ -17,7 +17,7 @@ export class PatientHttpService implements PatientService {
 
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl =`${environment.api.baseUrl}/patients`;
+  private readonly apiUrl =`${environment.api.baseUrl}/patients/crud`;
 
   findAll(
     page: number = 0,

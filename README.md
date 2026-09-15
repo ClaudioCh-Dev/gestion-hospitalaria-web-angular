@@ -2,33 +2,133 @@
 
 Aplicación web para la **gestión integral de un sistema hospitalario**, desarrollada con **Angular 22**.
 
-El sistema permite administrar las principales operaciones de un hospital desde una interfaz moderna y centralizada, incluyendo la gestión de **pacientes, doctores y citas médicas**, además de un dashboard con información general del sistema.
+El sistema permite administrar pacientes, doctores y citas médicas desde una interfaz moderna y centralizada.
 
-El frontend está preparado para consumir una API REST y cuenta con una configuración de **Mock** para trabajar durante el desarrollo sin depender del backend.
+El frontend puede trabajar con una **API REST** o con **datos Mock**, permitiendo desarrollar y probar la aplicación sin depender del backend.
 
 ---
 
-## 📸 Vistas de la aplicación
+# ⚡ Inicio rápido
 
-### Dashboard
+## 1. Clonar el proyecto
 
-Panel principal con una vista general del estado del sistema hospitalario.
+```bash
+git clone <REPOSITORY_URL>
+
+cd gestion-hospitalaria-frontend
+```
+
+## 2. Instalar dependencias
+
+```bash
+npm install
+```
+
+## 3. Configurar variables de entorno
+
+El proyecto utiliza un archivo `.env` para configurar la URL de la API de producción.
+
+Copia el archivo:
+
+```text
+.env.template → .env
+```
+
+Configura `.env`:
+
+```env
+API_URL=https://miapi.com
+```
+
+> El archivo `.env` no debe subirse al repositorio.
+
+## 4. Generar los environments
+
+Ejecuta el script:
+
+```bash
+node scripts/start-environments.js
+```
+
+Este comando genera automáticamente:
+
+```text
+src/environments/
+├── environment.ts
+├── environment.dev.ts
+├── environment.mock.ts
+└── environment.prod.ts
+```
+
+> **Importante:** debes ejecutar este script después de crear o modificar `.env`.
+
+## 5. Ejecutar el proyecto
+
+### 🚀 Desarrollo
+
+Para ejecutar el frontend conectado al backend:
+
+```bash
+npm start
+```
+
+Utiliza:
+
+```text
+http://localhost:4040
+```
+
+como API.
+
+Frontend:
+
+```text
+http://localhost:4200
+```
+
+### 🧪 Mock
+
+Para ejecutar el frontend utilizando **datos simulados**, sin necesidad de levantar el backend:
+
+```bash
+npm run start:mock
+```
+
+---
+
+## 📌 Configuraciones disponibles
+
+| Comando              | Configuración | Fuente de datos |
+| -------------------- | ------------- | --------------- |
+| `npm start`          | Development   | API REST        |
+| `npm run start:mock` | Mock          | Datos simulados |
+| `npm run build`      | Production    | API REST        |
+| `npm run watch`      | Development   | API REST        |
+| `npm test`           | —             | Tests           |
+
+---
+
+# 📸 Vistas de la aplicación
+
+## Dashboard
+
+Panel principal con una vista general del estado del sistema.
 
 <img width="2129" height="1240" alt="Dashboard" src="https://github.com/user-attachments/assets/71064222-f9a8-4679-a84f-aa137b7cd594" />
 
 ---
 
-### Gestión de pacientes
+## Gestión de pacientes
 
 Módulo encargado de administrar la información de los pacientes registrados en el sistema.
 
 Permite consultar, crear, editar y gestionar la información asociada a cada paciente.
 
-<img width="2126" height="1241" alt="image" src="https://github.com/user-attachments/assets/73e75790-d9fc-4fe6-8b18-c3bf233a9a97" />
+<img width="2126" height="1241" alt="Gestión de pacientes" src="https://github.com/user-attachments/assets/73e75790-d9fc-4fe6-8b18-c3bf233a9a97" />
 
 ---
 
-### Gestión de doctores
+## Gestión de doctores
 
 Módulo para administrar los profesionales médicos del hospital y su información correspondiente.
 
@@ -36,7 +136,7 @@ Módulo para administrar los profesionales médicos del hospital y su informaci�
 
 ---
 
-### Gestión de citas
+## Gestión de citas
 
 Módulo destinado a la administración de las citas médicas entre pacientes y doctores.
 
@@ -44,7 +144,7 @@ Módulo destinado a la administración de las citas médicas entre pacientes y d
 
 ---
 
-## 🚀 Tecnologías
+# 🚀 Tecnologías
 
 * **Angular 22**
 * **TypeScript**
@@ -56,12 +156,13 @@ Módulo destinado a la administración de las citas médicas entre pacientes y d
 * **Vitest**
 * **REST API**
 * **Standalone Components**
+* **Signals**
 
 ---
 
-## 📦 Funcionalidades
+# 📦 Funcionalidades
 
-### 👤 Pacientes
+## 👤 Pacientes
 
 * Listado de pacientes.
 * Paginación.
@@ -73,7 +174,7 @@ Módulo destinado a la administración de las citas médicas entre pacientes y d
 * Selección de tipo de sangre.
 * Manejo de estados.
 
-### 👨‍⚕️ Doctores
+## 👨‍⚕️ Doctores
 
 * Listado de doctores.
 * Paginación.
@@ -82,7 +183,7 @@ Módulo destinado a la administración de las citas médicas entre pacientes y d
 * Gestión de especialidades.
 * Validación de formularios.
 
-### 📅 Citas
+## 📅 Citas
 
 * Listado de citas.
 * Gestión de pacientes y doctores.
@@ -90,7 +191,7 @@ Módulo destinado a la administración de las citas médicas entre pacientes y d
 * Estados de las citas.
 * Paginación y filtros.
 
-### 📊 Dashboard
+## 📊 Dashboard
 
 * Resumen general del sistema.
 * Indicadores principales.
@@ -98,11 +199,9 @@ Módulo destinado a la administración de las citas médicas entre pacientes y d
 
 ---
 
-## 🏗️ Arquitectura
+# 🏗️ Arquitectura
 
 El proyecto está organizado siguiendo una estructura orientada a funcionalidades, separando la lógica de presentación, servicios, modelos y elementos reutilizables.
-
-Una estructura aproximada:
 
 ```text
 src/
@@ -128,24 +227,26 @@ src/
 │
 ├── environments/
 │   ├── environment.ts
-│   └── environment.mock.ts
+│   ├── environment.dev.ts
+│   ├── environment.mock.ts
+│   └── environment.prod.ts
 │
 └── main.ts
 ```
 
-### Core
+## Core
 
-Contiene elementos globales de la aplicación que normalmente tienen una única instancia:
+Contiene elementos globales de la aplicación:
 
 * Guards.
 * HTTP Interceptors.
 * Servicios globales.
-* Configuración de la aplicación.
+* Configuración.
 * Autenticación.
 
-### Shared
+## Shared
 
-Contiene elementos reutilizables por diferentes funcionalidades:
+Contiene elementos reutilizables:
 
 * Componentes.
 * Modelos.
@@ -153,11 +254,9 @@ Contiene elementos reutilizables por diferentes funcionalidades:
 * Utilidades.
 * Elementos comunes de UI.
 
-### Features
+## Features
 
-Cada módulo funcional mantiene su propia lógica y componentes.
-
-Por ejemplo:
+Cada funcionalidad mantiene su propia lógica y componentes.
 
 ```text
 features/
@@ -169,13 +268,13 @@ features/
     └── patients.routes.ts
 ```
 
-Esto permite que cada funcionalidad permanezca aislada y sea más fácil de mantener.
+Esto permite mantener cada funcionalidad aislada y facilitar su mantenimiento.
 
 ---
 
-## 🔌 Comunicación con el Backend
+# 🔌 Comunicación con el Backend
 
-La aplicación está diseñada para consumir una **API REST** mediante servicios HTTP.
+La aplicación consume una **API REST** mediante servicios HTTP.
 
 El flujo principal es:
 
@@ -191,9 +290,9 @@ REST API
 Backend
 ```
 
-Los componentes no deberían comunicarse directamente con la API.
+Los componentes no se comunican directamente con la API.
 
-Por ejemplo:
+Ejemplo:
 
 ```text
 PatientComponent
@@ -207,108 +306,123 @@ GET /api/patients
 PatientResponse
 ```
 
-Esto permite mantener separada la lógica de presentación de la comunicación con el backend.
-
 ---
 
-## 🧪 Modo Mock
+# 🧪 Modo Mock
 
-Durante el desarrollo se puede utilizar información simulada sin necesidad de levantar el backend.
+El proyecto dispone de un modo **Mock con datos simulados**.
 
-La aplicación puede seleccionar entre una implementación HTTP real y una implementación Mock.
+No es necesario levantar el backend para utilizar esta configuración.
 
 ```text
-                    ┌── PatientHttpService ──→ API
-PatientService ─────┤
-                    └── PatientMockService ──→ Mock
+                  ┌── HTTP Service ──→ API REST
+PatientService ───┤
+                  └── Mock Service ──→ Datos simulados
 ```
 
-Esto permite desarrollar y probar la interfaz independientemente del estado del backend.
-
-Para ejecutar la aplicación con la configuración Mock:
+Para ejecutar el modo Mock:
 
 ```bash
-ng serve -c mock
-```
-
-Para utilizar la configuración normal:
-
-```bash
-ng serve
+npm run start:mock
 ```
 
 ---
 
-## ⚙️ Requisitos
+# ⚙️ Configuración de Environments
 
-Antes de ejecutar el proyecto necesitas tener instalado:
-
-* Node.js
-* Angular CLI
-* npm
-
-Puedes verificar las versiones:
-
-```bash
-node --version
-npm --version
-ng version
-```
-
----
-
-## 💻 Instalación
-
-Clona el repositorio:
-
-```bash
-git clone <REPOSITORY_URL>
-```
-
-Entra al proyecto:
-
-```bash
-cd gestion-hospitalaria-frontend
-```
-
-Instala las dependencias:
-
-```bash
-npm install
-```
-
----
-
-## ▶️ Desarrollo
-
-Inicia el servidor de desarrollo:
-
-```bash
-ng serve
-```
-
-Después abre:
+Los environments son generados automáticamente mediante:
 
 ```text
-http://localhost:4200/
+scripts/start-environments.js
 ```
 
-La aplicación se actualizará automáticamente cuando se modifiquen los archivos del proyecto.
+El archivo `.env` solamente contiene la configuración necesaria para generar el environment de producción.
 
-### Desarrollo con Mock
+### `.env`
 
-```bash
-ng serve -c mock
+```env
+API_URL=https://miapi.com
 ```
+
+El script genera las siguientes configuraciones:
+
+### Development
+
+```text
+environment.dev.ts
+```
+
+Utiliza:
+
+```text
+useMocks: false
+baseUrl: http://localhost:4040
+```
+
+### Mock
+
+```text
+environment.mock.ts
+```
+
+Utiliza:
+
+```text
+useMocks: true
+baseUrl: http://localhost:4040
+```
+
+### Production
+
+```text
+environment.prod.ts
+```
+
+Utiliza:
+
+```text
+useMocks: false
+baseUrl: API_URL
+```
+
+### Environment principal
+
+```text
+environment.ts
+```
+
+Es el environment base que Angular reemplaza dependiendo de la configuración utilizada.
 
 ---
 
-## 🏗️ Build
+# 🏗️ Build
 
-Para generar el build:
+El proyecto utiliza **Production como configuración por defecto** para el build.
+
+Por lo tanto:
 
 ```bash
-ng build
+npm run build
+```
+
+genera directamente el **build de producción**.
+
+La configuración de producción reemplaza:
+
+```text
+environment.ts
+```
+
+por:
+
+```text
+environment.prod.ts
+```
+
+La URL utilizada será la configurada en:
+
+```env
+API_URL=https://miapi.com
 ```
 
 Los archivos compilados se generan dentro de:
@@ -317,44 +431,61 @@ Los archivos compilados se generan dentro de:
 dist/
 ```
 
-Para producción:
-
-```bash
-ng build --configuration production
-```
-
 ---
 
-## 🧪 Testing
+# 🧪 Testing
 
 El proyecto utiliza **Vitest** para las pruebas unitarias.
 
 Ejecutar:
 
 ```bash
-ng test
+npm test
 ```
 
 ---
 
-## 📁 Convenciones
+# 📜 Scripts disponibles
+
+```json
+{
+  "ng": "ng",
+  "start": "ng serve",
+  "start:mock": "ng serve --configuration mock",
+  "build": "ng build",
+  "watch": "ng build --watch --configuration development",
+  "test": "ng test"
+}
+```
+
+| Comando              | Descripción                           |
+| -------------------- | ------------------------------------- |
+| `npm start`          | Desarrollo utilizando API REST        |
+| `npm run start:mock` | Desarrollo utilizando datos simulados |
+| `npm run build`      | Build de producción                   |
+| `npm run watch`      | Build en modo watch para desarrollo   |
+| `npm test`           | Ejecuta las pruebas unitarias         |
+
+---
+
+# 📁 Convenciones
 
 El proyecto utiliza:
 
 * **Standalone Components**
 * **Reactive Forms**
-* **Signals** cuando corresponde.
-* **Typed Forms**.
+* **Signals**
+* **Typed Forms**
 * Servicios para comunicación con API.
-* Separación entre modelos de request y response.
+* Separación entre modelos Request y Response.
 * Componentes reutilizables.
-* Lazy Loading para funcionalidades cuando corresponde.
-* Interceptors para comportamiento HTTP global.
-* Guards para protección de rutas.
+* Lazy Loading.
+* HTTP Interceptors.
+* Guards.
 
 ---
 
-## 🔄 Flujo de una funcionalidad
+# 🔄 Flujo de una funcionalidad
 
 Una funcionalidad típica sigue este flujo:
 
@@ -398,9 +529,7 @@ Actualización de la vista
 
 ---
 
-## 📌 Estado del proyecto
-
-Actualmente el frontend cuenta con los siguientes módulos principales:
+# 📌 Estado del proyecto
 
 | Módulo                | Estado |
 | --------------------- | ------ |
@@ -417,7 +546,7 @@ Actualmente el frontend cuenta con los siguientes módulos principales:
 
 ---
 
-## 📚 Recursos
+# 📚 Recursos
 
 * [Angular](https://angular.dev/)
 * [Angular CLI](https://angular.dev/tools/cli)
@@ -428,7 +557,7 @@ Actualmente el frontend cuenta con los siguientes módulos principales:
 
 ---
 
-## 👨‍💻 Autor
+# 👨‍💻 Autor
 
 **Rider**
 
