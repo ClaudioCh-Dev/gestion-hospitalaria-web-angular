@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import {
+  Gender,
   PatientDetailResponse,
   PatientRequest,
   PatientResponse,
@@ -19,20 +20,25 @@ export class PatientHttpService implements PatientService {
 
   private readonly apiUrl =`${environment.api.baseUrl}/patients/crud`;
 
-  findAll(
-    page: number = 0,
-    size: number = 10,
-  ): Observable<PageResponse<PatientResponse>> {
+findAll(
+  page: number = 0,
+  size: number = 10,
+  gender?: Gender,
+): Observable<PageResponse<PatientResponse>> {
 
-    const params = new HttpParams()
-      .set('page', page)
-      .set('size', size);
+  let params = new HttpParams()
+    .set('page', page)
+    .set('size', size);
 
-    return this.http.get<PageResponse<PatientResponse>>(
-      this.apiUrl,
-      { params },
-    );
+  if (gender) {
+    params = params.set('gender', gender);
   }
+
+  return this.http.get<PageResponse<PatientResponse>>(
+    this.apiUrl,
+    { params },
+  );
+}
 
   findById(
     id: number,

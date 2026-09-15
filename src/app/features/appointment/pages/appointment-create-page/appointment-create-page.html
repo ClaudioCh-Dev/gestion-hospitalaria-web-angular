@@ -20,6 +20,7 @@
 
   <!-- Formulario -->
   <form
+    tuiForm="m"
     [formGroup]="form"
     (ngSubmit)="create()"
     class="w-full rounded-xl border border-slate-200 bg-white p-6 shadow-sm"
@@ -29,7 +30,11 @@
       <!-- ESPECIALIDAD -->
       <!-- ====================================== -->
 
-      <tui-textfield tuiChevron tuiTextfieldSize="s">
+      <tui-textfield
+        tuiChevron
+        tuiTextfieldSize="m"
+        [stringify]="(value) => specialties.find((s) => s.id === value)?.name || ''"
+      >
         <label tuiLabel> Especialidad </label>
 
         <input tuiSelect formControlName="specialtyId" placeholder="Selecciona una especialidad" />
@@ -41,13 +46,18 @@
             </button>
           }
         </tui-data-list>
+        <span><tui-error formControlName="specialtyId" /></span>
       </tui-textfield>
 
       <!-- ====================================== -->
       <!-- PACIENTE -->
       <!-- ====================================== -->
 
-      <tui-textfield tuiChevron tuiTextfieldSize="s">
+      <tui-textfield
+        tuiChevron
+        tuiTextfieldSize="m"
+        [stringify]="(value) => patients.find((p) => p.id === value)?.name || ''"
+      >
         <label tuiLabel> Paciente </label>
 
         <input tuiSelect formControlName="patientId" placeholder="Selecciona un paciente" />
@@ -59,16 +69,21 @@
             </button>
           }
         </tui-data-list>
+        <span><tui-error formControlName="patientId" /></span>
       </tui-textfield>
 
       <!-- ====================================== -->
       <!-- MÉDICO -->
       <!-- ====================================== -->
 
-      <tui-textfield tuiChevron tuiTextfieldSize="s">
+      <tui-textfield
+        tuiChevron
+        tuiTextfieldSize="m"
+        [stringify]="(value) => doctors.find((d) => d.id === value)?.name || ''"
+      >
         <label tuiLabel> Médico </label>
 
-        <input tuiSelect formControlName="doctorId" placeholder="Selecciona un médico" />
+        <input required tuiSelect formControlName="doctorId" placeholder="Selecciona un médico" />
 
         <tui-data-list *tuiDropdown>
           @for (doctor of doctors; track doctor.id) {
@@ -77,13 +92,18 @@
             </button>
           }
         </tui-data-list>
+        <span><tui-error formControlName="doctorId" /></span>
       </tui-textfield>
 
       <!-- ====================================== -->
       <!-- TIPO DE CITA -->
       <!-- ====================================== -->
 
-      <tui-textfield tuiChevron tuiTextfieldSize="s">
+      <tui-textfield
+        tuiChevron
+        tuiTextfieldSize="m"
+        [stringify]="(value) => appointmentTypes.find((at) => at.id === value)?.name || ''"
+      >
         <label tuiLabel> Tipo de cita </label>
 
         <input
@@ -93,70 +113,83 @@
         />
 
         <tui-data-list *tuiDropdown>
-          <button tuiOption type="button" [value]="1">Consulta general</button>
-
-          <button tuiOption type="button" [value]="2">Consulta especializada</button>
-
-          <button tuiOption type="button" [value]="3">Control médico</button>
+          @for (appointmentType of appointmentTypes; track appointmentType.id) {
+            <button tuiOption type="button" [value]="appointmentType.id">
+              {{ appointmentType.name }}
+            </button>
+          }
         </tui-data-list>
+        <span><tui-error formControlName="appointmentTypeId" /></span>
       </tui-textfield>
 
       <!-- ====================================== -->
       <!-- DURACIÓN -->
       <!-- ====================================== -->
 
-      <tui-textfield tuiTextfieldSize="s">
-        <label tuiLabel> Duración </label>
+      <tui-textfield tuiTextfieldSize="m" [tuiTextfieldCleaner]="false">
+        <label tuiLabel>Duración (minutos)</label>
 
-        <input tuiInput type="number" formControlName="durationMinutes" placeholder="Minutos" />
+        <input
+          postfix=" min"
+          tuiInputNumber
+          [max]="120"
+          [min]="30"
+          [step]="30"
+          formControlName="durationMinutes"
+          placeholder="Minutos"
+        />
+        <span><tui-error formControlName="durationMinutes" /></span>
       </tui-textfield>
 
       <!-- ====================================== -->
       <!-- FECHA -->
       <!-- ====================================== -->
 
-      <tui-textfield tuiTextfieldSize="s">
+      <tui-textfield tuiTextfieldSize="m">
         <label tuiLabel> Fecha </label>
 
-        <input tuiInputDate type="date" formControlName="scheduledDate" />
+        <input
+          tuiInputDate
+          type="date"
+          formControlName="scheduledDate"
+          [min]="today"
+          [max]="maxDay"
+        />
 
         <tui-calendar *tuiDropdown />
+        <span><tui-error formControlName="scheduledDate" /></span>
       </tui-textfield>
 
       <!-- ====================================== -->
       <!-- HORA -->
       <!-- ====================================== -->
 
-      <tui-textfield tuiTextfieldSize="s">
-        <label tuiLabel> Hora </label>
+      <tui-textfield tuiTextfieldSize="m" [disabledItemHandler]="disabledItemHandler">
+        <input
+          placeholder="Click me to open dropdown"
+          tuiInputTime
+          formControlName="scheduledTime"
+        />
 
-        <input mode="HH:MM AA" tuiInputTime formControlName="scheduledTime" />
+        <tui-data-list-wrapper *tuiDropdown [items]="items | tuiFilterByInput: filter" />
+        <span><tui-error formControlName="scheduledTime" /></span>
       </tui-textfield>
+
       <div></div>
 
       <!-- MOTIVO -->
-      <tui-textfield iconStart="@tui.pencil" tuiTextfieldSize="s" [tuiTextfieldCleaner]="false">
+      <tui-textfield iconStart="@tui.pencil" tuiTextfieldSize="m" [tuiTextfieldCleaner]="false">
         <label tuiLabel>Escribe tu motivo</label>
-        <textarea
-          required
-          tuiTextarea
-          [max]="4"
-          [min]="4"
-          formControlName="reason"
-        ></textarea>
+        <textarea tuiTextarea [max]="4" [min]="4" formControlName="reason"></textarea>
       </tui-textfield>
 
       <!-- NOTAS -->
-      <tui-textfield iconStart="@tui.pencil" tuiTextfieldSize="s" [tuiTextfieldCleaner]="false">
+      <tui-textfield iconStart="@tui.pencil" tuiTextfieldSize="m" [tuiTextfieldCleaner]="false">
         <label tuiLabel>Escribe tus notas</label>
-        <textarea
-          required
-          tuiTextarea
-          [max]="4"
-          [min]="4"
-          formControlName="notes"
-        ></textarea>
+        <textarea tuiTextarea [max]="4" [min]="4" formControlName="notes"></textarea>
+        <span><tui-error formControlName="notes" /></span>
       </tui-textfield>
+      
     </div>
 
     <!-- ====================================== -->

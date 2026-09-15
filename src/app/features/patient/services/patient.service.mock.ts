@@ -1,77 +1,44 @@
-import {
-  Injectable,
-  inject,
-  signal,
-} from '@angular/core';
+import { Injectable, inject, signal } from '@angular/core';
 
-import {
-  HttpErrorResponse,
-} from '@angular/common/http';
+import { HttpErrorResponse } from '@angular/common/http';
 
-import {
-  Observable,
-  of,
-  throwError,
-} from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 
-import {
-  PatientDetailResponse,
-  PatientRequest,
-  PatientResponse,
-} from '../model';
+import { Gender, PatientDetailResponse, PatientRequest, PatientResponse } from '../model';
 
-import {
-  PageResponse,
-} from '@shared/models/page.type';
+import { PageResponse } from '@shared/models/page.type';
 
-import {
-  PatientService,
-} from './patient.service';
+import { PatientService } from './patient.service';
 
-import {
-  PATIENTS_MOCK,
-} from '../mocks/patient.mocks';
+import { PATIENTS_MOCK } from '../mocks/patient.mocks';
 
-import {
-  PATIENT_DETAILS_MOCK,
-} from '../mocks/patient.detail.mocks';
+import { PATIENT_DETAILS_MOCK } from '../mocks/patient.detail.mocks';
 
-import {
-  ErrorHandlerService,
-} from '@core/services/error-handler.service';
+import { ErrorHandlerService } from '@core/services/error-handler.service';
 
-import {
-  GENDERS,
-} from '@patients/constans/patient-options';
+import { GENDERS } from '@patients/constans/patient-options';
 
-import {
-  ProblemDetailMicroservice,
-} from '@shared/models/problem.type';
+import { ProblemDetailMicroservice } from '@shared/models/problem.type';
 
 @Injectable()
-export class PatientMockService
-  extends PatientService {
-
-  private readonly errorHandler =
-    inject(ErrorHandlerService);
+export class PatientMockService extends PatientService {
+  private readonly errorHandler = inject(ErrorHandlerService);
 
   // =====================================================
   // PATIENTS
   // =====================================================
 
-  private readonly _patients =
-    signal<PageResponse<PatientResponse>>(
-      structuredClone(PATIENTS_MOCK),
-    );
+  private readonly _patients = signal<PageResponse<PatientResponse>>(
+    structuredClone(PATIENTS_MOCK),
+  );
 
   // =====================================================
   // PATIENT DETAILS
   // =====================================================
 
-  private readonly _patientDetails =
-    signal<PatientDetailResponse[]>(
-      structuredClone(PATIENT_DETAILS_MOCK),
-    );
+  private readonly _patientDetails = signal<PatientDetailResponse[]>(
+    structuredClone(PATIENT_DETAILS_MOCK),
+  );
 
   // =====================================================
   // HANDLE ERROR
@@ -83,11 +50,8 @@ export class PatientMockService
     detail: string,
     code?: string,
   ): Observable<never> {
-
     const problem: ProblemDetailMicroservice = {
-
-      type:
-        'about:blank',
+      type: 'about:blank',
 
       title,
 
@@ -95,93 +59,57 @@ export class PatientMockService
 
       detail,
 
-      instance:
-        undefined,
+      instance: undefined,
 
       code,
     };
 
-    console.log(
-      '🧪 MOCK PROBLEM:',
-      problem,
-    );
+    console.log('🧪 MOCK PROBLEM:', problem);
 
-    const error =
-      new HttpErrorResponse({
+    const error = new HttpErrorResponse({
+      status,
 
-        status,
+      statusText: title,
 
-        statusText:
-          title,
-
-        error:
-          problem,
-
-      });
+      error: problem,
+    });
 
     this.errorHandler.handle(error);
 
-    return throwError(
-      () => error,
-    );
+    return throwError(() => error);
   }
 
   // =====================================================
   // FIND ALL
   // =====================================================
-
   findAll(
     page: number = 0,
     size: number = 10,
-  ): Observable<
-    PageResponse<PatientResponse>
-  > {
+    gender?: Gender,
+  ): Observable<PageResponse<PatientResponse>> {
+    let patients = this._patients().content;
 
-    const patients =
-      this._patients().content;
+    if (gender) {
+      patients = patients.filter((patient) => patient.gender === gender.toString());
+    }
 
-    const totalElements =
-      patients.length;
+    const totalElements = patients.length;
+    const totalPages = Math.ceil(totalElements / size);
 
-    const totalPages =
-      Math.ceil(
-        totalElements / size,
-      );
+    const start = page * size;
+    const end = start + size;
 
-    const start =
-      page * size;
-
-    const end =
-      start + size;
-
-    const content =
-      patients.slice(
-        start,
-        end,
-      );
+    const content = patients.slice(start, end);
 
     return of({
-
       content,
-
       totalElements,
-
       totalPages,
-
       size,
-
-      number:
-        page,
-
-      first:
-        page === 0,
-
-      last:
-        page >= totalPages - 1,
-
-      numberOfElements:
-        content.length,
-
+      number: page,
+      first: page === 0,
+      last: page >= totalPages - 1,
+      numberOfElements: content.length,
     });
   }
 
@@ -189,19 +117,10 @@ export class PatientMockService
   // FIND BY ID
   // =====================================================
 
-  findById(
-    id: number,
-  ): Observable<PatientDetailResponse> {
-
-    const patient =
-      this._patientDetails()
-        .find(
-          item =>
-            item.id === id,
-        );
+  findById(id: number): Observable<PatientDetailResponse> {
+    const patient = this._patientDetails().find((item) => item.id === id);
 
     if (!patient) {
-
       return this.handleError(
         404,
         'Paciente no encontrado',
@@ -217,21 +136,10 @@ export class PatientMockService
   // FIND BY DOCUMENT NUMBER
   // =====================================================
 
-  findByDocumentNumber(
-    documentNumber: string,
-  ): Observable<PatientResponse> {
-
-    const patient =
-      this._patients()
-        .content
-        .find(
-          item =>
-            item.documentNumber ===
-            documentNumber,
-        );
+  findByDocumentNumber(documentNumber: string): Observable<PatientResponse> {
+    const patient = this._patients().content.find((item) => item.documentNumber === documentNumber);
 
     if (!patient) {
-
       return this.handleError(
         404,
         'Paciente no encontrado',
@@ -247,21 +155,12 @@ export class PatientMockService
   // CREATE
   // =====================================================
 
-  create(
-    patient: PatientRequest,
-  ): Observable<PatientResponse> {
-
-    const documentExists =
-      this._patients()
-        .content
-        .some(
-          item =>
-            item.documentNumber ===
-            patient.documentNumber,
-        );
+  create(patient: PatientRequest): Observable<PatientResponse> {
+    const documentExists = this._patients().content.some(
+      (item) => item.documentNumber === patient.documentNumber,
+    );
 
     if (documentExists) {
-
       return this.handleError(
         409,
         'Paciente ya existe',
@@ -270,83 +169,51 @@ export class PatientMockService
       );
     }
 
-    const id =
-      Date.now();
+    const id = Date.now();
 
-    const newPatient:
-      PatientResponse = {
-
+    const newPatient: PatientResponse = {
       id,
 
-      documentNumber:
-        patient.documentNumber,
+      documentNumber: patient.documentNumber,
 
-      firstName:
-        patient.firstName,
+      firstName: patient.firstName,
 
-      lastName:
-        patient.lastName,
+      lastName: patient.lastName,
 
-      birthDate:
-        patient.birthDate,
+      birthDate: patient.birthDate,
 
-      phone:
-        patient.phone,
+      phone: patient.phone,
 
-      email:
-        patient.email,
+      email: patient.email,
 
-      active:
-        true,
+      active: true,
     };
 
-    this._patients.update(
-      current => ({
+    this._patients.update((current) => ({
+      ...current,
 
-        ...current,
+      content: [...current.content, newPatient],
 
-        content: [
-          ...current.content,
-          newPatient,
-        ],
+      totalElements: current.totalElements + 1,
 
-        totalElements:
-          current.totalElements + 1,
+      numberOfElements: current.numberOfElements + 1,
+    }));
 
-        numberOfElements:
-          current.numberOfElements + 1,
-
-      }),
-    );
-
-    return of(
-      newPatient,
-    );
+    return of(newPatient);
   }
 
   // =====================================================
   // UPDATE
   // =====================================================
 
-  update(
-    id: number,
-    patient: PatientRequest,
-  ): Observable<PatientResponse> {
-
-    const existing =
-      this._patients()
-        .content
-        .find(
-          item =>
-            item.id === id,
-        );
+  update(id: number, patient: PatientRequest): Observable<PatientResponse> {
+    const existing = this._patients().content.find((item) => item.id === id);
 
     // -----------------------------------------
     // NOT FOUND
     // -----------------------------------------
 
     if (!existing) {
-
       return this.handleError(
         404,
         'Paciente no encontrado',
@@ -359,18 +226,11 @@ export class PatientMockService
     // DUPLICATE DOCUMENT
     // -----------------------------------------
 
-    const documentExists =
-      this._patients()
-        .content
-        .some(
-          item =>
-            item.documentNumber ===
-              patient.documentNumber &&
-            item.id !== id,
-        );
+    const documentExists = this._patients().content.some(
+      (item) => item.documentNumber === patient.documentNumber && item.id !== id,
+    );
 
     if (documentExists) {
-
       return this.handleError(
         409,
         'Paciente ya existe',
@@ -383,101 +243,61 @@ export class PatientMockService
     // UPDATE PATIENT
     // -----------------------------------------
 
-    const updatedPatient:
-      PatientResponse = {
-
+    const updatedPatient: PatientResponse = {
       ...existing,
 
-      documentNumber:
-        patient.documentNumber,
+      documentNumber: patient.documentNumber,
 
-      firstName:
-        patient.firstName,
+      firstName: patient.firstName,
 
-      lastName:
-        patient.lastName,
+      lastName: patient.lastName,
 
-      birthDate:
-        patient.birthDate,
+      birthDate: patient.birthDate,
 
-      phone:
-        patient.phone,
+      phone: patient.phone,
 
-      email:
-        patient.email,
+      email: patient.email,
 
-      gender:
-        GENDERS.find(
-          gender =>
-            gender.id ===
-            patient.gender,
-        )?.value ??
-        'MALE',
+      gender: (GENDERS.find((gender) => gender.id === patient.gender)?.value) ?? Gender.MALE.toString(),
     };
 
     // -----------------------------------------
     // UPDATE LIST
     // -----------------------------------------
 
-    this._patients.update(
-      current => ({
+    this._patients.update((current) => ({
+      ...current,
 
-        ...current,
-
-        content:
-          current.content.map(
-            item =>
-              item.id === id
-                ? updatedPatient
-                : item,
-          ),
-
-      }),
-    );
+      content: current.content.map((item) => (item.id === id ? updatedPatient : item)),
+    }));
 
     // -----------------------------------------
     // UPDATE DETAILS
     // -----------------------------------------
 
-    this._patientDetails.update(
-      current =>
-        current.map(
-          item =>
-            item.id === id
-              ? {
-                  ...item,
-                  ...patient,
-                  updatedAt:
-                    new Date()
-                      .toISOString(),
-                }
-              : item,
-        ),
+    this._patientDetails.update((current) =>
+      current.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              ...patient,
+              updatedAt: new Date().toISOString(),
+            }
+          : item,
+      ),
     );
 
-    return of(
-      updatedPatient,
-    );
+    return of(updatedPatient);
   }
 
   // =====================================================
   // DELETE
   // =====================================================
 
-  delete(
-    id: number,
-  ): Observable<void> {
-
-    const exists =
-      this._patients()
-        .content
-        .some(
-          item =>
-            item.id === id,
-        );
+  delete(id: number): Observable<void> {
+    const exists = this._patients().content.some((item) => item.id === id);
 
     if (!exists) {
-
       return this.handleError(
         404,
         'Paciente no encontrado',
@@ -486,41 +306,22 @@ export class PatientMockService
       );
     }
 
-    this._patients.update(
-      current => {
+    this._patients.update((current) => {
+      const content = current.content.filter((item) => item.id !== id);
 
-        const content =
-          current.content.filter(
-            item =>
-              item.id !== id,
-          );
+      return {
+        ...current,
 
-        return {
+        content,
 
-          ...current,
+        totalElements: content.length,
 
-          content,
+        numberOfElements: content.length,
+      };
+    });
 
-          totalElements:
-            content.length,
+    this._patientDetails.update((current) => current.filter((item) => item.id !== id));
 
-          numberOfElements:
-            content.length,
-
-        };
-      },
-    );
-
-    this._patientDetails.update(
-      current =>
-        current.filter(
-          item =>
-            item.id !== id,
-        ),
-    );
-
-    return of(
-      void 0,
-    );
+    return of(void 0);
   }
 }

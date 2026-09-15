@@ -1,23 +1,22 @@
 import { Routes } from '@angular/router';
+import { Layout } from './layout/layout';
+import { DashboardPage } from './features/dashboard/page/dashboard-page/dashboard-page';
 
 export const routes: Routes = [
   {
     path: '',
-    loadComponent: () =>
-      import('./layout/layout').then((m) => m.Layout),
+    component: Layout,
 
     children: [
+      {
+        path: 'dashboard',
+        component: DashboardPage,
+      },
       {
         path: 'patients',
         loadComponent: () =>
           import('./features/patient/pages/patient.crud/patient.crud')
             .then((m) => m.PatientCrud),
-      },
-      {
-        path: 'dashboard',
-        loadComponent: () =>
-          import('./features/dashboard/page/dashboard-page/dashboard-page')
-            .then((m) => m.DashboardPage),
       },
       {
         path: 'doctors',
@@ -36,6 +35,16 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/appointment/pages/appointment-create-page/appointment-create-page')
             .then((m) => m.AppointmentCreatePage),
+      },
+      {
+        path: '',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
+      },
+      {
+        path: '**',
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
       },
     ],
   },
