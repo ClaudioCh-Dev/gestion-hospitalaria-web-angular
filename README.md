@@ -8,12 +8,6 @@ El frontend puede trabajar con una **API REST** o con **datos Mock**, permitiend
 
 ---
 
-# 🏥 Gestión Hospitalaria — Frontend
-
-Descripción...
-
----
-
 ## 🔗 Backend
 
 Este proyecto frontend consume el backend de Gestión Hospitalaria,
