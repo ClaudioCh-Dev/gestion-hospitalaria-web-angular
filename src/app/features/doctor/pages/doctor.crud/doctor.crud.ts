@@ -1,12 +1,23 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  inject,
+  signal,
+} from '@angular/core';
 
-import { TuiButton, TuiDialogService } from '@taiga-ui/core';
+import { rxResource } from '@angular/core/rxjs-interop';
 
-import { TuiTable, TuiTablePagination } from '@taiga-ui/addon-table';
+import {
+  TuiButton,
+  TuiDialogService,
+} from '@taiga-ui/core';
+
+import {
+  TuiTable,
+  TuiTablePagination,
+} from '@taiga-ui/addon-table';
 
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
-
-import { PageResponse } from '../../../../shared/models/page.type';
 
 import {
   DoctorResponse,
@@ -15,6 +26,8 @@ import {
 } from '../../model/doctor.dtos';
 
 import { DoctorService } from '../../services/doctor.service';
+
+import { SpecialtyStore } from '../../store/specialty.store';
 
 import { ModalCreateEdit } from '../../components/modal-create-edit/modal-create-edit';
 
@@ -27,132 +40,239 @@ import { DoctorTableComponent } from '../../components/doctor-table/doctor-table
 
 @Component({
   selector: 'app-doctor-crud',
-
-  imports: [DoctorFiltersComponent, DoctorTableComponent, TuiTable, TuiTablePagination,TuiButton],
-
+  imports: [
+    DoctorFiltersComponent,
+    DoctorTableComponent,
+    TuiTable,
+    TuiTablePagination,
+    TuiButton,
+  ],
   templateUrl: 'doctor.crud.html',
-
   styleUrl: 'doctor.crud.less',
-
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class DoctorCrud implements OnInit {
+export class DoctorCrud {
   private readonly doctorService = inject(DoctorService);
 
-  private readonly dialogs = inject(TuiDialogService);
+  private readonly specialtyStore =
+    inject(SpecialtyStore);
 
-  // ============================
-  // Tabla
-  // ============================
+  private readonly dialogs =
+    inject(TuiDialogService);
 
-  protected readonly data = signal<DoctorResponse[]>([]);
+  // =====================================================
+  // LOADING DE ACCIONES
+  // =====================================================
 
-  protected readonly selected = signal<DoctorResponse[]>([]);
+  protected readonly loadingDoctorId =
+    signal<number | null>(null);
 
-  protected total = signal(0);
+  protected readonly loadingAction =
+    signal<'edit' | 'more' | null>(null);
 
-  protected page = signal(0);
+  // =====================================================
+  // TABLA
+  // =====================================================
 
-  protected size = signal(15);
+  protected readonly selected =
+    signal<DoctorResponse[]>([]);
 
-  protected readonly sizeOptions = [10, 50, 100];
+  protected readonly page =
+    signal(0);
 
-  // ============================
-  // Inicialización
-  // ============================
+  protected readonly size =
+    signal(15);
 
-  ngOnInit(): void {
-    this.loadDoctors();
+  protected readonly sizeOptions =
+    [10, 50, 100];
+
+  protected readonly selectedDoctor =
+    signal<DoctorResponse | null>(null);
+
+  // =====================================================
+  // RESOURCE
+  // =====================================================
+
+  protected readonly doctorsResource = rxResource({
+    params: () => ({
+      page: this.page(),
+      size: this.size(),
+    }),
+
+    stream: (resource) =>
+      this.doctorService.findAll(
+        resource.params.page,
+        resource.params.size,
+      ),
+  });
+
+  // =====================================================
+  // CREAR DOCTOR
+  // =====================================================
+
+  protected async createDoctorModal(): Promise<void> {
+    try {
+      await this.specialtyStore.load();
+
+      this.dialogs
+        .open<CreateDoctorRequest | null>(
+          new PolymorpheusComponent(
+            ModalCreateEdit,
+          ),
+          {
+            label: 'Nuevo doctor',
+            size: 'm',
+          },
+        )
+        .subscribe((doctor) => {
+          if (doctor === null) {
+            return;
+          }
+
+          this.doctorsResource.reload();
+        });
+    } catch (error) {
+      console.error(
+        'Error al cargar las especialidades',
+        error,
+      );
+    }
   }
 
-  // ============================
-  // Obtener doctores
-  // ============================
+  // =====================================================
+  // EDITAR DOCTOR
+  // =====================================================
 
-  protected loadDoctors(): void {
-    this.doctorService.findAll(this.page(), this.size()).subscribe({
-      next: (response: PageResponse<DoctorResponse>) => {
-        console.log('📥 Respuesta doctores:', response);
+  protected async editDoctorModal(
+    doctor: DoctorResponse,
+  ): Promise<void> {
+    this.loadingDoctorId.set(doctor.id);
+    this.loadingAction.set('edit');
 
-        this.data.set(response.content);
+    try {
+      // Cargamos especialidades si todavía no existen
+      await this.specialtyStore.load();
 
-        this.total.set(response.totalElements);
-      },
+      // Obtenemos detalle del doctor
+      const detail =
+        await this.getDoctorDetail(doctor.id);
 
-      error: (error) => {
-        console.error('❌ Error al obtener doctores', error);
-      },
+      this.loadingDoctorId.set(null);
+      this.loadingAction.set(null);
+
+      this.dialogs
+        .open<UpdateDoctorRequest | null>(
+          new PolymorpheusComponent(
+            ModalCreateEdit,
+          ),
+          {
+            label: 'Editar doctor',
+            size: 'm',
+            data: detail,
+          },
+        )
+        .subscribe((result) => {
+          if (result === null) {
+            return;
+          }
+
+          this.doctorsResource.reload();
+        });
+    } catch (error) {
+      this.loadingDoctorId.set(null);
+      this.loadingAction.set(null);
+
+      console.error(
+        'Error al preparar la edición del doctor',
+        error,
+      );
+    }
+  }
+
+  // =====================================================
+  // OBTENER DETALLE
+  // =====================================================
+
+  private getDoctorDetail(
+    id: number,
+  ): Promise<DoctorResponse> {
+    return new Promise((resolve, reject) => {
+      this.doctorService
+        .findById(id)
+        .subscribe({
+          next: resolve,
+          error: reject,
+        });
     });
   }
 
-  // ============================
-  // Crear doctor
-  // ============================
+  // =====================================================
+  // VER DOCTOR
+  // =====================================================
 
-  protected createDoctorModal(): void {
-    this.dialogs
-      .open<CreateDoctorRequest | null>(new PolymorpheusComponent(ModalCreateEdit), {
-        label: 'Nuevo doctor',
-        size: 'm',
-      })
-      .subscribe((doctor) => {
-        if (doctor === null) {
-          return;
-        }
+  protected moreDoctor(
+    doctor: DoctorResponse,
+  ): void {
+    this.loadingDoctorId.set(doctor.id);
+    this.loadingAction.set('more');
 
-        this.loadDoctors();
+    this.doctorService
+      .findById(doctor.id)
+      .subscribe({
+        next: (detail) => {
+          this.loadingDoctorId.set(null);
+          this.loadingAction.set(null);
+
+          this.selectedDoctor.set(detail);
+        },
+
+        error: (error) => {
+          this.loadingDoctorId.set(null);
+          this.loadingAction.set(null);
+
+          console.error(
+            'Error al obtener detalle del doctor',
+            error,
+          );
+        },
       });
   }
 
-  // ============================
-  // Editar doctor
-  // ============================
+  // =====================================================
+  // FILTROS
+  // =====================================================
 
-  protected editDoctorModal(doctor: DoctorResponse): void {
-    this.dialogs
-      .open<UpdateDoctorRequest | null>(new PolymorpheusComponent(ModalCreateEdit), {
-        label: 'Editar doctor',
-        size: 'm',
-        data: doctor,
-      })
-      .subscribe((doctor) => {
-        if (doctor === null) {
-          return;
-        }
-
-        this.loadDoctors();
-      });
-  }
-
-  // ============================
-  // Filtros
-  // ============================
-
-  protected onFiltersChange(filters: DoctorFilters): void {
-    console.log('Filtros cambiados:', filters);
-
-    this.loadDoctors();
-  }
-
-  // ============================
-  // Cambiar página
-  // ============================
-
-  protected changePage(page: number): void {
-    this.page.set(page);
-
-    this.loadDoctors();
-  }
-
-  // ============================
-  // Cambiar tamaño
-  // ============================
-
-  protected changeSize(size: number): void {
-    this.size.set(size);
+  protected onFiltersChange(
+    filters: DoctorFilters,
+  ): void {
+    console.log(
+      'Filtros cambiados:',
+      filters,
+    );
 
     this.page.set(0);
 
-    this.loadDoctors();
+    this.doctorsResource.reload();
+  }
+
+  // =====================================================
+  // CAMBIAR PÁGINA
+  // =====================================================
+
+  protected changePage(
+    page: number,
+  ): void {
+    this.page.set(page);
+  }
+
+  // =====================================================
+  // CAMBIAR TAMAÑO
+  // =====================================================
+
+  protected changeSize(
+    size: number,
+  ): void {
+    this.size.set(size);
+    this.page.set(0);
   }
 }

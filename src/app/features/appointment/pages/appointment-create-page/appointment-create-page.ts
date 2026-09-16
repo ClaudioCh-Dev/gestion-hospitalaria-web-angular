@@ -47,7 +47,6 @@ import { TuiForm, TuiItemGroup } from '@taiga-ui/layout';
     TuiInputTime,
     TuiSelect,
     TuiTextarea,
-    TuiFilterByInputPipe,
     TuiError,
     TuiForm,
     TuiLabel,

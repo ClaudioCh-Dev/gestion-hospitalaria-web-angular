@@ -1,41 +1,81 @@
 <div class="flex w-full flex-col gap-5">
+
+  <!-- Header -->
   <div class="flex w-full items-center gap-4">
-    <!-- Filtros + Creación -->
+
     <div class="flex-1">
-      <app-patient-filters (filtersChange)="onFiltersChange($event)" />
+      <app-patient-filters
+        (filtersChange)="onFiltersChange($event)"
+      />
     </div>
 
-    <!-- Crear paciente -->
     <button
       tuiButton
       type="button"
       iconStart="@tui.plus"
       size="s"
       appearance="primary"
+      [disabled]="patientsResource.isLoading()"
       (click)="createPatientModal()"
     >
       Nuevo paciente
     </button>
+
   </div>
 
-  <!-- Tabla -->
-  <app-patient-table
-    [patients]="data()"
-    [(selected)]="selected"
-    [loadingPatientId]="loadingPatientId()"
-    [selectedPatient]="selectedPatient()"
-    (edit)="editPatientModal($event)"
-    (more)="morePatient($event)"
-    (closeDetail)="selectedPatient.set(null)"
-  />
+  <!-- Error -->
+  @if (patientsResource.error(); as error) {
 
-  <!-- Paginación -->
-  <tui-table-pagination
-    [items]="sizeOptions"
-    [total]="total()"
-    [size]="size()"
-    [page]="page()"
-    (pageChange)="changePage($event)"
-    (sizeChange)="changeSize($event)"
-  />
+    <div
+      class="flex w-full items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700"
+    >
+      <div class="flex flex-col">
+        <span class="font-medium">
+          Error al cargar los pacientes
+        </span>
+
+        <span class="text-sm">
+          Ocurrió un problema al obtener la información.
+        </span>
+      </div>
+
+      <button
+        tuiButton
+        size="s"
+        appearance="secondary"
+        type="button"
+        (click)="patientsResource.reload()"
+      >
+        Reintentar
+      </button>
+    </div>
+
+  }
+
+  <!-- Tabla -->
+  @if (!patientsResource.error()) {
+
+    <app-patient-table
+      [patients]="patientsResource.value()?.content ?? []"
+      [loading]="patientsResource.isLoading()"
+      [(selected)]="selected"
+      [loadingPatientId]="loadingPatientId()"
+      [selectedPatient]="selectedPatient()"
+      (edit)="editPatientModal($event)"
+      (more)="morePatient($event)"
+      (closeDetail)="selectedPatient.set(null)"
+    />
+
+    <!-- Paginación -->
+    <tui-table-pagination
+      [items]="sizeOptions"
+      [total]="patientsResource.value()?.totalElements ?? 0"
+      [size]="size()"
+      [page]="page()"
+      (pageChange)="changePage($event)"
+      (sizeChange)="changeSize($event)"
+    />
+
+  }
+
 </div>

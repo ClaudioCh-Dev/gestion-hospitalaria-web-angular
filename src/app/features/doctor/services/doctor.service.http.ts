@@ -113,13 +113,8 @@ export class DoctorHttpService implements DoctorService {
     );
   }
 
-  findAllSpecialties(
-    page: number = 0,
-    size: number = 10,
-  ): Observable<PageResponse<SpecialtyResponse>> {
-    const params = new HttpParams().set('page', page).set('size', size);
-
-    return this.http.get<PageResponse<SpecialtyResponse>>(`${this.apiUrl}/specialties`, { params });
+  findAllSpecialties(): Observable<SpecialtyResponse[]> {
+    return this.http.get<SpecialtyResponse[]>(`${this.apiUrl}/specialties`);
   }
 
   createSpecialty(specialty: CreateSpecialtyRequest): Observable<SpecialtyResponse> {

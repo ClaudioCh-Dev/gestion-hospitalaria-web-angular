@@ -1,6 +1,7 @@
 import { Observable } from 'rxjs';
 
 import { PageResponse } from '../../../shared/models/page.type';
+
 import {
   CreateDoctorRequest,
   UpdateDoctorRequest,
@@ -35,10 +36,7 @@ export abstract class DoctorService {
     doctor: UpdateDoctorRequest,
   ): Observable<DoctorResponse>;
 
-  abstract findAllSpecialties(
-    page?: number,
-    size?: number,
-  ): Observable<PageResponse<SpecialtyResponse>>;
+  abstract findAllSpecialties(): Observable<SpecialtyResponse[]>;
 
   abstract createSpecialty(
     specialty: CreateSpecialtyRequest,

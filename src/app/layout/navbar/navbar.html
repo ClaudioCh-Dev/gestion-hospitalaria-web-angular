@@ -3,25 +3,57 @@
   class="flex items-center justify-between"
   style="background: linear-gradient(90deg, rgb(15, 23, 42), rgb(30, 41, 59))"
 >
-<span tuiNavigationLogo class="flex items-center gap-3">
-  <tui-icon
-    icon="@tui.heart-pulse"
-    class="text-white"
-    style="font-size: 28px;"
-  />
+  <button
+    class="block md:hidden!"
+    portal
+    title="Menu"
+    tuiIconButton
+    tuiNavigationDrawer
+    type="button"
+    [(open)]="openSandwich"
+  >
+    <tui-data-list>
+      @for (group of groupsOptions(); track group.item.route) {
+        <!-- Item principal -->
+        <button
+          tuiOption
+          type="button"
+          [iconStart]="group.item.icon"
+          (click)="openSandwich.set(false)"
+          [routerLink]="group.item.route"
+          size="xs"
+        >
+          {{ group.item.label }}
+        </button>
 
-  <span class="flex items-baseline gap-2">
-    <span class="text-xl font-semibold tracking-tight text-white">
-      Aura
-    </span>
+        <!-- Hijos -->
+        @if (group.children?.length) {
+          @for (child of group.children; track child.route) {
+            <button
+              tuiOption
+              type="button"
+              [iconStart]="child.icon"
+              (click)="openSandwich.set(false)"
+              size="xs"
+            >
+              {{ child.label }}
+            </button>
+          }
+        }
+      }
+    </tui-data-list>
+  </button>
+  <span tuiNavigationLogo class="flex items-center gap-3">
+    <tui-icon icon="@tui.heart-pulse" class="text-white" style="font-size: 28px" />
 
-    <span
-      class="text-xs font-semibold uppercase tracking-[0.25em] text-slate-300"
-    >
-      Bioclinic
+    <span class="flex items-baseline gap-2">
+      <span class="text-xl font-semibold tracking-tight text-white"> Aura </span>
+
+      <span class="text-xs font-semibold uppercase tracking-[0.25em] text-slate-300">
+        Bioclinic
+      </span>
     </span>
   </span>
-</span>
   <div class="flex items-center gap-2">
     <button
       iconStart="@tui.bell"
@@ -51,8 +83,36 @@
       <tui-badge-notification />
     </button>
 
-    <button tuiIconButton type="button">
+    <button
+      tuiIconButton
+      type="button"
+      [attr.aria-expanded]="avatarOpen()"
+      [tuiDropdown]="avatarDropdown"
+      [tuiDropdownManual]="avatarOpen()"
+      [tuiObscuredEnabled]="avatarOpen()"
+      (click)="onAvatarClick()"
+      (tuiActiveZoneChange)="onAvatarActiveZone($event)"
+      (tuiObscured)="onAvatarObscured($event)"
+    >
       <tui-avatar tuiAvatar="AI" />
+
+      <ng-template #avatarDropdown>
+        <tui-data-list>
+          <button tuiOption type="button" (click)="onProfile()">
+            <tui-icon icon="@tui.user" />
+            <span tuiTitle>
+              Perfil
+            </span>
+          </button>
+
+          <button tuiOption type="button" (click)="onLogout()">
+            <tui-icon icon="@tui.log-out" />
+            <span tuiTitle>
+              Cerrar sesión
+            </span>
+          </button>
+        </tui-data-list>
+      </ng-template>
     </button>
   </div>
 </header>

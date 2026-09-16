@@ -1,0 +1,53 @@
+<div tuiAppearance="secondary" tuiCardLarge>
+
+  <!-- Header -->
+  <header tuiHeader>
+
+    <div class="flex flex-col gap-1">
+
+      <div class="flex items-center gap-2">
+
+        <span class="text-xs font-medium text-slate-400">
+          {{ date() | date: 'dd MMM yyyy' }}
+        </span>
+
+        <span class="text-xs text-slate-400">
+          •
+        </span>
+
+        <span class="text-xs text-slate-400">
+          {{ date() | date: 'HH:mm' }}
+        </span>
+
+      </div>
+
+      <h2 tuiTitle>
+        {{ title() }}
+      </h2>
+
+    </div>
+
+    <aside tuiAccessories class="ml-auto!">
+
+      <span
+        class="rounded-full px-2.5 py-1 text-xs font-medium"
+        [class]="statusClass()"
+      >
+        {{ status() }}
+      </span>
+
+    </aside>
+
+  </header>
+
+  <!-- Contenido específico -->
+  <section class="pt-2!">
+    <ng-content select="[card-content]" />
+  </section>
+
+  <!-- Footer específico -->
+  <footer class="mt-4! flex items-center justify-between">
+    <ng-content select="[card-footer]" />
+  </footer>
+
+</div>

@@ -1,14 +1,11 @@
 import {
   ChangeDetectionStrategy,
   Component,
-  inject,
   input,
   model,
   output,
   signal,
 } from '@angular/core';
-
-import { PatientDetailComponent } from '../patient-detail/patient-detail';
 
 import { FormsModule } from '@angular/forms';
 
@@ -17,7 +14,6 @@ import {
   TuiCell,
   TuiCheckbox,
   TuiDropdown,
-  TuiIcon,
   TuiInput,
   TuiLoader,
   TuiTitle,
@@ -26,25 +22,33 @@ import {
 import {
   TuiAutoColorPipe,
   TuiAvatar,
-  TuiChevron,
   TuiComboBox,
   TuiDataListWrapper,
   TuiInitialsPipe,
   TuiItemsWithMore,
   TuiSelect,
+  TuiSkeleton,
   TuiStatus,
 } from '@taiga-ui/kit';
 
-import { PatientDetailResponse, PatientResponse } from '../../model';
+import {
+  TuiTable,
+  TuiTableControl,
+} from '@taiga-ui/addon-table';
 
-import { TuiTable, TuiTableControl, TuiTablePagination } from '@taiga-ui/addon-table';
+import { PatientDetailComponent } from '../patient-detail/patient-detail';
 
-import { PatientService } from '../../services/patient.service';
+import {
+  PatientDetailResponse,
+  PatientResponse,
+} from '../../model';
 
 @Component({
   selector: 'app-patient-table',
   imports: [
     FormsModule,
+
+    // Taiga UI
     TuiAutoColorPipe,
     TuiAvatar,
     TuiButton,
@@ -56,43 +60,69 @@ import { PatientService } from '../../services/patient.service';
     TuiInitialsPipe,
     TuiInput,
     TuiItemsWithMore,
+    TuiLoader,
     TuiSelect,
     TuiStatus,
     TuiTable,
     TuiTableControl,
     TuiTitle,
+    // Components
     PatientDetailComponent,
-    TuiLoader,
   ],
   templateUrl: './patient-table.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PatientTableComponent {
-  private readonly patientService = inject(PatientService);
+
+  // ============================
+  // Inputs
+  // ============================
 
   readonly patients = input<PatientResponse[]>([]);
 
+  readonly loading = input(false);
+
+  readonly selectedPatient =
+    input<PatientDetailResponse | null>(null);
+
+  readonly loadingPatientId =
+    input<number | null>(null);
+
+  // ============================
+  // Model
+  // ============================
+
   readonly selected = model<PatientResponse[]>([]);
+
+  // ============================
+  // Outputs
+  // ============================
 
   readonly edit = output<PatientResponse>();
 
   readonly more = output<PatientResponse>();
 
-  readonly selectedPatient = input<PatientDetailResponse | null>(null);
+  readonly closeDetail = output<void>();
 
-  readonly loadingPatientId = input<number | null>(null);
+  // ============================
+  // Estado interno
+  // ============================
 
   readonly loadingAction = signal<string | null>(null);
 
-  readonly closeDetail = output<void>();
+  // ============================
+  // Acciones
+  // ============================
 
   protected morePatient(patient: PatientResponse): void {
     this.loadingAction.set('more');
+
     this.more.emit(patient);
   }
 
   protected editPatient(patient: PatientResponse): void {
     this.loadingAction.set('edit');
+
     this.edit.emit(patient);
   }
 }

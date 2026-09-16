@@ -1,8 +1,13 @@
 import { Routes } from '@angular/router';
 import { Layout } from './layout/layout';
 import { DashboardPage } from './features/dashboard/page/dashboard-page/dashboard-page';
+import { Login } from './features/auth/pages/login/login';
 
 export const routes: Routes = [
+  {
+    path: 'login',
+    component: Login,
+  },
   {
     path: '',
     component: Layout,
@@ -37,6 +42,18 @@ export const routes: Routes = [
             .then((m) => m.AppointmentCreatePage),
       },
       {
+        path: 'medical-records',
+        loadComponent: () =>
+          import('./features/medical-history/pages/patient-history-page/patient-history-page')
+            .then((m) => m.MedicalRecords),
+      },
+      {
+        path: 'billing',
+        loadComponent: () =>
+          import('./features/billing/pages/billing-page/billing-page')
+            .then((m) => m.BillingPage),
+      },
+      {
         path: '',
         redirectTo: 'dashboard',
         pathMatch: 'full',
@@ -47,10 +64,5 @@ export const routes: Routes = [
         pathMatch: 'full',
       },
     ],
-  },
-  {
-    path: 'login',
-    loadComponent: () =>
-      import('./features/auth/pages/login/login').then((m) => m.Login),
   },
 ];

@@ -1,56 +1,123 @@
-import { ChangeDetectionStrategy, Component, input, model, output, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  input,
+  model,
+  output,
+  signal,
+} from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 
-import { TuiButton, TuiCell, TuiCheckbox, TuiTitle } from '@taiga-ui/core';
+import {
+  TuiButton,
+  TuiCell,
+  TuiCheckbox,
+  TuiLoader,
+  TuiTitle,
+} from '@taiga-ui/core';
 
-import { TuiAutoColorPipe, TuiAvatar, TuiInitialsPipe, TuiStatus } from '@taiga-ui/kit';
+import {
+  TuiAutoColorPipe,
+  TuiAvatar,
+  TuiInitialsPipe,
+  TuiStatus,
+} from '@taiga-ui/kit';
 
-import { TuiTable, TuiTableControl } from '@taiga-ui/addon-table';
+import {
+  TuiTable,
+  TuiTableControl,
+} from '@taiga-ui/addon-table';
 
 import { DoctorResponse } from '../../model/doctor.dtos';
+
 import { DoctorDetailComponent } from '../doctor-detail/doctor-detail';
+
+import { TimeRangePipe } from '@shared/pipes/time-range-pipe';
 
 @Component({
   selector: 'app-doctor-table',
-
   imports: [
     FormsModule,
-
     TuiAutoColorPipe,
     TuiAvatar,
     TuiButton,
     TuiCell,
     TuiCheckbox,
     TuiInitialsPipe,
+    TuiLoader,
     TuiStatus,
-
     TuiTable,
     TuiTableControl,
     TuiTitle,
-
-    DoctorDetailComponent
+    DoctorDetailComponent,
+    TimeRangePipe,
   ],
-
   templateUrl: './doctor-table.html',
-
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DoctorTableComponent {
-  readonly doctors = input<DoctorResponse[]>([]);
 
-  readonly selected = model<DoctorResponse[]>([]);
+  // =====================================================
+  // INPUTS
+  // =====================================================
 
-  readonly edit = output<DoctorResponse>();
+  readonly doctors =
+    input<DoctorResponse[]>([]);
 
-  readonly more = output<DoctorResponse>();
+  readonly loading =
+    input(false);
 
-  protected readonly selectedDoctor = signal<DoctorResponse | null>(null);
+  readonly loadingDoctorId =
+    input<number | null>(null);
 
-  protected moreDoctor(doctor: DoctorResponse): void {
-    console.log('Doctor seleccionado:', doctor);
+  readonly loadingAction =
+    input<'edit' | 'more' | null>(null);
 
-    this.selectedDoctor.set(doctor);
+  // =====================================================
+  // SELECTION
+  // =====================================================
+
+  readonly selected =
+    model<DoctorResponse[]>([]);
+
+  // =====================================================
+  // OUTPUTS
+  // =====================================================
+
+  readonly edit =
+    output<DoctorResponse>();
+
+  readonly more =
+    output<DoctorResponse>();
+
+  // =====================================================
+  // DETAIL
+  // =====================================================
+
+  readonly selectedDoctor =
+  input<DoctorResponse | null>(null);
+
+  readonly closeDetail = output<void>();
+
+  // =====================================================
+  // EDIT
+  // =====================================================
+
+  protected editDoctor(
+    doctor: DoctorResponse,
+  ): void {
+
+    this.edit.emit(doctor);
+  }
+
+  // =====================================================
+  // MORE
+  // =====================================================
+
+  protected moreDoctor(
+    doctor: DoctorResponse,
+  ): void {
 
     this.more.emit(doctor);
   }

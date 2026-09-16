@@ -1,28 +1,36 @@
 import { Injectable, inject, signal } from '@angular/core';
-
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { Observable, of, throwError } from 'rxjs';
+import { delay } from 'rxjs/operators';
 
-import { Gender, PatientDetailResponse, PatientRequest, PatientResponse } from '../model';
+import {
+  Gender,
+  PatientDetailResponse,
+  PatientRequest,
+  PatientResponse,
+} from '../model';
 
 import { PageResponse } from '@shared/models/page.type';
-
 import { PatientService } from './patient.service';
 
 import { PATIENTS_MOCK } from '../mocks/patient.mocks';
-
 import { PATIENT_DETAILS_MOCK } from '../mocks/patient.detail.mocks';
 
 import { ErrorHandlerService } from '@core/services/error-handler.service';
-
 import { GENDERS } from '@patients/constans/patient-options';
-
 import { ProblemDetailMicroservice } from '@shared/models/problem.type';
 
 @Injectable()
 export class PatientMockService extends PatientService {
+
   private readonly errorHandler = inject(ErrorHandlerService);
+
+  // =====================================================
+  // MOCK DELAY
+  // =====================================================
+
+  private readonly MOCK_DELAY = 1500;
 
   // =====================================================
   // PATIENTS
@@ -50,17 +58,13 @@ export class PatientMockService extends PatientService {
     detail: string,
     code?: string,
   ): Observable<never> {
+
     const problem: ProblemDetailMicroservice = {
       type: 'about:blank',
-
       title,
-
       status,
-
       detail,
-
       instance: undefined,
-
       code,
     };
 
@@ -68,9 +72,7 @@ export class PatientMockService extends PatientService {
 
     const error = new HttpErrorResponse({
       status,
-
       statusText: title,
-
       error: problem,
     });
 
@@ -82,16 +84,28 @@ export class PatientMockService extends PatientService {
   // =====================================================
   // FIND ALL
   // =====================================================
+
   findAll(
     page: number = 0,
     size: number = 10,
     gender?: Gender,
   ): Observable<PageResponse<PatientResponse>> {
+
     let patients = this._patients().content;
 
+    // -----------------------------------------
+    // FILTER GENDER
+    // -----------------------------------------
+
     if (gender) {
-      patients = patients.filter((patient) => patient.gender === gender.toString());
+      patients = patients.filter(
+        (patient) => patient.gender === gender.toString(),
+      );
     }
+
+    // -----------------------------------------
+    // PAGINATION
+    // -----------------------------------------
 
     const totalElements = patients.length;
     const totalPages = Math.ceil(totalElements / size);
@@ -101,7 +115,11 @@ export class PatientMockService extends PatientService {
 
     const content = patients.slice(start, end);
 
-    return of({
+    // -----------------------------------------
+    // RESPONSE
+    // -----------------------------------------
+
+    const response: PageResponse<PatientResponse> = {
       content,
       totalElements,
       totalPages,
@@ -110,7 +128,11 @@ export class PatientMockService extends PatientService {
       first: page === 0,
       last: page >= totalPages - 1,
       numberOfElements: content.length,
-    });
+    };
+
+    return of(response).pipe(
+      delay(this.MOCK_DELAY),
+    );
   }
 
   // =====================================================
@@ -118,7 +140,10 @@ export class PatientMockService extends PatientService {
   // =====================================================
 
   findById(id: number): Observable<PatientDetailResponse> {
-    const patient = this._patientDetails().find((item) => item.id === id);
+
+    const patient = this._patientDetails().find(
+      (item) => item.id === id,
+    );
 
     if (!patient) {
       return this.handleError(
@@ -129,15 +154,22 @@ export class PatientMockService extends PatientService {
       );
     }
 
-    return of(patient);
+    return of(patient).pipe(
+      delay(this.MOCK_DELAY),
+    );
   }
 
   // =====================================================
   // FIND BY DOCUMENT NUMBER
   // =====================================================
 
-  findByDocumentNumber(documentNumber: string): Observable<PatientResponse> {
-    const patient = this._patients().content.find((item) => item.documentNumber === documentNumber);
+  findByDocumentNumber(
+    documentNumber: string,
+  ): Observable<PatientResponse> {
+
+    const patient = this._patients().content.find(
+      (item) => item.documentNumber === documentNumber,
+    );
 
     if (!patient) {
       return this.handleError(
@@ -148,16 +180,22 @@ export class PatientMockService extends PatientService {
       );
     }
 
-    return of(patient);
+    return of(patient).pipe(
+      delay(this.MOCK_DELAY),
+    );
   }
 
   // =====================================================
   // CREATE
   // =====================================================
 
-  create(patient: PatientRequest): Observable<PatientResponse> {
+  create(
+    patient: PatientRequest,
+  ): Observable<PatientResponse> {
+
     const documentExists = this._patients().content.some(
-      (item) => item.documentNumber === patient.documentNumber,
+      (item) =>
+        item.documentNumber === patient.documentNumber,
     );
 
     if (documentExists) {
@@ -173,41 +211,42 @@ export class PatientMockService extends PatientService {
 
     const newPatient: PatientResponse = {
       id,
-
       documentNumber: patient.documentNumber,
-
       firstName: patient.firstName,
-
       lastName: patient.lastName,
-
       birthDate: patient.birthDate,
-
       phone: patient.phone,
-
       email: patient.email,
-
       active: true,
     };
 
     this._patients.update((current) => ({
       ...current,
-
-      content: [...current.content, newPatient],
-
+      content: [
+        ...current.content,
+        newPatient,
+      ],
       totalElements: current.totalElements + 1,
-
       numberOfElements: current.numberOfElements + 1,
     }));
 
-    return of(newPatient);
+    return of(newPatient).pipe(
+      delay(this.MOCK_DELAY),
+    );
   }
 
   // =====================================================
   // UPDATE
   // =====================================================
 
-  update(id: number, patient: PatientRequest): Observable<PatientResponse> {
-    const existing = this._patients().content.find((item) => item.id === id);
+  update(
+    id: number,
+    patient: PatientRequest,
+  ): Observable<PatientResponse> {
+
+    const existing = this._patients().content.find(
+      (item) => item.id === id,
+    );
 
     // -----------------------------------------
     // NOT FOUND
@@ -227,7 +266,9 @@ export class PatientMockService extends PatientService {
     // -----------------------------------------
 
     const documentExists = this._patients().content.some(
-      (item) => item.documentNumber === patient.documentNumber && item.id !== id,
+      (item) =>
+        item.documentNumber === patient.documentNumber &&
+        item.id !== id,
     );
 
     if (documentExists) {
@@ -245,20 +286,17 @@ export class PatientMockService extends PatientService {
 
     const updatedPatient: PatientResponse = {
       ...existing,
-
       documentNumber: patient.documentNumber,
-
       firstName: patient.firstName,
-
       lastName: patient.lastName,
-
       birthDate: patient.birthDate,
-
       phone: patient.phone,
-
       email: patient.email,
-
-      gender: (GENDERS.find((gender) => gender.id === patient.gender)?.value) ?? Gender.MALE.toString(),
+      gender:
+        GENDERS.find(
+          (gender) => gender.id === patient.gender,
+        )?.value ??
+        Gender.MALE.toString(),
     };
 
     // -----------------------------------------
@@ -267,8 +305,12 @@ export class PatientMockService extends PatientService {
 
     this._patients.update((current) => ({
       ...current,
-
-      content: current.content.map((item) => (item.id === id ? updatedPatient : item)),
+      content: current.content.map(
+        (item) =>
+          item.id === id
+            ? updatedPatient
+            : item,
+      ),
     }));
 
     // -----------------------------------------
@@ -287,7 +329,9 @@ export class PatientMockService extends PatientService {
       ),
     );
 
-    return of(updatedPatient);
+    return of(updatedPatient).pipe(
+      delay(this.MOCK_DELAY),
+    );
   }
 
   // =====================================================
@@ -295,7 +339,10 @@ export class PatientMockService extends PatientService {
   // =====================================================
 
   delete(id: number): Observable<void> {
-    const exists = this._patients().content.some((item) => item.id === id);
+
+    const exists = this._patients().content.some(
+      (item) => item.id === id,
+    );
 
     if (!exists) {
       return this.handleError(
@@ -307,21 +354,28 @@ export class PatientMockService extends PatientService {
     }
 
     this._patients.update((current) => {
-      const content = current.content.filter((item) => item.id !== id);
+
+      const content = current.content.filter(
+        (item) => item.id !== id,
+      );
 
       return {
         ...current,
-
         content,
-
         totalElements: content.length,
-
         numberOfElements: content.length,
       };
     });
 
-    this._patientDetails.update((current) => current.filter((item) => item.id !== id));
+    this._patientDetails.update(
+      (current) =>
+        current.filter(
+          (item) => item.id !== id,
+        ),
+    );
 
-    return of(void 0);
+    return of(void 0).pipe(
+      delay(this.MOCK_DELAY),
+    );
   }
 }

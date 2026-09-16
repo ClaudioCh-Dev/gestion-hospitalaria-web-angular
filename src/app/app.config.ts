@@ -1,6 +1,6 @@
 import { provideTaiga } from '@taiga-ui/core';
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
-import { provideRouter } from '@angular/router';
+import { provideRouter, withViewTransitions } from '@angular/router';
 import { TUI_LANGUAGE, TUI_SPANISH_LANGUAGE } from '@taiga-ui/i18n';
 import { routes } from './app.routes';
 import { signal } from '@angular/core';
@@ -43,5 +43,7 @@ export const appConfig: ApplicationConfig = {
         ? DoctorMockService
         : DoctorHttpService,
     },
+
+    provideRouter(routes, withViewTransitions()),
   ],
 };

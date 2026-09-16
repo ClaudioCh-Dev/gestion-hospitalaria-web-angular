@@ -1,0 +1,483 @@
+<div class="flex w-full flex-col gap-4">
+
+  <!-- Header -->
+  <div>
+    <h1 class="text-xl font-semibold text-slate-900">
+      Facturación
+    </h1>
+
+    <p class="mt-1 text-sm text-slate-500">
+      Gestiona los registros de facturación y pagos de las citas médicas.
+    </p>
+  </div>
+
+  <!-- Estadísticas -->
+  <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+
+    @for (stat of stats; track stat.title) {
+
+      <div
+        class="rounded-lg! border! border-slate-200! bg-white! px-4! py-4! shadow-sm!"
+      >
+
+        <header class="flex items-center justify-between">
+
+          <div>
+            <p class="text-xs text-slate-500">
+              {{ stat.title }}
+            </p>
+
+            <h2 class="mt-1 text-xl font-semibold text-slate-900">
+              {{ stat.value }}
+            </h2>
+          </div>
+
+          <div
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600"
+          >
+            <tui-icon [icon]="stat.icon" />
+          </div>
+
+        </header>
+
+      </div>
+
+    }
+
+  </div>
+
+  <!-- Buscador -->
+  <search tuiSearch>
+
+    <form [formGroup]="form">
+
+      <!-- Primera fila -->
+      <fieldset tuiTextfieldSize="s">
+
+        <!-- Buscar -->
+        <tui-textfield iconStart="@tui.search">
+
+          <input
+            formControlName="search"
+            placeholder="Paciente o número de cita..."
+            tuiInput
+          />
+
+        </tui-textfield>
+
+        <!-- Estado -->
+        <tui-textfield tuiChevron>
+
+          <input
+            formControlName="status"
+            placeholder="Estado"
+            tuiSelect
+          />
+
+          <tui-data-list-wrapper
+            *tuiDropdown
+            [items]="statuses"
+          />
+
+        </tui-textfield>
+
+        <!-- Buscar -->
+        <button
+          size="s"
+          tuiButton
+          type="button"
+          (click)="searchBillings()"
+        >
+          Buscar
+        </button>
+
+      </fieldset>
+
+      <!-- Segunda fila -->
+      <fieldset>
+
+        <!-- Ordenar -->
+        <tui-textfield tuiChevron>
+
+          <input
+            formControlName="filter"
+            placeholder="Ordenar por"
+            tuiSelect
+          />
+
+          <tui-data-list-wrapper
+            *tuiDropdown
+            [items]="filters"
+          />
+
+        </tui-textfield>
+
+        <!-- Limpiar -->
+        <button
+          appearance="flat"
+          iconStart="@tui.rotate-cw"
+          size="xs"
+          tuiButton
+          type="reset"
+          [disabled]="!count()"
+        >
+          Limpiar {{ count() ? `(${count()})` : '' }}
+        </button>
+
+        <!-- Descargar -->
+        <button
+          iconStart="@tui.cloud-download"
+          tuiLink
+          type="button"
+          [style.margin-inline-start]="'auto'"
+        >
+          Descargar
+        </button>
+
+      </fieldset>
+
+    </form>
+
+  </search>
+
+  <!-- Facturación -->
+  <div
+    class="grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-md xl:grid-cols-2"
+  >
+
+    @for (record of page.content; track record.id) {
+
+      <div
+        tuiAppearance="secondary"
+        tuiCardLarge
+      >
+
+        <!-- Header -->
+        <header tuiHeader>
+
+          <div class="flex flex-col gap-1">
+
+            <div class="flex items-center gap-2">
+
+              <span class="text-xs font-medium text-slate-400">
+                {{ record.issuedAt | date: 'dd MMM yyyy' }}
+              </span>
+
+              <span class="text-xs text-slate-400">
+                •
+              </span>
+
+              <span class="text-xs text-slate-400">
+                {{ record.issuedAt | date: 'HH:mm' }}
+              </span>
+
+            </div>
+
+            <h2 tuiTitle>
+              Factura #{{ record.id }}
+            </h2>
+
+          </div>
+
+          <!-- Estado -->
+          <aside tuiAccessories class="ml-auto!">
+
+            <span
+              class="rounded-full px-2.5 py-1 text-xs font-medium"
+              [class]="getStatusClass(record.status)"
+            >
+              {{ getStatusLabel(record.status) }}
+            </span>
+
+          </aside>
+
+        </header>
+
+        <!-- Información -->
+        <section
+          class="grid grid-cols-1 gap-5 pt-2! md:grid-cols-3 md:pl-8"
+        >
+
+          <!-- Paciente -->
+          <div class="flex items-center gap-3">
+
+            <tui-icon
+              icon="@tui.user"
+              class="shrink-0 text-slate-400"
+            />
+
+            <div>
+
+              <p class="text-xs text-slate-400">
+                Paciente
+              </p>
+
+              <p class="mt-1 text-sm font-medium text-slate-800">
+                {{ record.patientName }}
+              </p>
+
+            </div>
+
+          </div>
+
+          <!-- Cita -->
+          <div class="flex items-center gap-3">
+
+            <tui-icon
+              icon="@tui.calendar"
+              class="shrink-0 text-slate-400"
+            />
+
+            <div>
+
+              <p class="text-xs text-slate-400">
+                Cita
+              </p>
+
+              <p class="mt-1 text-sm font-medium text-slate-800">
+                #{{ record.appointmentId }}
+              </p>
+
+            </div>
+
+          </div>
+
+          <!-- Monto -->
+          <div class="flex items-center gap-3">
+
+            <tui-icon
+              icon="@tui.wallet"
+              class="shrink-0 text-slate-400"
+            />
+
+            <div>
+
+              <p class="text-xs text-slate-400">
+                Monto
+              </p>
+
+              <p class="mt-1 text-sm font-semibold text-slate-900">
+                {{ record.currency }} {{ record.amount | number: '1.2-2' }}
+              </p>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- Segunda información -->
+        <section
+          class="mt-4! grid grid-cols-1 gap-5 md:grid-cols-3 md:pl-8"
+        >
+
+          <!-- Estado -->
+          <div class="flex items-center gap-3">
+
+            <tui-icon
+              icon="@tui.circle-check"
+              class="shrink-0 text-slate-400"
+            />
+
+            <div>
+
+              <p class="text-xs text-slate-400">
+                Estado
+              </p>
+
+              <p class="mt-1 text-sm font-medium text-slate-700">
+                {{ getStatusLabel(record.status) }}
+              </p>
+
+            </div>
+
+          </div>
+
+          <!-- Fecha emisión -->
+          <div class="flex items-center gap-3">
+
+            <tui-icon
+              icon="@tui.file-text"
+              class="shrink-0 text-slate-400"
+            />
+
+            <div>
+
+              <p class="text-xs text-slate-400">
+                Emitida
+              </p>
+
+              <p class="mt-1 text-sm text-slate-700">
+                {{ record.issuedAt | date: 'dd/MM/yyyy HH:mm' }}
+              </p>
+
+            </div>
+
+          </div>
+
+          <!-- Fecha pago -->
+          <div class="flex items-center gap-3">
+
+            <tui-icon
+              icon="@tui.credit-card"
+              class="shrink-0 text-slate-400"
+            />
+
+            <div>
+
+              <p class="text-xs text-slate-400">
+                Fecha de pago
+              </p>
+
+              <p class="mt-1 text-sm text-slate-700">
+
+                @if (record.paidAt) {
+                  {{ record.paidAt | date: 'dd/MM/yyyy HH:mm' }}
+                } @else {
+                  <span class="text-slate-400">
+                    Pendiente
+                  </span>
+                }
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </section>
+
+        <!-- Footer -->
+        <footer class="mt-5! flex items-center justify-between">
+
+          <div class="flex items-center gap-4">
+
+            <span class="text-xs text-slate-400">
+              Factura #{{ record.id }}
+            </span>
+
+            <span class="text-sm font-semibold text-slate-900">
+              {{ record.currency }}
+              {{ record.amount | number: '1.2-2' }}
+            </span>
+
+          </div>
+
+          <div class="flex items-center gap-2">
+
+            @if (record.status === 'PENDING') {
+
+              <button
+                appearance="primary"
+                size="s"
+                tuiButton
+                type="button"
+                (click)="payBilling(record)"
+              >
+                Cobrar
+
+                <tui-icon icon="@tui.credit-card" />
+              </button>
+
+            } @else {
+
+              <button
+                appearance="secondary"
+                size="s"
+                tuiButton
+                type="button"
+                (click)="viewDetail(record)"
+              >
+                Ver detalle
+
+                <tui-icon icon="@tui.arrow-right" />
+              </button>
+
+            }
+
+          </div>
+
+        </footer>
+
+      </div>
+
+    } @empty {
+
+      <div
+        appearance="floating"
+        tuiCardLarge
+        class="py-12!"
+      >
+
+        <section
+          class="flex flex-col items-center justify-center text-center"
+        >
+
+          <tui-icon
+            icon="@tui.wallet"
+            class="mb-3 text-slate-400"
+          />
+
+          <h3 class="text-sm font-semibold text-slate-800">
+            No hay registros de facturación
+          </h3>
+
+          <p class="mt-1 text-sm text-slate-500">
+            No se encontraron facturas para mostrar.
+          </p>
+
+        </section>
+
+      </div>
+
+    }
+
+  </div>
+
+  <!-- Paginación -->
+  <div class="flex items-center justify-between">
+
+    <span class="text-sm text-slate-500">
+
+      Mostrando
+      {{ page.numberOfElements }}
+      de
+      {{ page.totalElements }}
+      registros
+
+    </span>
+
+    <div class="flex items-center gap-2">
+
+      <button
+        appearance="secondary"
+        size="s"
+        tuiButton
+        type="button"
+        [disabled]="page.first"
+        (click)="previousPage()"
+      >
+        <tui-icon icon="@tui.chevron-left" />
+      </button>
+
+      <span class="text-sm text-slate-600">
+        Página {{ page.number + 1 }}
+        de {{ page.totalPages }}
+      </span>
+
+      <button
+        appearance="secondary"
+        size="s"
+        tuiButton
+        type="button"
+        [disabled]="page.last"
+        (click)="nextPage()"
+      >
+        <tui-icon icon="@tui.chevron-right" />
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, input, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import { TuiActiveZone, TuiObscured } from '@taiga-ui/cdk';
 import {
@@ -12,6 +12,8 @@ import {
 } from '@taiga-ui/core';
 import { TuiAvatar, TuiBadge, TuiBadgeNotification, TuiChevron, TuiFade, TuiTabs, TuiBadgedContentComponent, TuiBadgedContent } from '@taiga-ui/kit';
 import { TuiNavigation} from '@taiga-ui/layout';
+import { SidebarGroup } from '../types';
+import { RouterLink } from '@angular/router';
  
 	interface ExampleAction {
     readonly description: string;
@@ -36,6 +38,8 @@ import { TuiNavigation} from '@taiga-ui/layout';
     TuiObscured,
     TuiTitle,
     TuiBadgedContent,
+    RouterLink,
+    TuiOption,
 ],
   selector: 'app-navbar',
   templateUrl: 'navbar.html',
@@ -43,6 +47,9 @@ import { TuiNavigation} from '@taiga-ui/layout';
 })
 export class Navbar {
 
+    readonly groupsOptions = input<SidebarGroup[]>([]);
+
+    protected readonly openSandwich = signal(false);
 
      protected readonly actions: readonly ExampleAction[] = [
         {
@@ -82,4 +89,39 @@ export class Navbar {
         this.selected.set(action);
         this.open.set(false);
     }
+
+
+    protected readonly avatarOpen = signal(false);
+
+protected onAvatarClick(): void {
+  this.avatarOpen.update((open) => !open);
+}
+
+protected onAvatarActiveZone(
+  event: any
+): void {
+  if (!event) {
+    this.avatarOpen.set(false);
+  }
+}
+
+protected onAvatarObscured(
+  event: boolean
+): void {
+  if (event) {
+    this.avatarOpen.set(false);
+  }
+}
+
+protected onProfile(): void {
+  this.avatarOpen.set(false);
+
+  // this.router.navigate(['/profile']);
+}
+
+protected onLogout(): void {
+  this.avatarOpen.set(false);
+
+  // this.authService.logout();
+}
 }

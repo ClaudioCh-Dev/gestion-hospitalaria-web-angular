@@ -1,8 +1,9 @@
 <div class="flex w-full flex-col gap-5">
 
+  <!-- Header -->
   <div class="flex w-full items-center gap-4">
 
-    <!-- Filtros + Creación -->
+    <!-- Filtros -->
     <div class="flex-1">
       <app-doctor-filters
         (filtersChange)="onFiltersChange($event)"
@@ -23,19 +24,25 @@
 
   </div>
 
-
   <!-- Tabla -->
   <app-doctor-table
-    [doctors]="data()"
+    [doctors]="doctorsResource.value()?.content ?? []"
+    [loading]="doctorsResource.isLoading()"
+    [loadingDoctorId]="loadingDoctorId()"
+    [loadingAction]="loadingAction()"
     [(selected)]="selected"
+    [selectedDoctor]="selectedDoctor()"
     (edit)="editDoctorModal($event)"
+    (more)="moreDoctor($event)"
+    (closeDetail)="selectedDoctor.set(null)"
   />
-
 
   <!-- Paginación -->
   <tui-table-pagination
     [items]="sizeOptions"
-    [total]="total()"
+    [total]="
+      doctorsResource.value()?.totalElements ?? 0
+    "
     [size]="size()"
     [page]="page()"
     (pageChange)="changePage($event)"
