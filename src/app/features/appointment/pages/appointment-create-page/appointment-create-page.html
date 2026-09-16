@@ -164,6 +164,7 @@
       <!-- HORA -->
       <!-- ====================================== -->
 
+      <!-- 
       <tui-textfield tuiTextfieldSize="m" [disabledItemHandler]="disabledItemHandler">
         <input
           placeholder="Click me to open dropdown"
@@ -173,10 +174,33 @@
 
         <tui-data-list-wrapper *tuiDropdown [items]="items | tuiFilterByInput: filter" />
         <span><tui-error formControlName="scheduledTime" /></span>
-      </tui-textfield>
-
-      <div></div>
-
+      </tui-textfield> -->
+      <div class="md:col-span-2 my-3">
+        <label class="pl-2 pb-1" tuiLabel>Selecciona una hora</label>
+        <div class="flex flex-wrap gap-6" tuiPlatform="ios">
+          <div tuiItemGroup [autoscroll]="false" [horizontal]="false">
+            @for (chip of chips; track chip) {
+              <label
+                tuiChip
+                [appearance]="getTimeAppearance(chip)"
+                [iconEnd]="disabledTime(chip) ? '' : '@tui.clock'"
+              >
+                {{ chip }}
+                <input
+                  appearance=""
+                  name="scheduledTime"
+                  tuiChip
+                  type="radio"
+                  [value]="chip"
+                  [disabled]="disabledTime(chip)"
+                  (click)="onTimeClicked(chip.toString('HH:MM'))"
+                />
+              </label>
+            }
+          </div>
+        </div>
+         <tui-error class="pl-2" formControlName="scheduledTime" />
+      </div>
       <!-- MOTIVO -->
       <tui-textfield iconStart="@tui.pencil" tuiTextfieldSize="m" [tuiTextfieldCleaner]="false">
         <label tuiLabel>Escribe tu motivo</label>
@@ -189,7 +213,6 @@
         <textarea tuiTextarea [max]="4" [min]="4" formControlName="notes"></textarea>
         <span><tui-error formControlName="notes" /></span>
       </tui-textfield>
-      
     </div>
 
     <!-- ====================================== -->
