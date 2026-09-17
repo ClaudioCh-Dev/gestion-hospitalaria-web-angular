@@ -14,6 +14,15 @@ import { DoctorMockService } from './features/doctor/services/doctor.service.moc
 import { DoctorHttpService } from './features/doctor/services/doctor.service.http';
 import { environment } from '../environments/environment';
 import { errorInterceptor } from './core/interceptors/error.interceptor';
+import { AppointmentTypeService } from './features/appointment/services/appointment-type.service';
+import { AppointmentTypeMockService } from './features/appointment/services/impl/appointment-type-mock.service';
+import { AppointmentTypeHttpService } from './features/appointment/services/impl/appointment-type-http.service';
+import { BillingRecordService } from './features/billing/services/billing-record.service';
+import { BillingRecordMockService } from './features/billing/services/billing-record-mock.service';
+import { BillingRecordHttpService } from './features/billing/services/billing-record-http.service';
+import { MedicalRecordHttpService } from './features/medical-history/services/medical-record-http.service';
+import { MedicalRecordService } from './features/medical-history/services/medical-record.service';
+import { MedicalRecordMockService } from './features/medical-history/services/medical-record-mock.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -42,6 +51,27 @@ export const appConfig: ApplicationConfig = {
       useClass: environment.useMocks
         ? DoctorMockService
         : DoctorHttpService,
+    },
+
+    {
+      provide: AppointmentTypeService,
+      useClass: environment.useMocks
+        ? AppointmentTypeMockService
+        : AppointmentTypeHttpService,
+    },
+
+    {
+      provide: BillingRecordService,
+      useClass: environment.useMocks
+        ? BillingRecordMockService
+        : BillingRecordHttpService,
+    },
+
+    {
+      provide: MedicalRecordService,
+      useClass: environment.useMocks
+        ? MedicalRecordMockService
+        : MedicalRecordHttpService,
     },
 
     provideRouter(routes, withViewTransitions()),
