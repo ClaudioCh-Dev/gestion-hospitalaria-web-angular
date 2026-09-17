@@ -1,11 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  input,
-  model,
-  output,
-  signal,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, input, model, output, signal } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 
@@ -31,17 +24,11 @@ import {
   TuiStatus,
 } from '@taiga-ui/kit';
 
-import {
-  TuiTable,
-  TuiTableControl,
-} from '@taiga-ui/addon-table';
+import { TuiTable, TuiTableControl } from '@taiga-ui/addon-table';
 
 import { PatientDetailComponent } from '../patient-detail/patient-detail';
 
-import {
-  PatientDetailResponse,
-  PatientResponse,
-} from '../../model';
+import { PatientDetailResponse, PatientResponse } from '../../interfaces';
 
 @Component({
   selector: 'app-patient-table',
@@ -73,7 +60,6 @@ import {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PatientTableComponent {
-
   // ============================
   // Inputs
   // ============================
@@ -82,11 +68,9 @@ export class PatientTableComponent {
 
   readonly loading = input(false);
 
-  readonly selectedPatient =
-    input<PatientDetailResponse | null>(null);
+  readonly selectedPatient = input<PatientDetailResponse | null>(null);
 
-  readonly loadingPatientId =
-    input<number | null>(null);
+  readonly loadingPatientId = input<number | null>(null);
 
   // ============================
   // Model

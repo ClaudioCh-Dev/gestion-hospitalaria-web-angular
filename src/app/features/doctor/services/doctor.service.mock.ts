@@ -11,7 +11,7 @@ import {
   DoctorResponse,
   CreateSpecialtyRequest,
   SpecialtyResponse,
-} from '../model/doctor.dtos';
+} from '../intefaces';
 
 import { DoctorService } from './doctor.service';
 

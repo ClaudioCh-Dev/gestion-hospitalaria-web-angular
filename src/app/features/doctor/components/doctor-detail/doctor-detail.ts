@@ -4,7 +4,7 @@ import { TuiButton, TuiIcon, TuiPopup, TuiTitle, TuiAppearance } from '@taiga-ui
 
 import { TuiAvatar, TuiBadge, TuiDrawer, TuiInitialsPipe, TuiTabs } from '@taiga-ui/kit';
 
-import { DoctorResponse } from '../../model/doctor.dtos';
+import { DoctorResponse } from '../../intefaces';
 
 @Component({
   selector: 'app-doctor-detail',

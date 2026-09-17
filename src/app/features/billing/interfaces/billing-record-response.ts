@@ -1,7 +1,4 @@
-export type BillingStatus =
-  | 'PENDING'
-  | 'PAID'
-  | 'CANCELLED';
+import { BillingStatus } from "./billing-status";
 
 export interface BillingRecordResponse {
   id: number;

@@ -7,7 +7,7 @@ import {
   PatientDetailResponse,
   PatientRequest,
   PatientResponse,
-} from '../model';
+} from '../interfaces';
 
 import { PageResponse } from '@shared/models/page.type';
 import { PatientService } from '@patients/services/patient.service';

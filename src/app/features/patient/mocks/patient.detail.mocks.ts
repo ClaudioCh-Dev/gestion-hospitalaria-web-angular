@@ -1,4 +1,4 @@
-import {PatientDetailResponse} from '../model';
+import {PatientDetailResponse} from '../interfaces';
 
 export const PATIENT_DETAILS_MOCK: PatientDetailResponse[] = [
   {

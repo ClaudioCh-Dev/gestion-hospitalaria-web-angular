@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
 import { PageResponse } from '@shared/models/page.type';
-import { Gender, PatientDetailResponse, PatientRequest, PatientResponse } from '../model';
+import { Gender, PatientDetailResponse, PatientRequest, PatientResponse } from '../interfaces';
 
 export abstract class PatientService {
   abstract findAll(

@@ -1,5 +1,5 @@
 export interface BillingTariffResponse {
-  billingAppointmentTypeId: number;
+  appointmentTypeId: number;
   price: number;
   currency: string;
 }

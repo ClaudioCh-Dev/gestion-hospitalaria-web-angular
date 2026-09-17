@@ -1,4 +1,4 @@
-import { PatientResponse } from '../model';
+import { PatientResponse } from '../interfaces';
 import { PageResponse } from '../../../shared/models/page.type';
 
 export const PATIENTS_MOCK: PageResponse<PatientResponse> = {

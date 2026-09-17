@@ -23,7 +23,7 @@ import {
   DoctorResponse,
   CreateDoctorRequest,
   UpdateDoctorRequest,
-} from '../../model/doctor.dtos';
+} from '../../intefaces';
 
 import { DoctorService } from '../../services/doctor.service';
 

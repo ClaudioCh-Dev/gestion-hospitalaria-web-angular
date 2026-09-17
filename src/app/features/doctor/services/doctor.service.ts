@@ -8,7 +8,7 @@ import {
   DoctorResponse,
   CreateSpecialtyRequest,
   SpecialtyResponse,
-} from '../model/doctor.dtos';
+} from '../intefaces';
 
 export abstract class DoctorService {
 

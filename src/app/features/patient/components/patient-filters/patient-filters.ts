@@ -32,7 +32,7 @@ export interface PatientFilters {
 export class PatientFiltersComponent {
   protected search = '';
 
-  protected readonly genders = ['Todos', ...GENDERS] as const;
+  protected readonly genders = ['Todos', ...GENDERS.map((g) => g.value)] as const;
 
   protected gender: string | null = this.genders[0];
 

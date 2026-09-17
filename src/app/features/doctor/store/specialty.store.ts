@@ -2,7 +2,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
 import { DoctorService } from '../services/doctor.service';
-import { SpecialtyResponse } from '../model/doctor.dtos';
+import { SpecialtyResponse } from '../intefaces';
 
 @Injectable({
   providedIn: 'root',

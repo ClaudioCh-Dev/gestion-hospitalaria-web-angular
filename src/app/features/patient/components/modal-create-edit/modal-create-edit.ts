@@ -8,7 +8,7 @@ import { injectContext } from '@taiga-ui/polymorpheus';
 
 import { BLOOD_TYPES, GENDERS } from '../../constans/patient-options';
 
-import { PatientDetailResponse, PatientRequest } from '../../model';
+import { PatientDetailResponse, PatientRequest } from '../../interfaces';
 
 import { PatientService } from '../../services/patient.service';
 

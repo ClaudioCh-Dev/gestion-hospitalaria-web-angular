@@ -31,7 +31,7 @@ import {
 
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 
-import { PatientDetailResponse, PatientRequest, PatientResponse } from '../../model';
+import { PatientDetailResponse, PatientRequest, PatientResponse } from '../../interfaces';
 
 import { PatientService } from '@patients/services/patient.service';
 

@@ -29,7 +29,7 @@ import {
   TuiTableControl,
 } from '@taiga-ui/addon-table';
 
-import { DoctorResponse } from '../../model/doctor.dtos';
+import { DoctorResponse } from '../../intefaces';
 
 import { DoctorDetailComponent } from '../doctor-detail/doctor-detail';
 

@@ -8,7 +8,7 @@ import {
 import { TuiButton, TuiIcon, TuiPopup, TuiTitle, TuiAppearance } from '@taiga-ui/core';
 import { TuiAvatar, TuiBadge, TuiDrawer, TuiInitialsPipe, TuiTabs } from '@taiga-ui/kit';
 
-import { PatientDetailResponse } from '../../model';
+import { PatientDetailResponse } from '../../interfaces';
 
 @Component({
   selector: 'app-patient-detail',
