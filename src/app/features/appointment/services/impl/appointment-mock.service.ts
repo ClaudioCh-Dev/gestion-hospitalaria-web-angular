@@ -1,6 +1,9 @@
 import { HttpErrorResponse } from '@angular/common/http';
+
 import { Injectable, inject, signal } from '@angular/core';
+
 import { Observable, of, throwError } from 'rxjs';
+
 import { delay } from 'rxjs/operators';
 
 import {
@@ -11,10 +14,13 @@ import {
 } from '../../interfaces';
 
 import { AppointmentService } from '../appointment.service';
+
 import { APPOINTMENTS_MOCK } from '../../mocks/appointment.mocks';
 
 import { PageResponse } from '@shared/models/page.type';
+
 import { ProblemDetailMicroservice } from '@shared/models/problem.type';
+
 import { ErrorHandlerService } from '@core/services/error-handler.service';
 
 @Injectable()
@@ -74,9 +80,11 @@ export class AppointmentMockService extends AppointmentService {
     const appointments = this._appointments();
 
     const totalElements = appointments.length;
+
     const totalPages = Math.ceil(totalElements / size);
 
     const start = page * size;
+
     const end = start + size;
 
     const content = appointments.slice(start, end);
@@ -148,6 +156,24 @@ export class AppointmentMockService extends AppointmentService {
 
     const appointments = this._appointments()
       .filter(item => item.doctorId === doctorId);
+
+    return of(appointments).pipe(
+      delay(this.MOCK_DELAY),
+    );
+  }
+
+  // =====================================================
+  // FIND BY DATE
+  // =====================================================
+
+  findByDate(
+    date: string,
+  ): Observable<AppointmentResponse[]> {
+
+    const appointments = this._appointments()
+      .filter(item =>
+        item.scheduledAt.startsWith(date),
+      );
 
     return of(appointments).pipe(
       delay(this.MOCK_DELAY),

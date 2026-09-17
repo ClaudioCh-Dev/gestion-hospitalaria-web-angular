@@ -32,17 +32,68 @@
 
     <tbody tuiTbody>
       @if (loading()) {
-        <!-- ============================================= -->
-        <!-- LOADING -->
-        <!-- ============================================= -->
+        @for (row of [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; track row) {
+          <tr class="animate-pulse">
+            <!-- Selección -->
+            <td tuiTd>
+              <div [tuiCell]="'s'">
+                <div class="h-4 w-4 rounded bg-slate-200"></div>
+              </div>
+            </td>
 
-        <tr>
-          <td tuiTd colspan="7">
-            <div class="flex min-h-60 w-full items-center justify-center">
-              <tui-loader [style.--tui-diameter.rem]="4.5" />
-            </div>
-          </td>
-        </tr>
+            <!-- Doctor -->
+            <td tuiTd>
+              <div [tuiCell]="'s'">
+                <!-- Avatar -->
+                <div class="h-9 w-9 shrink-0 rounded-full bg-slate-200"></div>
+
+                <!-- Nombre -->
+                <div class="space-y-2">
+                  <div class="h-3 w-28 rounded bg-slate-200"></div>
+                  <div class="h-2 w-20 rounded bg-slate-200"></div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Especialidad -->
+            <td tuiTd>
+              <div [tuiCell]="'s'">
+                <div class="h-3 w-28 rounded bg-slate-200"></div>
+              </div>
+            </td>
+
+            <!-- Contacto -->
+            <td tuiTd>
+              <div [tuiCell]="'s'">
+                <div class="space-y-2">
+                  <div class="h-3 w-24 rounded bg-slate-200"></div>
+                  <div class="h-2 w-32 rounded bg-slate-200"></div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Horario -->
+            <td tuiTd>
+              <div [tuiCell]="'s'">
+                <div class="h-3 w-24 rounded bg-slate-200"></div>
+              </div>
+            </td>
+
+            <!-- Estado -->
+            <td tuiTd>
+              <div class="h-5 w-16 rounded-full bg-slate-200"></div>
+            </td>
+
+            <!-- Acciones -->
+            <td tuiTd>
+              <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded bg-slate-200"></div>
+
+                <div class="h-8 w-8 rounded bg-slate-200"></div>
+              </div>
+            </td>
+          </tr>
+        }
       } @else {
         <!-- ============================================= -->
         <!-- DOCTORS -->
@@ -66,10 +117,12 @@
 
             <td tuiTd>
               <div [tuiCell]="'s'">
-                <div
-                  [style.background]="doctor.firstName + ' ' + doctor.lastName | tuiAutoColor"
-                  [tuiAvatar]="doctor.firstName + ' ' + doctor.lastName | tuiInitials"
-                ></div>
+                <div tuiAvatar>
+                  <picture>
+                    <source media="(min-width: 600px)" [srcset]="doctor.photoUrl | avatarDefaultDoctor" />
+                    <img alt="Doctor" [src]="null | avatarDefaultDoctor" />
+                  </picture>
+                </div>
 
                 <span tuiTitle>
                   {{ doctor.firstName }}
@@ -186,7 +239,4 @@
 <!-- DETALLE -->
 <!-- ===================================================== -->
 
-<app-doctor-detail
-  [doctor]="selectedDoctor()"
-  (close)="closeDetail.emit()"
-/>
+<app-doctor-detail [doctor]="selectedDoctor()" (close)="closeDetail.emit()" />

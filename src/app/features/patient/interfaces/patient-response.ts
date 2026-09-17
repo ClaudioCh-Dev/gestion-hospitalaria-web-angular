@@ -8,5 +8,5 @@ export interface PatientResponse{
   phone?: string;
   email?: string;
   active: boolean;
-  photo?: string;
+  photoUrl?: string;
 }

@@ -2,9 +2,12 @@ import { NgClass } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  inject,
   signal,
 } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { rxResource } from '@angular/core/rxjs-interop';
+import { forkJoin } from 'rxjs';
 
 import { TuiDay } from '@taiga-ui/cdk';
 import {
@@ -13,7 +16,19 @@ import {
   TuiHint,
   TuiTextfield,
 } from '@taiga-ui/core';
-import { TuiAutoColorPipe, TuiAvatar, TuiInputDate } from '@taiga-ui/kit';
+import { TuiInputDate } from '@taiga-ui/kit';
+
+import { AppointmentService } from '../../services/appointment.service';
+import { DoctorService } from '../../../doctor/services/doctor.service';
+
+import {
+  AppointmentResponse,
+} from '../../interfaces';
+
+import {
+  DoctorResponse,
+} from '../../../doctor/intefaces';
+import { AvatarDefaultDoctorPipe } from '@shared/pipes/avatar-default-doctor-pipe';
 
 @Component({
   selector: 'app-cell-callendar-admin',
@@ -24,166 +39,77 @@ import { TuiAutoColorPipe, TuiAvatar, TuiInputDate } from '@taiga-ui/kit';
     TuiTextfield,
     TuiCalendar,
     TuiHint,
-     TuiInputDate
+    TuiInputDate,
+    AvatarDefaultDoctorPipe,
   ],
   templateUrl: './cell-callendar-admin.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class CellCallendarAdmin {
 
+  private readonly appointmentService =
+    inject(AppointmentService);
+
+  private readonly doctorService =
+    inject(DoctorService);
+
   // =========================
   // DATE
   // =========================
 
-    protected readonly today = TuiDay.currentLocal();
-    protected readonly min = new TuiDay(this.today.year, this.today.month, 1);
-    protected readonly max = this.min.append({month: 1, day: -1});
-    protected readonly handler = (day: TuiDay): boolean => day.daySame(this.today);
-    protected selectedDateValue = TuiDay.currentLocal();
+  protected readonly today =
+    TuiDay.currentLocal();
 
-  defaultActiveMonth = signal(
-    TuiDay.currentLocal(),
-  );
+  protected readonly min =
+    new TuiDay(
+      this.today.year,
+      this.today.month,
+      1,
+    );
 
+  protected readonly max =
+    this.min.append({
+      month: 1,
+      day: -1,
+    });
 
-  // =========================
-  // DOCTORS
-  // =========================
+  protected readonly handler =
+    (day: TuiDay): boolean =>
+      day.daySame(this.today);
 
-doctors = [
-  {
-    id: 1,
-    name: 'Dr. García',
-    specialty: 'Medicina general',
-    email: 'garcia@hospital.com',
-    phone: '+51 987 654 321',
-    avatar: 'https://i.pravatar.cc/150?img=12',
-  },
-  {
-    id: 2,
-    name: 'Dra. Torres',
-    specialty: 'Cardiología',
-    email: 'torres@hospital.com',
-    phone: '+51 987 654 322',
-    avatar: 'https://i.pravatar.cc/150?img=47',
-  },
-  {
-    id: 3,
-    name: 'Dr. Ramírez',
-    specialty: 'Pediatría',
-    email: 'ramirez@hospital.com',
-    phone: '+51 987 654 323',
-    avatar: 'https://i.pravatar.cc/150?img=33',
-  },
-  {
-    id: 4,
-    name: 'Dra. López',
-    specialty: 'Dermatología',
-    email: 'lopez@hospital.com',
-    phone: '+51 987 654 324',
-    avatar: 'https://i.pravatar.cc/150?img=44',
-  },
-  {
-    id: 5,
-    name: 'Dr. Martínez',
-    specialty: 'Traumatología',
-    email: 'martinez@hospital.com',
-    phone: '+51 987 654 325',
-    avatar: 'https://i.pravatar.cc/150?img=68',
-  },
-];
+  protected readonly selectedDate =
+    signal(TuiDay.currentLocal());
 
+  protected readonly defaultActiveMonth =
+    signal(TuiDay.currentLocal());
 
   // =========================
-  // HOURS
+  // CALENDAR RESOURCE
   // =========================
 
-  hours = this.generateHours();
+  protected readonly calendarResource =
+    rxResource({
+      params: () => ({
+        date: this.formatDate(
+          this.selectedDate(),
+        ),
+      }),
 
-
-  // =========================
-  // APPOINTMENTS
-  // =========================
-
-  appointments = [
-    {
-      doctorId: 1,
-      start: '08:00',
-      end: '09:00',
-      patient: 'Juan Pérez',
-      type: 'Consulta general',
-    },
-    {
-      doctorId: 1,
-      start: '10:00',
-      end: '11:30',
-      patient: 'Carlos Ruiz',
-      type: 'Control médico',
-    },
-    {
-      doctorId: 2,
-      start: '09:00',
-      end: '10:00',
-      patient: 'María López',
-      type: 'Consulta cardiológica',
-    },
-    {
-      doctorId: 2,
-      start: '11:00',
-      end: '12:30',
-      patient: 'Ana Torres',
-      type: 'Electrocardiograma',
-    },
-    {
-      doctorId: 3,
-      start: '08:30',
-      end: '09:30',
-      patient: 'Pedro Sánchez',
-      type: 'Consulta pediátrica',
-    },
-    {
-      doctorId: 3,
-      start: '13:00',
-      end: '14:00',
-      patient: 'Sofía Díaz',
-      type: 'Control pediátrico',
-    },
-    {
-      doctorId: 4,
-      start: '10:30',
-      end: '11:30',
-      patient: 'Lucía Flores',
-      type: 'Consulta dermatológica',
-    },
-    {
-      doctorId: 4,
-      start: '15:00',
-      end: '16:30',
-      patient: 'Diego Castro',
-      type: 'Evaluación dermatológica',
-    },
-    {
-      doctorId: 5,
-      start: '09:30',
-      end: '11:00',
-      patient: 'Miguel Vargas',
-      type: 'Consulta traumatológica',
-    },
-    {
-      doctorId: 5,
-      start: '14:00',
-      end: '15:00',
-      patient: 'Andrea Ruiz',
-      type: 'Control traumatológico',
-    },
-  ];
-
+      stream: ({ params }) =>
+        forkJoin({
+          doctors: this.doctorService.findAll(0, 100),
+          appointments:
+            this.appointmentService.findByDate(
+              params.date,
+            ),
+        }),
+    });
 
   // =========================
   // APPOINTMENT COLORS
   // =========================
 
-  appointmentColors = [
+  protected readonly appointmentColors = [
     'bg-blue-600 text-white',
     'bg-emerald-600 text-white',
     'bg-violet-600 text-white',
@@ -196,51 +122,87 @@ doctors = [
     'bg-pink-600 text-white',
   ];
 
+  // =========================
+  // HOURS
+  // =========================
+
+  protected readonly hours =
+    this.generateHours();
+
+  // =========================
+  // DOCTORS
+  // =========================
+
+  protected get doctors(): DoctorResponse[] {
+    return this.calendarResource.value()
+      ?.doctors.content ?? [];
+  }
+
+  // =========================
+  // APPOINTMENTS
+  // =========================
+
+  protected get appointments(): AppointmentResponse[] {
+    return this.calendarResource.value()
+      ?.appointments ?? [];
+  }
 
   // =========================
   // DATE NAVIGATION
   // =========================
 
-  previousDay(): void {
-    this.selectedDateValue =
-      this.selectedDateValue.append({
+  protected previousDay(): void {
+    this.selectedDate.update(date =>
+      date.append({
         day: -1,
-      });
+      }),
+    );
 
     this.defaultActiveMonth.set(
-      this.selectedDateValue,
+      this.selectedDate(),
     );
   }
 
-
-  nextDay(): void {
-    this.selectedDateValue =
-      this.selectedDateValue.append({
+  protected nextDay(): void {
+    this.selectedDate.update(date =>
+      date.append({
         day: 1,
-      });
+      }),
+    );
 
     this.defaultActiveMonth.set(
-      this.selectedDateValue,
+      this.selectedDate(),
     );
   }
 
-
-  goToday(): void {
-    this.selectedDateValue =
+  protected goToday(): void {
+    const today =
       TuiDay.currentLocal();
 
-    this.defaultActiveMonth.set(
-      this.selectedDateValue,
-    );
+    this.selectedDate.set(today);
+    this.defaultActiveMonth.set(today);
   }
 
+  protected onDateChange(
+    date: TuiDay,
+  ): void {
+
+    if (!date) {
+      return;
+    }
+
+    this.selectedDate.set(date);
+    this.defaultActiveMonth.set(date);
+  }
 
   // =========================
   // DATE TITLE
   // =========================
 
-  getDayTitle(): string {
-    const date = this.selectedDateValue;
+  protected getDayTitle(): string {
+
+    const date =
+      this.selectedDate();
 
     const jsDate = new Date(
       date.year,
@@ -248,23 +210,45 @@ doctors = [
       date.day,
     );
 
-    return new Intl.DateTimeFormat('es-PE', {
-      weekday: 'long',
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-    }).format(jsDate);
+    return new Intl.DateTimeFormat(
+      'es-PE',
+      {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      },
+    ).format(jsDate);
   }
 
+  // =========================
+  // FORMAT DATE
+  // =========================
+
+  private formatDate(
+    date: TuiDay,
+  ): string {
+
+    return [
+      date.year,
+      String(date.month + 1).padStart(2, '0'),
+      String(date.day).padStart(2, '0'),
+    ].join('-');
+  }
 
   // =========================
   // HOURS
   // =========================
 
   private generateHours(): string[] {
+
     const hours: string[] = [];
 
-    for (let hour = 8; hour <= 21; hour++) {
+    for (
+      let hour = 8;
+      hour <= 21;
+      hour++
+    ) {
       hours.push(
         `${hour.toString().padStart(2, '0')}:00`,
       );
@@ -279,59 +263,101 @@ doctors = [
     return hours;
   }
 
-
   // =========================
   // APPOINTMENT
   // =========================
 
-  getAppointment(
+  protected getAppointment(
     doctorId: number,
     time: string,
-  ) {
+  ): AppointmentResponse | undefined {
+
     return this.appointments.find(
       appointment =>
         appointment.doctorId === doctorId &&
-        appointment.start === time,
+        this.getTime(
+          appointment.scheduledAt,
+        ) === time,
     );
   }
-
 
   // =========================
   // APPOINTMENT WIDTH
   // =========================
 
-  getAppointmentCells(
-    start: string,
-    end: string,
+  protected getAppointmentCells(
+    appointment: AppointmentResponse,
   ): number {
-    return (
-      (this.toMinutes(end) -
-        this.toMinutes(start)) /
-      30
-    );
-  }
 
+    const start =
+      this.getTime(
+        appointment.scheduledAt,
+      );
+
+    const end =
+      this.addMinutes(
+        start,
+        appointment.durationMinutes,
+      );
+
+    return (
+      this.toMinutes(end) -
+      this.toMinutes(start)
+    ) / 30;
+  }
 
   // =========================
   // APPOINTMENT COLOR
   // =========================
 
-  getAppointmentColor(
-    appointment: (typeof this.appointments)[number],
+  protected getAppointmentColor(
+    appointment: AppointmentResponse,
   ): string {
 
     const index =
-      this.appointments.indexOf(appointment);
+      this.appointments.indexOf(
+        appointment,
+      );
 
     return this.appointmentColors[
       index % this.appointmentColors.length
     ];
   }
 
-
   // =========================
   // TIME
   // =========================
+
+  private getTime(
+    dateTime: string,
+  ): string {
+
+    return (
+      dateTime
+        .split('T')[1]
+        ?.slice(0, 5) ?? ''
+    );
+  }
+
+  private addMinutes(
+    time: string,
+    minutes: number,
+  ): string {
+
+    const total =
+      this.toMinutes(time) + minutes;
+
+    const hours =
+      Math.floor(total / 60);
+
+    const mins =
+      total % 60;
+
+    return [
+      hours.toString().padStart(2, '0'),
+      mins.toString().padStart(2, '0'),
+    ].join(':');
+  }
 
   private toMinutes(
     time: string,

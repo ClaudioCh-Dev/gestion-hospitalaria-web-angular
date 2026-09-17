@@ -18,14 +18,63 @@
 
     <tbody tuiTbody>
       @if (loading()) {
-        <!-- LOADING -->
-        <tr>
-          <td tuiTd colspan="6">
-            <div class="flex min-h-60 w-full items-center justify-center">
-              <tui-loader [style.--tui-diameter.rem]="4.5" />
-            </div>
-          </td>
-        </tr>
+        @for (item of [1, 2, 3, 4, 5,6,7,8,9,10,11,12,13,14,15]; track $index) {
+          <tr class="animate-pulse">
+            <!-- Selección -->
+            <td tuiTd>
+              <div [tuiCell]="'s'">
+                <div class="h-4 w-4 rounded bg-slate-200"></div>
+              </div>
+            </td>
+
+            <!-- Paciente -->
+            <td tuiTd>
+              <div [tuiCell]="'s'">
+                <!-- Avatar -->
+                <div class="h-9 w-9 shrink-0 rounded-full bg-slate-200"></div>
+
+                <!-- Nombre + datos -->
+                <div class="space-y-2">
+                  <div class="h-3 w-28 rounded bg-slate-200"></div>
+
+                  <div class="h-2 w-36 rounded bg-slate-200"></div>
+                </div>
+              </div>
+            </td>
+
+            <!-- DNI -->
+            <td tuiTd>
+              <div [tuiCell]="'s'">
+                <div class="h-3 w-20 rounded bg-slate-200"></div>
+              </div>
+            </td>
+
+            <!-- Contacto -->
+            <td tuiTd>
+              <div [tuiCell]="'s'">
+                <div class="space-y-2">
+                  <div class="h-3 w-24 rounded bg-slate-200"></div>
+
+                  <div class="h-2 w-32 rounded bg-slate-200"></div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Estado -->
+            <td tuiTd>
+              <div class="h-5 w-16 rounded-full bg-slate-200"></div>
+            </td>
+
+            <!-- Acciones -->
+            <td tuiTd>
+              <div class="flex items-center gap-2">
+                <div class="h-8 w-8 rounded bg-slate-200"></div>
+
+                <div class="h-8 w-8 rounded bg-slate-200"></div>
+              </div>
+            </td>
+          </tr>
+        }
       } @else {
         <!-- PACIENTES -->
         @for (patient of patients(); track patient.id) {
@@ -40,21 +89,23 @@
             <!-- Paciente -->
             <td tuiTd>
               <div [tuiCell]="'s'">
-                <div
-                  [style.background]="patient.firstName + ' ' + patient.lastName | tuiAutoColor"
-                  [tuiAvatar]="patient.firstName + ' ' + patient.lastName | tuiInitials"
-                ></div>
+                <div tuiAvatar>
+                  <picture>
+                    <source media="(min-width: 600px)" [srcset]="patient.photoUrl | avatarDefaultPatient:patient.gender" />
+                    <img alt="Patient" [src]="null | avatarDefaultPatient:patient.gender" />
+                  </picture>
+                </div>
 
                 <span tuiTitle>
                   {{ patient.firstName }}
                   {{ patient.lastName }}
 
                   <span tuiSubtitle>
-                    {{ patient.gender || 'Sin género especificado' }}
+                    {{ patient.gender | i18nSelect: genderMap }}
 
                     ·
 
-                    {{ patient.birthDate }}
+                    {{ patient.birthDate | date: 'dd/MM/yyyy' }}
                   </span>
                 </span>
               </div>

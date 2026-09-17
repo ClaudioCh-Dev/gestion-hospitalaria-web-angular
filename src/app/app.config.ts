@@ -23,6 +23,9 @@ import { BillingRecordHttpService } from './features/billing/services/billing-re
 import { MedicalRecordHttpService } from './features/medical-history/services/medical-record-http.service';
 import { MedicalRecordService } from './features/medical-history/services/medical-record.service';
 import { MedicalRecordMockService } from './features/medical-history/services/medical-record-mock.service';
+import { AppointmentService } from './features/appointment/services/appointment.service';
+import { AppointmentMockService } from './features/appointment/services/impl/appointment-mock.service';
+import { AppointmentHttpService } from './features/appointment/services/impl/appointment-http.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -58,6 +61,12 @@ export const appConfig: ApplicationConfig = {
       useClass: environment.useMocks
         ? AppointmentTypeMockService
         : AppointmentTypeHttpService,
+    },
+    {
+      provide: AppointmentService,
+      useClass: environment.useMocks
+        ? AppointmentMockService
+        : AppointmentHttpService,
     },
 
     {

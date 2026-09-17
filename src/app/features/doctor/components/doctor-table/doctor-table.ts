@@ -34,17 +34,16 @@ import { DoctorResponse } from '../../intefaces';
 import { DoctorDetailComponent } from '../doctor-detail/doctor-detail';
 
 import { TimeRangePipe } from '@shared/pipes/time-range-pipe';
+import { AvatarDefaultDoctorPipe } from '@shared/pipes/avatar-default-doctor-pipe';
 
 @Component({
   selector: 'app-doctor-table',
   imports: [
     FormsModule,
-    TuiAutoColorPipe,
     TuiAvatar,
     TuiButton,
     TuiCell,
     TuiCheckbox,
-    TuiInitialsPipe,
     TuiLoader,
     TuiStatus,
     TuiTable,
@@ -52,6 +51,7 @@ import { TimeRangePipe } from '@shared/pipes/time-range-pipe';
     TuiTitle,
     DoctorDetailComponent,
     TimeRangePipe,
+    AvatarDefaultDoctorPipe,
   ],
   templateUrl: './doctor-table.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

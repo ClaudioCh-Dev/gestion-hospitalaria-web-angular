@@ -1,5 +1,7 @@
 import { inject, Injectable } from '@angular/core';
+
 import { HttpClient, HttpParams } from '@angular/common/http';
+
 import { Observable } from 'rxjs';
 
 import {
@@ -9,7 +11,9 @@ import {
 } from '../../interfaces';
 
 import { PageResponse } from '@shared/models/page.type';
+
 import { AppointmentService } from '../appointment.service';
+
 import { environment } from '@environments/environment';
 
 @Injectable()
@@ -59,6 +63,15 @@ export class AppointmentHttpService implements AppointmentService {
 
     return this.http.get<AppointmentResponse[]>(
       `${this.apiUrl}/doctor/${doctorId}`,
+    );
+  }
+
+  findByDate(
+    date: string,
+  ): Observable<AppointmentResponse[]> {
+
+    return this.http.get<AppointmentResponse[]>(
+      `${this.apiUrl}/date/${date}`,
     );
   }
 

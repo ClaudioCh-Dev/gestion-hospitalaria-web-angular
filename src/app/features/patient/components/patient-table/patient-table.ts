@@ -29,6 +29,8 @@ import { TuiTable, TuiTableControl } from '@taiga-ui/addon-table';
 import { PatientDetailComponent } from '../patient-detail/patient-detail';
 
 import { PatientDetailResponse, PatientResponse } from '../../interfaces';
+import { AvatarDefaultPatientPipe } from '@shared/pipes/avatar-default-patient-pipe';
+import { DatePipe, I18nSelectPipe } from '@angular/common';
 
 @Component({
   selector: 'app-patient-table',
@@ -36,7 +38,6 @@ import { PatientDetailResponse, PatientResponse } from '../../interfaces';
     FormsModule,
 
     // Taiga UI
-    TuiAutoColorPipe,
     TuiAvatar,
     TuiButton,
     TuiCell,
@@ -44,7 +45,6 @@ import { PatientDetailResponse, PatientResponse } from '../../interfaces';
     TuiComboBox,
     TuiDataListWrapper,
     TuiDropdown,
-    TuiInitialsPipe,
     TuiInput,
     TuiItemsWithMore,
     TuiLoader,
@@ -53,6 +53,9 @@ import { PatientDetailResponse, PatientResponse } from '../../interfaces';
     TuiTable,
     TuiTableControl,
     TuiTitle,
+    AvatarDefaultPatientPipe,
+    I18nSelectPipe,
+    DatePipe,  
     // Components
     PatientDetailComponent,
   ],
@@ -71,6 +74,12 @@ export class PatientTableComponent {
   readonly selectedPatient = input<PatientDetailResponse | null>(null);
 
   readonly loadingPatientId = input<number | null>(null);
+
+
+  readonly genderMap = {
+  MALE: 'Masculino',
+  FEMALE: 'Femenino',
+};
 
   // ============================
   // Model

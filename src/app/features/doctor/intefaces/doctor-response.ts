@@ -13,4 +13,5 @@ export interface DoctorResponse {
   scheduleEnd?: string;   // HH:mm:ss
   active: boolean;
   createdAt: string; // ISO 8601
+  photoUrl?: string;
 }

@@ -30,81 +30,92 @@
       <!-- ESPECIALIDAD -->
       <!-- ====================================== -->
 
-      <tui-textfield
-        tuiChevron
-        tuiTextfieldSize="m"
-        [stringify]="(value) => specialties.find((s) => s.id === value)?.name || ''"
-      >
-        <label tuiLabel> Especialidad </label>
+      <tui-textfield tuiChevron tuiTextfieldSize="m" [stringify]="stringifySpecialty">
+        <label tuiLabel>Especialidad</label>
 
         <input tuiSelect formControlName="specialtyId" placeholder="Selecciona una especialidad" />
 
         <tui-data-list *tuiDropdown>
-          @for (specialty of specialties; track specialty.id) {
-            <button tuiOption type="button" [value]="specialty.id">
-              {{ specialty.name }}
-            </button>
+          @if (appointmentData.isLoading()) {
+            <div class="p-3 text-sm text-gray-500">Cargando especialidades...</div>
+          } @else if (appointmentData.error()) {
+            <div class="p-3 text-sm text-red-500">Error al cargar las especialidades.</div>
+          } @else {
+            @for (specialty of appointmentData.value()?.specialties ?? []; track specialty.id) {
+              <button tuiOption type="button" [value]="specialty.id">
+                {{ specialty.value }}
+              </button>
+            }
           }
         </tui-data-list>
-        <span><tui-error formControlName="specialtyId" /></span>
+
+        <span>
+          <tui-error formControlName="specialtyId" />
+        </span>
       </tui-textfield>
 
       <!-- ====================================== -->
       <!-- PACIENTE -->
       <!-- ====================================== -->
 
-      <tui-textfield
-        tuiChevron
-        tuiTextfieldSize="m"
-        [stringify]="(value) => patients.find((p) => p.id === value)?.name || ''"
-      >
-        <label tuiLabel> Paciente </label>
+      <tui-textfield tuiChevron tuiTextfieldSize="m" [stringify]="stringifyPatient">
+        <label tuiLabel>Paciente</label>
 
         <input tuiSelect formControlName="patientId" placeholder="Selecciona un paciente" />
 
         <tui-data-list *tuiDropdown>
-          @for (patient of patients; track patient.id) {
-            <button tuiOption type="button" [value]="patient.id">
-              {{ patient.name }}
-            </button>
+          @if (appointmentData.isLoading()) {
+            <div class="p-3 text-sm text-gray-500">Cargando pacientes...</div>
+          } @else if (appointmentData.error()) {
+            <div class="p-3 text-sm text-red-500">Error al cargar los pacientes.</div>
+          } @else {
+            @for (patient of appointmentData.value()?.patients ?? []; track patient.id) {
+              <button tuiOption type="button" [value]="patient.id">
+                {{ patient.value }}
+              </button>
+            }
           }
         </tui-data-list>
-        <span><tui-error formControlName="patientId" /></span>
+
+        <span>
+          <tui-error formControlName="patientId" />
+        </span>
       </tui-textfield>
 
       <!-- ====================================== -->
       <!-- MÉDICO -->
       <!-- ====================================== -->
 
-      <tui-textfield
-        tuiChevron
-        tuiTextfieldSize="m"
-        [stringify]="(value) => doctors.find((d) => d.id === value)?.name || ''"
-      >
-        <label tuiLabel> Médico </label>
+      <tui-textfield tuiChevron tuiTextfieldSize="m" [stringify]="stringifyDoctor">
+        <label tuiLabel>Médico</label>
 
-        <input required tuiSelect formControlName="doctorId" placeholder="Selecciona un médico" />
+        <input tuiSelect formControlName="doctorId" placeholder="Selecciona un médico" />
 
         <tui-data-list *tuiDropdown>
-          @for (doctor of doctors; track doctor.id) {
-            <button tuiOption type="button" [value]="doctor.id">
-              {{ doctor.name }}
-            </button>
+          @if (doctorData.isLoading()) {
+            <div class="p-3 text-sm text-gray-500">Cargando médicos...</div>
+          } @else if (doctorData.error()) {
+            <div class="p-3 text-sm text-red-500">Error al cargar los médicos.</div>
+          } @else {
+            @for (doctor of doctorData.value() ?? []; track doctor.id) {
+              <button tuiOption type="button" [value]="doctor.id">
+                {{ doctor.value }}
+              </button>
+            }
           }
         </tui-data-list>
-        <span><tui-error formControlName="doctorId" /></span>
+
+        <span>
+          <tui-error formControlName="doctorId" />
+        </span>
       </tui-textfield>
 
       <!-- ====================================== -->
       <!-- TIPO DE CITA -->
       <!-- ====================================== -->
 
-      <tui-textfield
-        tuiChevron
-        tuiTextfieldSize="m"
-        [stringify]="(value) => appointmentTypes.find((at) => at.id === value)?.name || ''"
-      >
-        <label tuiLabel> Tipo de cita </label>
+      <tui-textfield tuiChevron tuiTextfieldSize="m" [stringify]="stringifyAppointmentType">
+        <label tuiLabel>Tipo de cita</label>
 
         <input
           tuiSelect
@@ -113,13 +124,25 @@
         />
 
         <tui-data-list *tuiDropdown>
-          @for (appointmentType of appointmentTypes; track appointmentType.id) {
-            <button tuiOption type="button" [value]="appointmentType.id">
-              {{ appointmentType.name }}
-            </button>
+          @if (appointmentData.isLoading()) {
+            <div class="p-3 text-sm text-gray-500">Cargando tipos de cita...</div>
+          } @else if (appointmentData.error()) {
+            <div class="p-3 text-sm text-red-500">Error al cargar los tipos de cita.</div>
+          } @else {
+            @for (
+              appointmentType of appointmentData.value()?.appointmentTypes ?? [];
+              track appointmentType.id
+            ) {
+              <button tuiOption type="button" [value]="appointmentType.id">
+                {{ appointmentType.value }}
+              </button>
+            }
           }
         </tui-data-list>
-        <span><tui-error formControlName="appointmentTypeId" /></span>
+
+        <span>
+          <tui-error formControlName="appointmentTypeId" />
+        </span>
       </tui-textfield>
 
       <!-- ====================================== -->
@@ -199,7 +222,7 @@
             }
           </div>
         </div>
-         <tui-error class="pl-2" formControlName="scheduledTime" />
+        <tui-error class="pl-2" formControlName="scheduledTime" />
       </div>
       <!-- MOTIVO -->
       <tui-textfield iconStart="@tui.pencil" tuiTextfieldSize="m" [tuiTextfieldCleaner]="false">

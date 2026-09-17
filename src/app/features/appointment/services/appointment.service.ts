@@ -3,12 +3,13 @@ import { Observable } from 'rxjs';
 import {
   AppointmentResponse,
   CreateAppointmentRequest,
-  UpdateAppointmentStatusRequest
+  UpdateAppointmentStatusRequest,
 } from '../interfaces';
 
 import { PageResponse } from '@shared/models/page.type';
 
 export abstract class AppointmentService {
+
   abstract findAll(
     page?: number,
     size?: number,
@@ -24,6 +25,10 @@ export abstract class AppointmentService {
 
   abstract findByDoctor(
     doctorId: number,
+  ): Observable<AppointmentResponse[]>;
+
+  abstract findByDate(
+    date: string,
   ): Observable<AppointmentResponse[]>;
 
   abstract create(

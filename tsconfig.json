@@ -80,7 +80,8 @@
       "@patients/*": ["./src/app/features/patient/*"],
       "@doctors/*": ["./src/app/features/doctor/*"],
       "@shared/*": ["./src/app/shared/*"],
-      "@core/*": ["./src/app/core/*"]
+      "@core/*": ["./src/app/core/*"],
+      "@appointment/*": ["./src/app/features/appointment/*"]
     }
   },
   "angularCompilerOptions": {
