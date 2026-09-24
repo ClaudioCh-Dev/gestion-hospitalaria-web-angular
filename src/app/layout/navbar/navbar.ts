@@ -1,4 +1,4 @@
-import {ChangeDetectionStrategy, Component, computed, input, signal} from '@angular/core';
+import {ChangeDetectionStrategy, Component, computed, inject, input, signal} from '@angular/core';
 import {FormsModule} from '@angular/forms';
 import { TuiActiveZone, TuiObscured } from '@taiga-ui/cdk';
 import {
@@ -13,7 +13,8 @@ import {
 import { TuiAvatar, TuiBadge, TuiBadgeNotification, TuiChevron, TuiFade, TuiTabs, TuiBadgedContentComponent, TuiBadgedContent } from '@taiga-ui/kit';
 import { TuiNavigation} from '@taiga-ui/layout';
 import { SidebarGroup } from '../types';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
+import { AuthService } from '@core/services/auth.service';
  
 	interface ExampleAction {
     readonly description: string;
@@ -46,6 +47,9 @@ import { RouterLink } from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Navbar {
+
+      private readonly authService = inject(AuthService);
+      private readonly router = inject(Router);
 
     readonly groupsOptions = input<SidebarGroup[]>([]);
 
@@ -122,6 +126,13 @@ protected onProfile(): void {
 protected onLogout(): void {
   this.avatarOpen.set(false);
 
-  // this.authService.logout();
+  this.authService.logout().subscribe({
+    next: () => {
+      this.router.navigate(['/login']);
+    },
+    error: (error) => {
+      console.error('Error logging out:', error);
+    }
+  });
 }
 }

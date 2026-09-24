@@ -66,6 +66,7 @@
       (closeDetail)="selectedPatient.set(null)"
     />
 
+    
     <!-- Paginación -->
     <tui-table-pagination
       [items]="sizeOptions"
@@ -74,6 +75,7 @@
       [page]="page()"
       (pageChange)="changePage($event)"
       (sizeChange)="changeSize($event)"
+      class="mt-auto"
     />
 
   }

@@ -201,11 +201,15 @@ export class AppointmentMockService extends AppointmentService {
       notes: request.notes,
       createdAt: new Date().toISOString(),
     };
+    
+    console.log("Before ",this._appointments());
 
     this._appointments.update(current => [
       ...current,
       newAppointment,
     ]);
+
+    console.log("After ",this._appointments());
 
     return of(newAppointment).pipe(
       delay(this.MOCK_DELAY),

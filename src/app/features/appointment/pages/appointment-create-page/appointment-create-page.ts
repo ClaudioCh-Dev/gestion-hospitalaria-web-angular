@@ -1,21 +1,28 @@
 import { Component, inject, signal } from '@angular/core';
+
 import { Router, RouterLink } from '@angular/router';
+
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+
 import { rxResource } from '@angular/core/rxjs-interop';
-import { forkJoin, map, of } from 'rxjs';
+
+import { forkJoin, map, of, tap } from 'rxjs';
 
 import { TuiDay, TuiPlatform, TuiTime } from '@taiga-ui/cdk';
+
 import {
   TuiButton,
   TuiCalendar,
   TuiDataList,
   TuiError,
   TuiLabel,
+  TuiLoader,
   TuiRadio,
   TuiTextfield,
   tuiItemsHandlersProvider,
   tuiValidationErrorsProvider,
 } from '@taiga-ui/core';
+
 import {
   TuiChip,
   TuiDataListWrapper,
@@ -26,14 +33,19 @@ import {
   TuiTextarea,
   tuiCreateTimePeriods,
 } from '@taiga-ui/kit';
+
 import { TuiForm, TuiItemGroup } from '@taiga-ui/layout';
 
 import { DoctorService } from '@doctors/services/doctor.service';
 import { PatientService } from '@patients/services/patient.service';
 import { AppointmentTypeService } from '@appointment/services/appointment-type.service';
 import { AppointmentService } from '@appointment/services/appointment.service';
+
 import { FormOption } from '@shared/components/modal-form/modal-form';
+
 import { CreateAppointmentRequest } from '@appointment/interfaces';
+import { withNotification } from '@shared/operators/with-notification';
+import { NotificationService } from '@core/services/alert-notification.service';
 
 interface AppointmentData {
   specialties: FormOption[];
@@ -66,6 +78,7 @@ interface AppointmentData {
     TuiChip,
     TuiItemGroup,
     TuiPlatform,
+    TuiLoader,
   ],
 
   providers: [
@@ -91,23 +104,49 @@ export class AppointmentCreatePage {
   // ============================================================
 
   private readonly doctorService = inject(DoctorService);
+
   private readonly patientService = inject(PatientService);
+
   private readonly appointmentTypeService = inject(AppointmentTypeService);
+
   private readonly appointmentService = inject(AppointmentService);
 
   private readonly router = inject(Router);
+
+  private readonly notificationService = inject(NotificationService);
+
   // ============================================================
   // SIGNALS
   // ============================================================
 
+  /**
+   * Especialidad seleccionada.
+   *
+   * Dispara doctorData.
+   */
   protected readonly specialtyId = signal<number | null>(null);
 
+  /**
+   * Doctor seleccionado.
+   *
+   * Dispara appointmentDataByDate.
+   */
+  protected readonly doctorId = signal<number | null>(null);
+
+  /**
+   * Fecha seleccionada.
+   *
+   * Dispara appointmentDataByDate.
+   */
+  protected readonly scheduledDate = signal<TuiDay | null>(null);
+
   // ============================================================
-  // RECURSOS
+  // RECURSO - DATOS INICIALES
   // ============================================================
 
   /**
-   * Datos iniciales del formulario:
+   * Carga:
+   *
    * - Especialidades
    * - Pacientes
    * - Tipos de cita
@@ -144,8 +183,12 @@ export class AppointmentCreatePage {
       }),
   });
 
+  // ============================================================
+  // RECURSO - DOCTORES POR ESPECIALIDAD
+  // ============================================================
+
   /**
-   * Médicos según la especialidad seleccionada.
+   * Obtiene los doctores según la especialidad.
    */
   protected readonly doctorData = rxResource({
     params: () => ({
@@ -169,72 +212,54 @@ export class AppointmentCreatePage {
   });
 
   // ============================================================
-  // DATOS TEMPORALES
+  // RECURSO - CITAS POR FECHA Y DOCTOR
   // ============================================================
 
   /**
-   * Mock de citas.
+   * Obtiene las citas disponibles/ocupadas
+   * para el doctor y fecha seleccionados.
    *
-   * TODO: reemplazar posteriormente por las citas
-   * obtenidas desde la API.
+   * Se vuelve a ejecutar cuando cambia:
+   *
+   * - doctorId
+   * - scheduledDate
    */
-  protected readonly appointments = [
-    {
-      id: 1,
-      patientId: 101,
-      doctorId: 1,
-      scheduledAt: '2026-09-16T09:00:00',
-      durationMinutes: 30,
-      reason: 'Consulta general',
-      status: 'SCHEDULED',
-      notes: 'Paciente refiere dolor de cabeza frecuente',
-      createdAt: '2026-09-10T14:30:00',
+  protected readonly appointmentDataByDate = rxResource({
+    params: () => ({
+      doctorId: this.doctorId(),
+
+      date: this.scheduledDate(),
+    }),
+
+    stream: ({ params }) => {
+      /**
+       * Si todavía no hay doctor o fecha,
+       * no hacemos llamada HTTP.
+       */
+      if (!params.doctorId || !params.date) {
+        return of([]);
+      }
+
+      /**
+       * TuiDay → YYYY-MM-DD
+       */
+      const date = this.formatDate(params.date);
+
+      /**
+       * La API devuelve las citas de la fecha.
+       *
+       * Después filtramos solamente las
+       * correspondientes al doctor seleccionado.
+       */
+      return this.appointmentService
+        .findByDate(date)
+        .pipe(
+          map((appointments) =>
+            appointments.filter((appointment) => appointment.doctorId === params.doctorId),
+          ),
+        );
     },
-    {
-      id: 2,
-      patientId: 102,
-      doctorId: 2,
-      scheduledAt: '2026-09-16T10:00:00',
-      durationMinutes: 45,
-      reason: 'Control cardiológico',
-      status: 'CONFIRMED',
-      notes: 'Control de presión arterial',
-      createdAt: '2026-09-11T09:15:00',
-    },
-    {
-      id: 3,
-      patientId: 103,
-      doctorId: 3,
-      scheduledAt: '2026-09-16T11:30:00',
-      durationMinutes: 30,
-      reason: 'Consulta pediátrica',
-      status: 'SCHEDULED',
-      notes: 'Control de rutina',
-      createdAt: '2026-09-12T16:20:00',
-    },
-    {
-      id: 4,
-      patientId: 104,
-      doctorId: 1,
-      scheduledAt: '2026-09-16T14:00:00',
-      durationMinutes: 30,
-      reason: 'Dolor abdominal',
-      status: 'COMPLETED',
-      notes: 'Seguimiento de tratamiento',
-      createdAt: '2026-09-08T11:45:00',
-    },
-    {
-      id: 5,
-      patientId: 105,
-      doctorId: 4,
-      scheduledAt: '2026-09-17T09:30:00',
-      durationMinutes: 60,
-      reason: 'Evaluación dermatológica',
-      status: 'CANCELLED',
-      notes: 'Reprogramar para próxima semana',
-      createdAt: '2026-09-13T10:00:00',
-    },
-  ];
+  });
 
   // ============================================================
   // FECHA Y HORA
@@ -285,6 +310,7 @@ export class AppointmentCreatePage {
 
     durationMinutes: new FormControl<number>(30, {
       nonNullable: true,
+
       validators: [Validators.required, Validators.min(1)],
     }),
 
@@ -302,15 +328,17 @@ export class AppointmentCreatePage {
   // ============================================================
 
   constructor() {
-    /**
-     * Cuando cambia la especialidad:
-     * - Limpia el médico seleccionado.
-     * - Habilita/deshabilita el campo médico.
-     * - Actualiza el signal que dispara doctorData.
-     */
+    // ==========================================================
+    // ESPECIALIDAD
+    // ==========================================================
+
     this.form.controls.specialtyId.valueChanges.subscribe((specialtyId) => {
       const doctorControl = this.form.controls.doctorId;
 
+      /**
+       * Al cambiar especialidad,
+       * eliminamos el doctor anterior.
+       */
       doctorControl.reset();
 
       if (specialtyId) {
@@ -319,17 +347,36 @@ export class AppointmentCreatePage {
         doctorControl.disable();
       }
 
+      /**
+       * Actualiza el signal que dispara
+       * doctorData.
+       */
       this.specialtyId.set(specialtyId);
     });
 
-    /**
-     * Cuando cambia la fecha:
-     * - Limpia la hora.
-     * - Habilita/deshabilita las horas.
-     */
+    // ==========================================================
+    // DOCTOR
+    // ==========================================================
+
+    this.form.controls.doctorId.valueChanges.subscribe((doctorId) => {
+      /**
+       * Actualiza el signal que utiliza
+       * appointmentDataByDate.
+       */
+      this.doctorId.set(doctorId);
+    });
+
+    // ==========================================================
+    // FECHA
+    // ==========================================================
+
     this.form.controls.scheduledDate.valueChanges.subscribe((scheduledDate) => {
       const timeControl = this.form.controls.scheduledTime;
 
+      /**
+       * Al cambiar fecha debemos
+       * volver a seleccionar hora.
+       */
       timeControl.reset();
 
       if (scheduledDate) {
@@ -337,13 +384,24 @@ export class AppointmentCreatePage {
       } else {
         timeControl.disable();
       }
+
+      /**
+       * Actualiza el signal que utiliza
+       * appointmentDataByDate.
+       */
+      this.scheduledDate.set(scheduledDate);
     });
 
-    /**
-     * Si cambia la duración:
-     * se debe volver a seleccionar la hora.
-     */
+    // ==========================================================
+    // DURACIÓN
+    // ==========================================================
+
     this.form.controls.durationMinutes.valueChanges.subscribe(() => {
+      /**
+       * Al cambiar duración,
+       * la hora seleccionada deja de ser
+       * necesariamente válida.
+       */
       this.form.controls.scheduledTime.reset();
     });
   }
@@ -359,11 +417,18 @@ export class AppointmentCreatePage {
 
     const duration = this.form.controls.durationMinutes.value;
 
+    // ==========================================================
+    // VALIDACIONES INICIALES
+    // ==========================================================
+
     if (!selectedDate || !selectedDoctor || !duration) {
       return true;
     }
 
-    // Bloquear horas pasadas si es hoy
+    // ==========================================================
+    // HORAS PASADAS
+    // ==========================================================
+
     if (selectedDate.daySame(this.today)) {
       const currentTime = new Date();
 
@@ -374,14 +439,10 @@ export class AppointmentCreatePage {
       }
     }
 
-    // Citas del doctor en la fecha seleccionada
-    const doctorAppointments = this.appointments.filter((appointment) =>
-      // TODO: habilitar cuando se consulte la API
-      // appointment.doctorId === selectedDoctor &&
-      this.isSameDate(appointment.scheduledAt, selectedDate),
-    );
+    // ==========================================================
+    // INICIO DE LA NUEVA CITA
+    // ==========================================================
 
-    // Inicio de la nueva cita
     const selectedStart = new Date(
       selectedDate.year,
       selectedDate.month,
@@ -390,20 +451,49 @@ export class AppointmentCreatePage {
       time.minutes,
     );
 
-    // Fin según duración
+    // ==========================================================
+    // FIN DE LA NUEVA CITA
+    // ==========================================================
+
     const selectedEnd = new Date(selectedStart.getTime() + duration * 60_000);
 
-    // Verificar cruces
-    return doctorAppointments.some((appointment) => {
-      const appointmentStart = new Date(appointment.scheduledAt);
+    // ==========================================================
+    // CITAS DEL RESOURCE
+    // ==========================================================
 
-      const appointmentEnd = new Date(
-        appointmentStart.getTime() + appointment.durationMinutes * 60_000,
-      );
+    /**
+     * appointmentDataByDate ya contiene
+     * únicamente las citas del doctor
+     * y fecha seleccionados.
+     *
+     * Aquí solamente verificamos
+     * si existe algún solapamiento.
+     */
+    return (
+      this.appointmentDataByDate.value()?.some((appointment) => {
+        const appointmentStart = new Date(appointment.scheduledAt);
 
-      return selectedStart < appointmentEnd && selectedEnd > appointmentStart;
-    });
+        const appointmentEnd = new Date(
+          appointmentStart.getTime() + appointment.durationMinutes * 60_000,
+        );
+
+        /**
+         * Existe solapamiento cuando:
+         *
+         * inicio nueva < fin existente
+         *
+         * &&
+         *
+         * fin nueva > inicio existente
+         */
+        return selectedStart < appointmentEnd && selectedEnd > appointmentStart;
+      }) ?? false
+    );
   };
+
+  // ============================================================
+  // APARIENCIA DEL CHIP
+  // ============================================================
 
   protected getTimeAppearance(chip: TuiTime): string {
     if (chip.toString('HH:MM') === this.form.controls.scheduledTime.value) {
@@ -416,6 +506,10 @@ export class AppointmentCreatePage {
 
     return 'outline';
   }
+
+  // ============================================================
+  // CLICK EN HORA
+  // ============================================================
 
   protected onTimeClicked(time: string): void {
     this.form.controls.scheduledTime.setValue(time);
@@ -437,23 +531,24 @@ export class AppointmentCreatePage {
       patientId: value.patientId!,
       doctorId: value.doctorId!,
       appointmentTypeId: value.appointmentTypeId!,
-      scheduledAt: `${value.scheduledDate}T${value.scheduledTime}`,
+      scheduledAt: `${this.formatDate(value.scheduledDate!)}T${value.scheduledTime}:00`,
       durationMinutes: value.durationMinutes,
       reason: value.reason,
       notes: value.notes,
     };
 
-    this.appointmentService.create(request).subscribe({
-      next: (response) => {
-        console.log('Create appointment:', response);
-
-        this.router.navigate(['/appointments']);
-      },
-
-      error: (error) => {
-        console.error('Error al crear la cita:', error);
-      },
-    });
+    this.appointmentService
+      .create(request)
+      .pipe(
+        withNotification(this.notificationService, {
+          success: 'Cita creada correctamente',
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.router.navigate(['/appointments']);
+        },
+      });
   }
 
   // ============================================================
@@ -493,13 +588,22 @@ export class AppointmentCreatePage {
   // HELPERS
   // ============================================================
 
-  private isSameDate(scheduledAt: string, selectedDate: TuiDay): boolean {
-    const appointmentDate = new Date(scheduledAt);
+  /**
+   * Convierte TuiDay a YYYY-MM-DD.
+   *
+   * Ejemplo:
+   *
+   * TuiDay(2026, 8, 17)
+   *       ↓
+   * 2026-09-17
+   */
+  private formatDate(date: TuiDay): string {
+    const year = date.year;
 
-    return (
-      appointmentDate.getFullYear() === selectedDate.year &&
-      appointmentDate.getMonth() === selectedDate.month &&
-      appointmentDate.getDate() === selectedDate.day
-    );
+    const month = String(date.month + 1).padStart(2, '0');
+
+    const day = String(date.day).padStart(2, '0');
+
+    return `${year}-${month}-${day}`;
   }
 }

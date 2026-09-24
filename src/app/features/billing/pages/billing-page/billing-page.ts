@@ -13,7 +13,11 @@ import {
   ReactiveFormsModule,
 } from '@angular/forms';
 
-import { rxResource, toSignal } from '@angular/core/rxjs-interop';
+import {
+  rxResource,
+  toSignal,
+} from '@angular/core/rxjs-interop';
+
 import { map } from 'rxjs';
 
 import { tuiCountFilledControls } from '@taiga-ui/cdk';
@@ -30,6 +34,7 @@ import {
 
 import {
   TuiChevron,
+  TuiConfirmService,
   TuiDataListWrapper,
   TuiSelect,
 } from '@taiga-ui/kit';
@@ -46,6 +51,8 @@ import {
 } from '../../interfaces';
 
 import { BillingRecordService } from '../../services/billing-record.service';
+import { withNotification } from '@shared/operators/with-notification';
+import { NotificationService } from '@core/services/alert-notification.service';
 
 interface Stat {
   title: string;
@@ -57,9 +64,11 @@ interface Stat {
 
 @Component({
   selector: 'app-billing-page',
+
   imports: [
     CommonModule,
     ReactiveFormsModule,
+
     TuiButton,
     TuiCardLarge,
     TuiHeader,
@@ -73,28 +82,48 @@ interface Stat {
     TuiTitle,
     TuiAppearance,
   ],
+
   templateUrl: 'billing-page.html',
+
   changeDetection: ChangeDetectionStrategy.OnPush,
+
+  providers: [
+    TuiConfirmService,
+  ],
 })
 export class BillingPage {
-  private readonly dialogs = inject(TuiDialogService);
-  private readonly billingService = inject(BillingRecordService);
+  // --------------------------------------------------
+  // SERVICES
+  // --------------------------------------------------
+
+  private readonly confirm =
+    inject(TuiConfirmService);
+
+  private readonly dialogs =
+    inject(TuiDialogService);
+
+  private readonly billingService =
+    inject(BillingRecordService);
+
+  private readonly notificationService= inject(NotificationService)
 
   // --------------------------------------------------
   // FORMULARIO
   // --------------------------------------------------
 
-  protected readonly form = new FormGroup({
-    search: new FormControl(''),
-    status: new FormControl(''),
-    filter: new FormControl(''),
-  });
+  protected readonly form =
+    new FormGroup({
+      search: new FormControl(''),
+      status: new FormControl(''),
+      filter: new FormControl(''),
+    });
 
   // --------------------------------------------------
   // PAGINACIÓN
   // --------------------------------------------------
 
   protected readonly page = signal(0);
+
   protected readonly size = signal(4);
 
   // --------------------------------------------------
@@ -117,7 +146,9 @@ export class BillingPage {
 
   protected readonly count = toSignal(
     this.form.valueChanges.pipe(
-      map(() => tuiCountFilledControls(this.form)),
+      map(() =>
+        tuiCountFilledControls(this.form),
+      ),
     ),
     {
       initialValue: 0,
@@ -163,25 +194,31 @@ export class BillingPage {
   // RESOURCE
   // --------------------------------------------------
 
-  protected readonly billingResource = rxResource({
-    params: () => ({
-      page: this.page(),
-      size: this.size(),
-    }),
+  protected readonly billingResource =
+    rxResource({
+      params: () => ({
+        page: this.page(),
+        size: this.size(),
+      }),
 
-    stream: ({ params }) =>
-      this.billingService.findAll(
-        params.page,
-        params.size,
-      ),
-  });
+      stream: ({ params }) =>
+        this.billingService.findAll(
+          params.page,
+          params.size,
+        ),
+    });
 
   // --------------------------------------------------
   // HELPERS
   // --------------------------------------------------
 
-  protected getStatusLabel(status: BillingStatus): string {
-    const labels: Record<BillingStatus, string> = {
+  protected getStatusLabel(
+    status: BillingStatus,
+  ): string {
+    const labels: Record<
+      BillingStatus,
+      string
+    > = {
       PENDING: 'Pendiente',
       PAID: 'Pagado',
       CANCELLED: 'Cancelado',
@@ -190,11 +227,21 @@ export class BillingPage {
     return labels[status];
   }
 
-  protected getStatusClass(status: BillingStatus): string {
-    const classes: Record<BillingStatus, string> = {
-      PENDING: 'bg-amber-50 text-amber-700',
-      PAID: 'bg-emerald-50 text-emerald-700',
-      CANCELLED: 'bg-red-50 text-red-700',
+  protected getStatusClass(
+    status: BillingStatus,
+  ): string {
+    const classes: Record<
+      BillingStatus,
+      string
+    > = {
+      PENDING:
+        'bg-amber-50 text-amber-700',
+
+      PAID:
+        'bg-emerald-50 text-emerald-700',
+
+      CANCELLED:
+        'bg-red-50 text-red-700',
     };
 
     return classes[status];
@@ -205,65 +252,108 @@ export class BillingPage {
   // --------------------------------------------------
 
   protected nextPage(): void {
-    const response = this.billingResource.value();
+    const response =
+      this.billingResource.value();
 
     if (!response || response.last) {
       return;
     }
 
-    this.page.update(page => page + 1);
+    this.page.update(
+      page => page + 1,
+    );
   }
 
   protected previousPage(): void {
-    const response = this.billingResource.value();
+    const response =
+      this.billingResource.value();
 
     if (!response || response.first) {
       return;
     }
 
-    this.page.update(page => page - 1);
+    this.page.update(
+      page => page - 1,
+    );
   }
 
   // --------------------------------------------------
-  // ACCIONES
+  // BÚSQUEDA
   // --------------------------------------------------
 
   protected searchBillings(): void {
-    console.log('Filtros:', this.form.value);
+    console.log(
+      'Filtros:',
+      this.form.value,
+    );
 
     this.page.set(0);
 
     this.billingResource.reload();
   }
 
-  protected payBilling(
-    record: BillingRecordResponse,
-  ): void {
-    this.dialogs
-      .open(
-        `
-          ¿Deseas confirmar el pago de la factura
-          <strong>#${record.id}</strong>
-          por
-          <strong>${record.currency} ${record.amount.toFixed(2)}</strong>?
-        `,
-        {
-          label: 'Confirmar pago',
-          size: 's',
-        },
-      )
-      .subscribe(() => {
+  // --------------------------------------------------
+  // PAGAR FACTURA
+  // --------------------------------------------------
+
+ protected payBilling(
+  record: BillingRecordResponse,
+): void {
+  const closable =
+    this.confirm.withConfirm({
+      label: '¿Confirmar pago?',
+    });
+
+  this.dialogs
+    .open(
+      `
+        ¿Deseas confirmar el pago de la factura
+        <strong>#${record.id}</strong>
+        por
+        <strong>
+          ${record.currency}
+          ${record.amount.toFixed(2)}
+        </strong>?
+      `,
+      {
+        label: 'Confirmar pago',
+        size: 's',
+        closable,
+        dismissible: closable,
+      },
+    )
+    .subscribe({
+      complete: () => {
         this.billingService
           .pay(record.id)
-          .subscribe(() => {
-            this.billingResource.reload();
+          .pipe(
+            withNotification(
+              this.notificationService,
+              {
+                success:
+                  'Factura pagada correctamente',
+              },
+            ),
+          )
+          .subscribe({
+            next: () => {
+              this.billingResource.reload();
+            },
           });
-      });
-  }
+      },
+    });
+}
+
+  // --------------------------------------------------
+  // DETALLE
+  // --------------------------------------------------
 
   protected viewDetail(
     record: BillingRecordResponse,
   ): void {
-    console.log('Ver detalle:', record);
+    console.log(
+      'Ver detalle:',
+      record,
+    );
   }
 }

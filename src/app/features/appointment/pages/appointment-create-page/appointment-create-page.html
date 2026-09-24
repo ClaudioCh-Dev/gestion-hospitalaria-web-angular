@@ -199,29 +199,40 @@
         <span><tui-error formControlName="scheduledTime" /></span>
       </tui-textfield> -->
       <div class="md:col-span-2 my-3">
-        <label class="pl-2 pb-1" tuiLabel>Selecciona una hora</label>
-        <div class="flex flex-wrap gap-6" tuiPlatform="ios">
-          <div tuiItemGroup [autoscroll]="false" [horizontal]="false">
-            @for (chip of chips; track chip) {
-              <label
-                tuiChip
-                [appearance]="getTimeAppearance(chip)"
-                [iconEnd]="disabledTime(chip) ? '' : '@tui.clock'"
-              >
-                {{ chip }}
-                <input
-                  appearance=""
-                  name="scheduledTime"
-                  tuiChip
-                  type="radio"
-                  [value]="chip"
-                  [disabled]="disabledTime(chip)"
-                  (click)="onTimeClicked(chip.toString('HH:MM'))"
-                />
-              </label>
-            }
+        <label class="pl-2 pb-1" tuiLabel> Selecciona una hora </label>
+
+        @if (appointmentDataByDate.isLoading()) {
+          <div class="flex items-center gap-2 py-4 pl-2">
+            <tui-loader [inheritColor]="true" size="s" />
+
+            <span class="text-sm text-gray-500"> Consultando disponibilidad... </span>
           </div>
-        </div>
+        } @else {
+          <div class="flex flex-wrap gap-6" tuiPlatform="ios">
+            <div tuiItemGroup [autoscroll]="false" [horizontal]="false">
+              @for (chip of chips; track chip) {
+                <label
+                  tuiChip
+                  [appearance]="getTimeAppearance(chip)"
+                  [iconEnd]="disabledTime(chip) ? '' : '@tui.clock'"
+                >
+                  {{ chip }}
+
+                  <input
+                    appearance=""
+                    name="scheduledTime"
+                    tuiChip
+                    type="radio"
+                    [value]="chip"
+                    [disabled]="disabledTime(chip)"
+                    (click)="onTimeClicked(chip.toString('HH:MM'))"
+                  />
+                </label>
+              }
+            </div>
+          </div>
+        }
+
         <tui-error class="pl-2" formControlName="scheduledTime" />
       </div>
       <!-- MOTIVO -->
