@@ -81,6 +81,9 @@
 </div>
 
 
+<div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
+<div class="min-w-0">
+
 <!-- Loading -->
 
 @if (calendarResource.isLoading()) {
@@ -138,7 +141,7 @@
 
         @if (showNowLine()) {
           <div
-            class="pointer-events-none absolute bottom-0 z-[16] -translate-x-1/2 translate-y-1/2 rounded-full bg-(--tui-background-accent-1) px-1.5 py-0.5 text-[9px] font-semibold leading-none text-white shadow-sm"
+            class="pointer-events-none absolute bottom-1 z-[16] -translate-x-1/2 rounded-full bg-(--tui-background-accent-1) px-1.5 py-0.5 text-[9px] font-semibold leading-none text-white shadow-sm"
             [style.left]="'calc(180px + (100% - 180px) * ' + nowPercent()! / 100 + ')'"
           >
             {{ nowLabel() }}
@@ -162,7 +165,7 @@
         @for (hour of hours; track hour) {
 
           <div
-            class="border-l border-slate-300 bg-slate-50 px-1 py-3 text-center"
+            class="border-l border-slate-300 bg-slate-50 px-1 pt-2 pb-6 text-center"
           >
             <span
               class="text-[10px] font-medium text-slate-500"
@@ -288,6 +291,20 @@
 </div>
 
 }
+
+
+</div>
+
+<!-- Panel: en curso, próximas y leyenda -->
+
+<app-agenda-panel
+  [current]="currentAppointments()"
+  [upcoming]="upcomingAppointments()"
+  [legend]="legend()"
+  [loading]="todayResource.isLoading() || !calendarResource.hasValue()"
+  (select)="openAppointment($event)"
+/>
+</div>
 
 
 <!-- Doctor tooltip -->

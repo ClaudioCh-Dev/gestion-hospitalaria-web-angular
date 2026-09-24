@@ -41,10 +41,16 @@ import {
 } from '../../../doctor/interfaces';
 import { AvatarDefaultDoctorPipe } from '@shared/pipes/avatar-default-doctor-pipe';
 import { StateMessage } from '@shared/components/state-message/state-message';
+import {
+  AgendaItem,
+  AgendaLegendItem,
+  AgendaPanel,
+} from '../agenda-panel/agenda-panel';
 
 @Component({
   selector: 'app-cell-calendar-admin',
   imports: [
+    AgendaPanel,
     StateMessage,
     FormsModule,
     NgClass,
@@ -205,6 +211,108 @@ export class CellCalendarAdmin {
               params.date,
             ),
         }),
+    });
+
+  // =========================
+  // TODAY PANEL
+  // =========================
+
+  // Solo cambia al pasar la medianoche, así no se vuelve a pedir cada minuto
+  private readonly todayKey =
+    computed(() => {
+      const now = this.now();
+
+      return this.formatDate(
+        new TuiDay(now.getFullYear(), now.getMonth(), now.getDate()),
+      );
+    });
+
+  // Citas de hoy aunque la agenda muestre otro día
+  protected readonly todayResource =
+    rxResource({
+      params: () => ({ date: this.todayKey() }),
+      stream: ({ params }) =>
+        this.appointmentService.findByDate(params.date),
+    });
+
+  private readonly todayItems =
+    computed(() => {
+      const types = new Map(
+        (this.calendarResource.value()?.appointmentTypes ?? [])
+          .map(type => [type.id, type]),
+      );
+
+      const doctors = new Map(
+        this.doctors.map(doctor => [doctor.id, doctor]),
+      );
+
+      const now = this.now();
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+      return (this.todayResource.value() ?? [])
+        .filter(appointment => !this.isFinished(appointment))
+        .map(appointment => {
+          const start = this.getTime(appointment.scheduledAt);
+          const startMinutes = this.toMinutes(start);
+          const endMinutes = startMinutes + appointment.durationMinutes;
+          const doctor = doctors.get(appointment.doctorId);
+          const type = types.get(appointment.appointmentTypeId);
+          const inProgress = startMinutes <= nowMinutes && nowMinutes < endMinutes;
+
+          return {
+            inProgress,
+            startMinutes,
+            item: {
+              appointment,
+              start,
+              end: this.addMinutes(start, appointment.durationMinutes),
+              doctorName: doctor
+                ? `${doctor.firstName} ${doctor.lastName}`
+                : `Médico #${appointment.doctorId}`,
+              typeTitle: type?.title ?? 'Cita',
+              colorClasses: getAppointmentTypeColor(type?.color).classes,
+              minutes: inProgress
+                ? endMinutes - nowMinutes
+                : startMinutes - nowMinutes,
+              progress: inProgress
+                ? (nowMinutes - startMinutes) / appointment.durationMinutes * 100
+                : 0,
+            } satisfies AgendaItem,
+          };
+        })
+        .sort((a, b) => a.startMinutes - b.startMinutes);
+    });
+
+  protected readonly currentAppointments =
+    computed(() =>
+      this.todayItems()
+        .filter(entry => entry.inProgress)
+        .map(entry => entry.item),
+    );
+
+  protected readonly upcomingAppointments =
+    computed(() => {
+      const now = this.now();
+      const nowMinutes = now.getHours() * 60 + now.getMinutes();
+
+      return this.todayItems()
+        .filter(entry => entry.startMinutes > nowMinutes)
+        .map(entry => entry.item);
+    });
+
+  // Tipos activos más los inactivos que aún tengan citas en el día mostrado
+  protected readonly legend =
+    computed<AgendaLegendItem[]>(() => {
+      const usedTypeIds = new Set(
+        this.appointments.map(appointment => appointment.appointmentTypeId),
+      );
+
+      return (this.calendarResource.value()?.appointmentTypes ?? [])
+        .filter(type => type.active || usedTypeIds.has(type.id))
+        .map(type => ({
+          title: type.title,
+          colorClasses: getAppointmentTypeColor(type.color).classes,
+        }));
     });
 
   // =========================
@@ -462,6 +570,7 @@ export class CellCalendarAdmin {
 
         if (updated) {
           this.calendarResource.reload();
+          this.todayResource.reload();
         }
       });
   }
