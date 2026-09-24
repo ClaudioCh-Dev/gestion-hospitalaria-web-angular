@@ -46,7 +46,7 @@
       <fieldset tuiTextfieldSize="s">
         <!-- Buscar -->
         <tui-textfield iconStart="@tui.search">
-          <input formControlName="search" placeholder="N° de factura, cita o paciente..." tuiInput />
+          <input formControlName="search" placeholder="Paciente, N° de factura o de cita..." tuiInput />
         </tui-textfield>
 
         <!-- Estado -->
@@ -193,7 +193,13 @@
               <div>
                 <p class="text-xs text-slate-400">Paciente</p>
 
-                <p class="mt-1 text-sm font-medium text-slate-800">#{{ record.patientId }}</p>
+                <p class="mt-1 text-sm font-medium text-slate-800">
+                  @if (patientNamesResource.isLoading()) {
+                    <span class="inline-block h-3 w-28 animate-pulse rounded bg-slate-200"></span>
+                  } @else {
+                    {{ patientName(record.patientId) }}
+                  }
+                </p>
               </div>
             </div>
 

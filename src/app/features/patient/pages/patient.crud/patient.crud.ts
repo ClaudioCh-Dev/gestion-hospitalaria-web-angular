@@ -32,7 +32,7 @@ import {
   type TuiConfirmData,
 } from '@taiga-ui/kit';
 
-import { filter, switchMap } from 'rxjs';
+import { catchError, filter, of, switchMap } from 'rxjs';
 
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 
@@ -122,8 +122,30 @@ export class PatientCrud {
       ),
   });
 
-  // El backend solo filtra por género: la búsqueda por texto se aplica sobre la página cargada
+  // Un DNI completo (8 dígitos) se busca en el backend, fuera de la página cargada
+  protected readonly isDniSearch = computed(() => /^\d{8}$/.test(this.search()));
+
+  protected readonly dniResource = rxResource({
+    params: () => (this.isDniSearch() ? { dni: this.search() } : undefined),
+
+    stream: ({ params }) =>
+      this.patientService
+        .findByDocumentNumber(params.dni)
+        .pipe(catchError(() => of(null))),
+  });
+
+  protected readonly tableLoading = computed(
+    () => this.patientsResource.isLoading() || this.dniResource.isLoading(),
+  );
+
+  // El backend solo filtra por género: el resto de la búsqueda se aplica sobre la página cargada
   protected readonly filteredPatients = computed(() => {
+    if (this.isDniSearch()) {
+      const patient = this.dniResource.value();
+
+      return patient ? [patient] : [];
+    }
+
     const patients = this.patientsResource.value()?.content ?? [];
     const term = this.search().toLowerCase();
 

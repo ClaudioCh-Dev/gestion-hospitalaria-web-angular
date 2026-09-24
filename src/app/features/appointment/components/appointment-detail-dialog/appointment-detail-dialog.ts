@@ -20,6 +20,10 @@ import { PatientService } from '@patients/services/patient.service';
 import { DoctorResponse } from '../../../doctor/intefaces';
 import { AppointmentResponse, AppointmentStatus } from '../../interfaces';
 import { AppointmentService } from '../../services/appointment.service';
+import {
+  APPOINTMENT_STATUS_APPEARANCES,
+  APPOINTMENT_STATUS_LABELS,
+} from '../../constants/appointment-status';
 
 export interface AppointmentDetailData {
   appointment: AppointmentResponse;
@@ -64,19 +68,9 @@ export class AppointmentDetailDialog {
     stream: ({ params }) => this.patientService.findById(params.id),
   });
 
-  protected readonly statusLabels: Record<AppointmentStatus, string> = {
-    [AppointmentStatus.SCHEDULED]: 'Programada',
-    [AppointmentStatus.CONFIRMED]: 'Confirmada',
-    [AppointmentStatus.COMPLETED]: 'Completada',
-    [AppointmentStatus.CANCELLED]: 'Cancelada',
-  };
+  protected readonly statusLabels = APPOINTMENT_STATUS_LABELS;
 
-  protected readonly statusAppearances: Record<AppointmentStatus, string> = {
-    [AppointmentStatus.SCHEDULED]: 'info',
-    [AppointmentStatus.CONFIRMED]: 'positive',
-    [AppointmentStatus.COMPLETED]: 'neutral',
-    [AppointmentStatus.CANCELLED]: 'negative',
-  };
+  protected readonly statusAppearances = APPOINTMENT_STATUS_APPEARANCES;
 
   protected readonly actionConfig: Record<AppointmentAction, ActionConfig> = {
     CONFIRM: {

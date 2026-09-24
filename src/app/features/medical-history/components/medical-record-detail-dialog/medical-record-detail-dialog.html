@@ -1,0 +1,262 @@
+<div class="flex flex-col gap-4">
+  <!-- Indicador de paso -->
+  <div class="flex items-center justify-between gap-4">
+    <span class="text-sm font-medium text-slate-700">{{ stepTitles[step() - 1] }}</span>
+
+    <div class="flex items-center gap-2">
+      <span class="text-xs text-slate-400">{{ step() }} / {{ steps }}</span>
+
+      <progress size="s" tuiProgressBar [max]="steps" [style.width.rem]="6" [value]="step()"></progress>
+    </div>
+  </div>
+
+  <section class="overflow-hidden" [tuiSlides]="direction()">
+    @switch (step()) {
+      <!-- ================================================= -->
+      <!-- 1. ATENCIÓN -->
+      <!-- ================================================= -->
+      @case (1) {
+        <div appearance="outline-grayscale" tuiCardLarge>
+          <header tuiHeader>
+            <h2 tuiTitle>
+              {{ record.specialty }}
+              <span tuiSubtitle class="capitalize">
+                {{ record.scheduledAt | date: "EEEE d 'de' MMMM y · HH:mm" : undefined : 'es-PE' }}
+              </span>
+            </h2>
+
+            <aside tuiAccessories>
+              <div appearance="primary" tuiAvatar="@tui.stethoscope"></div>
+            </aside>
+          </header>
+
+          <div class="flex flex-col gap-1">
+            <div tuiCell>
+              <div appearance="secondary" tuiAvatar="@tui.activity"></div>
+              <div tuiTitle>
+                Estado
+                <div tuiSubtitle>
+                  <span tuiBadge size="m" [appearance]="statusAppearance">{{ statusLabel }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div tuiCell>
+              <div appearance="secondary" tuiAvatar="@tui.file-text"></div>
+              <div tuiTitle>
+                Motivo de consulta
+                <div tuiSubtitle>{{ record.reason || 'Consulta médica' }}</div>
+              </div>
+            </div>
+
+            <div tuiCell>
+              <div appearance="secondary" tuiAvatar="@tui.calendar"></div>
+              <div tuiTitle>
+                Cita
+                <div tuiSubtitle>#{{ record.appointmentId }}</div>
+              </div>
+            </div>
+
+            <div tuiCell>
+              <div appearance="secondary" tuiAvatar="@tui.wallet"></div>
+              <div tuiTitle>
+                Monto de la atención
+                <div tuiSubtitle>{{ record.amount | currency: 'PEN' : 'symbol' : '1.2-2' : 'es-PE' }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+
+      <!-- ================================================= -->
+      <!-- 2. PACIENTE -->
+      <!-- ================================================= -->
+      @case (2) {
+        <div appearance="outline-grayscale" tuiCardLarge>
+          <header tuiHeader>
+            <h2 tuiTitle>
+              {{ record.patientName }}
+              <span tuiSubtitle>
+                @if (patientResource.value(); as patient) {
+                  DNI {{ patient.documentNumber }}
+                  @if (age() !== null) {
+                    · {{ age() }} años
+                  }
+                } @else {
+                  Paciente #{{ record.patientId }}
+                }
+              </span>
+            </h2>
+
+            <aside tuiAccessories>
+              <div appearance="primary" tuiAvatar="@tui.user"></div>
+            </aside>
+          </header>
+
+          @if (patientResource.isLoading()) {
+            @for (item of [1, 2, 3]; track item) {
+              <div class="h-12 animate-pulse rounded-lg bg-slate-100"></div>
+            }
+          } @else if (patientResource.value(); as patient) {
+            <div class="flex flex-col gap-1">
+              <div tuiCell>
+                <div appearance="secondary" tuiAvatar="@tui.droplet"></div>
+                <div tuiTitle>
+                  Tipo de sangre
+                  <div tuiSubtitle>{{ bloodTypeLabel() }}</div>
+                </div>
+              </div>
+
+              <div tuiCell>
+                <div appearance="secondary" tuiAvatar="@tui.triangle-alert"></div>
+                <div tuiTitle>
+                  Alergias
+                  <div tuiSubtitle>{{ patient.allergies || 'Ninguna registrada' }}</div>
+                </div>
+              </div>
+
+              <div tuiCell>
+                <div appearance="secondary" tuiAvatar="@tui.phone"></div>
+                <div tuiTitle>
+                  Contacto
+                  <div tuiSubtitle>
+                    {{ patient.phone || 'Sin teléfono' }} · {{ patient.email || 'Sin correo' }}
+                  </div>
+                </div>
+              </div>
+
+              <div tuiCell>
+                <div appearance="secondary" tuiAvatar="@tui.map-pin"></div>
+                <div tuiTitle>
+                  Dirección
+                  <div tuiSubtitle>{{ patient.address || 'No especificada' }}</div>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <p class="py-6 text-center text-sm text-slate-500">
+              No se pudo cargar la información del paciente.
+            </p>
+          }
+        </div>
+      }
+
+      <!-- ================================================= -->
+      <!-- 3. MÉDICO Y FACTURACIÓN -->
+      <!-- ================================================= -->
+      @case (3) {
+        <div class="flex flex-col gap-4">
+          <div appearance="outline-grayscale" tuiCardLarge>
+            <header tuiHeader>
+              <h2 tuiTitle>
+                {{ record.doctorName }}
+                <span tuiSubtitle>{{ record.specialty }}</span>
+              </h2>
+
+              <aside tuiAccessories>
+                <div appearance="primary" tuiAvatar="@tui.stethoscope"></div>
+              </aside>
+            </header>
+
+            @if (doctorResource.isLoading()) {
+              <div class="h-12 animate-pulse rounded-lg bg-slate-100"></div>
+            } @else if (doctorResource.value(); as doctor) {
+              <div class="flex flex-col gap-1">
+                <div tuiCell>
+                  <div appearance="secondary" tuiAvatar="@tui.id-card"></div>
+                  <div tuiTitle>
+                    Colegiatura
+                    <div tuiSubtitle>{{ doctor.licenseNumber }}</div>
+                  </div>
+                </div>
+
+                <div tuiCell>
+                  <div appearance="secondary" tuiAvatar="@tui.mail"></div>
+                  <div tuiTitle>
+                    Contacto
+                    <div tuiSubtitle>
+                      {{ doctor.phone || 'Sin teléfono' }} · {{ doctor.email || 'Sin correo' }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            } @else {
+              <p class="py-4 text-center text-sm text-slate-500">
+                No se pudo cargar la información del médico.
+              </p>
+            }
+          </div>
+
+          <div appearance="outline-grayscale" tuiCardLarge>
+            <header tuiHeader>
+              <h2 tuiTitle>
+                Facturación
+                <span tuiSubtitle>Comprobante asociado a la cita #{{ record.appointmentId }}</span>
+              </h2>
+
+              <aside tuiAccessories>
+                <div appearance="primary" tuiAvatar="@tui.receipt"></div>
+              </aside>
+            </header>
+
+            @if (billingResource.isLoading()) {
+              <div class="h-12 animate-pulse rounded-lg bg-slate-100"></div>
+            } @else if (billingResource.value(); as invoice) {
+              <div tuiCell>
+                <div appearance="secondary" tuiAvatar="@tui.wallet"></div>
+                <div tuiTitle>
+                  Factura #{{ invoice.id }}
+                  <div tuiSubtitle>
+                    Emitida {{ invoice.issuedAt | date: 'dd/MM/yyyy' }}
+                    @if (invoice.paidAt) {
+                      · Pagada {{ invoice.paidAt | date: 'dd/MM/yyyy' }}
+                    }
+                  </div>
+                </div>
+
+                <div class="flex flex-col items-end gap-1">
+                  <span class="text-sm font-semibold text-slate-900">
+                    {{ invoice.amount | currency: invoice.currency : 'symbol' : '1.2-2' : 'es-PE' }}
+                  </span>
+
+                  <span tuiBadge size="s" [appearance]="billingStatusAppearances[invoice.status]">
+                    {{ billingStatusLabels[invoice.status] }}
+                  </span>
+                </div>
+              </div>
+            } @else {
+              <p class="py-4 text-center text-sm text-slate-500">
+                No hay una factura registrada para esta cita.
+              </p>
+            }
+          </div>
+        </div>
+      }
+    }
+  </section>
+
+  <!-- Navegación -->
+  <footer class="flex items-center justify-between border-t border-slate-100 pt-4">
+    <button
+      tuiButton
+      type="button"
+      size="s"
+      appearance="flat"
+      iconStart="@tui.chevron-left"
+      [disabled]="step() === 1"
+      (click)="onStep(-1)"
+    >
+      Atrás
+    </button>
+
+    <button
+      tuiButton
+      type="button"
+      size="s"
+      [iconEnd]="step() < steps ? '@tui.chevron-right' : '@tui.check'"
+      (click)="next()"
+    >
+      {{ step() < steps ? 'Siguiente' : 'Listo' }}
+    </button>
+  </footer>
+</div>

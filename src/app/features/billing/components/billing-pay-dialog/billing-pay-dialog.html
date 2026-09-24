@@ -1,0 +1,47 @@
+<div class="flex flex-col gap-4">
+  <div appearance="outline-grayscale" tuiCardLarge>
+    <header tuiHeader>
+      <h2 tuiTitle>
+        {{ record.amount | currency: record.currency : 'symbol' : '1.2-2' : 'es-PE' }}
+        <span tuiSubtitle>Monto a cobrar</span>
+      </h2>
+
+      <aside tuiAccessories>
+        <div appearance="primary" tuiAvatar="@tui.wallet"></div>
+      </aside>
+    </header>
+
+    <div class="flex flex-col gap-1">
+      <div tuiCell>
+        <div appearance="secondary" tuiAvatar="@tui.user"></div>
+        <div tuiTitle>
+          Paciente
+          <div tuiSubtitle>{{ patientName }}</div>
+        </div>
+      </div>
+
+      <div tuiCell>
+        <div appearance="secondary" tuiAvatar="@tui.file-text"></div>
+        <div tuiTitle>
+          Factura #{{ record.id }}
+          <div tuiSubtitle>
+            Cita #{{ record.appointmentId }} · emitida {{ record.issuedAt | date: 'dd/MM/yyyy' }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="flex items-start gap-2 text-xs text-slate-500">
+    <tui-icon icon="@tui.info" class="shrink-0 text-slate-400" />
+    El pago se registrará con la fecha y hora actuales y la factura pasará a estado "Pagado".
+  </p>
+
+  <footer class="flex justify-end gap-2 border-t border-slate-100 pt-4">
+    <button tuiButton type="button" size="s" appearance="flat" (click)="cancel()">Cancelar</button>
+
+    <button tuiButton type="button" size="s" iconStart="@tui.credit-card" (click)="confirm()">
+      Confirmar cobro
+    </button>
+  </footer>
+</div>

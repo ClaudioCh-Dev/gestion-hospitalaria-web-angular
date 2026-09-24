@@ -1,63 +1,116 @@
-<div class="flex flex-col gap-5">
-  <div class="flex items-center justify-between">
-    <div>
-      <p class="text-xs text-slate-400">Monto</p>
-      <p class="text-2xl font-semibold text-slate-900">
-        {{ record.currency }} {{ record.amount | number: '1.2-2' }}
-      </p>
-    </div>
+<div class="flex flex-col gap-4">
+  <!-- ================================================= -->
+  <!-- RESUMEN -->
+  <!-- ================================================= -->
+  <div appearance="outline-grayscale" tuiCardLarge>
+    <header tuiHeader>
+      <h2 tuiTitle>
+        {{ record.amount | currency: record.currency : 'symbol' : '1.2-2' : 'es-PE' }}
+        <span tuiSubtitle>Factura #{{ record.id }} · Cita #{{ record.appointmentId }}</span>
+      </h2>
 
-    <span tuiBadge tuiStatus size="m" [appearance]="statusAppearances[record.status]">
-      {{ statusLabels[record.status] }}
-    </span>
+      <aside tuiAccessories>
+        <span
+          tuiBadge
+          size="l"
+          [appearance]="statusAppearances[record.status]"
+          [iconStart]="statusIcons[record.status]"
+        >
+          {{ statusLabels[record.status] }}
+        </span>
+      </aside>
+    </header>
+
+    <div class="flex flex-col gap-1">
+      <div tuiCell>
+        <div appearance="secondary" tuiAvatar="@tui.file-text"></div>
+        <div tuiTitle>
+          Emitida
+          <div tuiSubtitle>{{ record.issuedAt | date: "d 'de' MMMM y · HH:mm" : undefined : 'es-PE' }}</div>
+        </div>
+      </div>
+
+      <div tuiCell>
+        <div appearance="secondary" tuiAvatar="@tui.credit-card"></div>
+        <div tuiTitle>
+          Pago
+          <div tuiSubtitle>
+            @if (record.paidAt) {
+              {{ record.paidAt | date: "d 'de' MMMM y · HH:mm" : undefined : 'es-PE' }}
+            } @else {
+              Sin pago registrado
+            }
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
-  <dl class="grid grid-cols-2 gap-4 border-t border-slate-100 pt-4 text-sm">
-    <div class="col-span-2">
-      <dt class="flex items-center gap-1 text-xs text-slate-500">
-        <tui-icon icon="@tui.user" />
-        Paciente
-      </dt>
-      <dd class="mt-1 font-medium text-slate-900">
-        @if (patientResource.isLoading()) {
-          <span class="inline-block h-3 w-32 animate-pulse rounded bg-slate-200"></span>
-        } @else if (patientResource.value(); as patient) {
-          {{ patient.firstName }} {{ patient.lastName }}
-          <span class="text-xs font-normal text-slate-400">· DNI {{ patient.documentNumber }}</span>
-        } @else {
-          Paciente #{{ record.patientId }}
-        }
-      </dd>
-    </div>
-
-    <div>
-      <dt class="flex items-center gap-1 text-xs text-slate-500">
-        <tui-icon icon="@tui.calendar" />
-        Cita
-      </dt>
-      <dd class="mt-1 font-medium text-slate-900">#{{ record.appointmentId }}</dd>
-    </div>
-
-    <div>
-      <dt class="flex items-center gap-1 text-xs text-slate-500">
-        <tui-icon icon="@tui.file-text" />
-        Emitida
-      </dt>
-      <dd class="mt-1 text-slate-900">{{ record.issuedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
-    </div>
-
-    <div>
-      <dt class="flex items-center gap-1 text-xs text-slate-500">
-        <tui-icon icon="@tui.credit-card" />
-        Pagada
-      </dt>
-      <dd class="mt-1 text-slate-900">
-        {{ record.paidAt ? (record.paidAt | date: 'dd/MM/yyyy HH:mm') : 'Sin pago registrado' }}
-      </dd>
-    </div>
-  </dl>
-
-  <div class="flex justify-end">
-    <button tuiButton type="button" size="s" appearance="outline" (click)="close()">Cerrar</button>
+  <!-- ================================================= -->
+  <!-- PACIENTE -->
+  <!-- ================================================= -->
+  <div appearance="outline-grayscale" tuiCardLarge>
+    @if (patientResource.isLoading()) {
+      <div class="h-12 animate-pulse rounded-lg bg-slate-100"></div>
+    } @else {
+      <div tuiCell>
+        <div appearance="primary" tuiAvatar="@tui.user"></div>
+        <div tuiTitle>
+          @if (patientResource.value(); as patient) {
+            {{ patient.firstName }} {{ patient.lastName }}
+            <div tuiSubtitle>
+              DNI {{ patient.documentNumber }}
+              @if (patient.phone) {
+                · {{ patient.phone }}
+              }
+            </div>
+          } @else {
+            Paciente #{{ record.patientId }}
+            <div tuiSubtitle>No se pudo cargar la información del paciente</div>
+          }
+        </div>
+      </div>
+    }
   </div>
+
+  <!-- ================================================= -->
+  <!-- CITA -->
+  <!-- ================================================= -->
+  <div appearance="outline-grayscale" tuiCardLarge>
+    @if (appointmentResource.isLoading()) {
+      <div class="h-12 animate-pulse rounded-lg bg-slate-100"></div>
+    } @else if (appointmentResource.value(); as data) {
+      <div tuiCell>
+        <div appearance="primary" tuiAvatar="@tui.calendar"></div>
+        <div tuiTitle>
+          <span class="capitalize">
+            {{ data.appointment.scheduledAt | date: "EEEE d 'de' MMMM · HH:mm" : undefined : 'es-PE' }}
+          </span>
+          <div tuiSubtitle>
+            @if (data.doctor) {
+              {{ data.doctor.firstName }} {{ data.doctor.lastName }} · {{ data.doctor.specialtyName }}
+            } @else {
+              Médico #{{ data.appointment.doctorId }}
+            }
+          </div>
+        </div>
+
+        <span tuiBadge size="m" [appearance]="appointmentStatusAppearances[data.appointment.status]">
+          {{ appointmentStatusLabels[data.appointment.status] }}
+        </span>
+      </div>
+    } @else {
+      <div tuiCell>
+        <div appearance="primary" tuiAvatar="@tui.calendar"></div>
+        <div tuiTitle>
+          Cita #{{ record.appointmentId }}
+          <div tuiSubtitle>No se pudo cargar la información de la cita</div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <footer class="flex justify-end border-t border-slate-100 pt-4">
+    <button tuiButton type="button" size="s" (click)="close()">Listo</button>
+  </footer>
 </div>

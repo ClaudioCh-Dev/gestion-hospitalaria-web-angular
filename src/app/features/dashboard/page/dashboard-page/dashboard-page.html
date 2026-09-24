@@ -75,22 +75,26 @@
           </button>
         </div>
       } @else {
+        <!-- Una columna por día: cada punto queda centrado en su columna, lejos de los bordes.
+             La altura va inline: el :host de tui-axes (block-size: 100%) gana a las utilidades de Tailwind -->
         <tui-axes
-          class="h-50 w-full"
+          class="w-full"
+          [style.block-size.rem]="12.5"
           [axisXLabels]="chartLabels"
+          [centeredXLabels]="true"
           [horizontalLines]="4"
           [tuiLineChartHint]="hintContent"
-          [verticalLines]="chartLabels.length - 1"
+          [verticalLines]="chartLabels.length"
         >
           <tui-line-chart
             [dots]="true"
             [filled]="true"
-            [height]="chartHeight()"
+            [height]="chartHeight() + 0.5"
             [value]="appointmentsChart()"
-            [width]="chartLabels.length - 1"
-            [x]="0"
+            [width]="chartLabels.length"
+            [x]="-0.5"
             [xStringify]="xStringify"
-            [y]="0"
+            [y]="-0.5"
             [yStringify]="yStringify"
           />
         </tui-axes>

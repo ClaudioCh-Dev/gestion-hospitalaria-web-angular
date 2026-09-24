@@ -92,22 +92,6 @@
             </p>
           </div>
 
-          <!-- Registro -->
-
-          <div>
-            <span class="flex items-center gap-1 text-sm text-gray-500">
-              <tui-icon icon="@tui.clock" />
-
-              Horario
-            </span>
-
-            <p class="ml-6">
-              {{ currentDoctor.scheduleStart?.slice(0, 5) ?? '--:--' }}
-              -
-              {{ currentDoctor.scheduleEnd?.slice(0, 5) ?? '--:--' }}
-            </p>
-          </div>
-
           <!-- Descripción especialidad -->
 
           <div class="col-span-2">
@@ -198,6 +182,55 @@
             </p>
           </div>
         </div>
+      </section>
+
+      <!-- ================================================= -->
+      <!-- AGENDA -->
+      <!-- ================================================= -->
+
+      <section class="flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold">Agenda</h3>
+
+          @if (agendaResource.value(); as agenda) {
+            <span class="text-xs text-slate-400">
+              {{ agenda.total }} citas · {{ agenda.completed }} completadas
+            </span>
+          }
+        </div>
+
+        @if (agendaResource.isLoading()) {
+          @for (item of [1, 2, 3]; track item) {
+            <div class="h-14 animate-pulse rounded-lg bg-slate-100"></div>
+          }
+        } @else if (agendaResource.error()) {
+          <p class="py-4 text-center text-sm text-slate-500">No se pudo cargar la agenda.</p>
+        } @else if (agendaResource.value(); as agenda) {
+          @for (item of agenda.upcoming; track item.appointment.id) {
+            <div class="flex items-center justify-between rounded-lg border border-slate-200 p-3">
+              <div>
+                <p class="text-sm font-medium text-slate-900">{{ item.patientName }}</p>
+
+                <p class="text-xs text-slate-500">
+                  {{ item.appointment.scheduledAt | date: 'EEE dd/MM · HH:mm' : undefined : 'es-PE' }}
+                  · {{ item.appointment.reason || 'Consulta médica' }}
+                </p>
+              </div>
+
+              <span tuiBadge size="m" [appearance]="statusAppearances[item.appointment.status]">
+                {{ statusLabels[item.appointment.status] }}
+              </span>
+            </div>
+          } @empty {
+            <p class="py-4 text-center text-sm text-slate-500">No tiene citas próximas.</p>
+          }
+
+          @if (agenda.pendingCount > agenda.upcoming.length) {
+            <p class="text-center text-xs text-slate-400">
+              Mostrando {{ agenda.upcoming.length }} de {{ agenda.pendingCount }} citas próximas
+            </p>
+          }
+        }
       </section>
     </div>
   }

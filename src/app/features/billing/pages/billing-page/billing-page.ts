@@ -19,7 +19,7 @@ import {
   toSignal,
 } from '@angular/core/rxjs-interop';
 
-import { map, startWith } from 'rxjs';
+import { catchError, EMPTY, forkJoin, map, of, startWith, switchMap } from 'rxjs';
 
 import { tuiCountFilledControls } from '@taiga-ui/cdk';
 
@@ -35,7 +35,6 @@ import {
 
 import {
   TuiChevron,
-  TuiConfirmService,
   TuiDataListWrapper,
   TuiSelect,
 } from '@taiga-ui/kit';
@@ -52,10 +51,15 @@ import {
 } from '../../interfaces';
 
 import { BillingRecordService } from '../../services/billing-record.service';
+import { PatientService } from '@patients/services/patient.service';
 import { withNotification } from '@shared/operators/with-notification';
 import { NotificationService } from '@core/services/alert-notification.service';
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 import { BillingDetailDialog } from '../../components/billing-detail-dialog/billing-detail-dialog';
+import {
+  BillingPayDialog,
+  BillingPayDialogData,
+} from '../../components/billing-pay-dialog/billing-pay-dialog';
 
 const ALL_STATUSES = 'Todos los estados';
 
@@ -100,20 +104,18 @@ interface Stat {
 
   changeDetection: ChangeDetectionStrategy.OnPush,
 
-  providers: [
-    TuiConfirmService,
-  ],
 })
 export class BillingPage {
   // --------------------------------------------------
   // SERVICES
   // --------------------------------------------------
 
-  private readonly confirm =
-    inject(TuiConfirmService);
 
   private readonly dialogs =
     inject(TuiDialogService);
+
+  private readonly patientService =
+    inject(PatientService);
 
   private readonly billingService =
     inject(BillingRecordService);
@@ -232,6 +234,65 @@ export class BillingPage {
     });
 
   // --------------------------------------------------
+  // NOMBRES DE PACIENTES
+  //
+  // BillingRecordResponse solo trae patientId: se consulta
+  // una vez cada paciente distinto de la página cargada.
+  // --------------------------------------------------
+
+  private readonly patientIds = computed(() => [
+    ...new Set(
+      (this.billingResource.value()?.content ?? [])
+        .map(record => record.patientId),
+    ),
+  ]);
+
+  protected readonly patientNamesResource =
+    rxResource({
+      params: () => ({
+        ids: this.patientIds(),
+      }),
+
+      stream: ({ params }) => {
+        if (!params.ids.length) {
+          return of(new Map<number, string>());
+        }
+
+        return forkJoin(
+          params.ids.map(id =>
+            this.patientService.findById(id).pipe(
+              map(patient => `${patient.firstName} ${patient.lastName}`),
+              catchError(() => of(null)),
+            ),
+          ),
+        ).pipe(
+          map(names => {
+            const result = new Map<number, string>();
+
+            params.ids.forEach((id, index) => {
+              const name = names[index];
+
+              if (name) {
+                result.set(id, name);
+              }
+            });
+
+            return result;
+          }),
+        );
+      },
+    });
+
+  protected patientName(
+    patientId: number,
+  ): string {
+    return (
+      this.patientNamesResource.value()?.get(patientId) ??
+      `Paciente #${patientId}`
+    );
+  }
+
+  // --------------------------------------------------
   // FILTROS (sobre la página cargada)
   // --------------------------------------------------
 
@@ -251,7 +312,10 @@ export class BillingPage {
       (!statusFilter || record.status === statusFilter) &&
       (!term ||
         [record.id, record.patientId, record.appointmentId]
-          .some(value => String(value).includes(term))),
+          .some(value => String(value).includes(term)) ||
+        this.patientName(record.patientId)
+          .toLowerCase()
+          .includes(term.toLowerCase())),
     );
 
     const byDate = (record: BillingRecordResponse) =>
@@ -368,7 +432,7 @@ export class BillingPage {
     const rows = this.filteredRecords().map(record => [
       record.id,
       record.appointmentId,
-      record.patientId,
+      `"${this.patientName(record.patientId)}"`,
       record.amount.toFixed(2),
       record.currency,
       this.getStatusLabel(record.status),
@@ -397,54 +461,50 @@ export class BillingPage {
   // PAGAR FACTURA
   // --------------------------------------------------
 
- protected payBilling(
-  record: BillingRecordResponse,
-): void {
-  const closable =
-    this.confirm.withConfirm({
-      label: '¿Confirmar pago?',
-    });
+  protected payBilling(
+    record: BillingRecordResponse,
+  ): void {
+    const data: BillingPayDialogData = {
+      record,
+      patientName: this.patientName(record.patientId),
+    };
 
-  this.dialogs
-    .open(
-      `
-        ¿Deseas confirmar el pago de la factura
-        <strong>#${record.id}</strong>
-        por
-        <strong>
-          ${record.currency}
-          ${record.amount.toFixed(2)}
-        </strong>?
-      `,
-      {
-        label: 'Confirmar pago',
-        size: 's',
-        closable,
-        dismissible: closable,
-      },
-    )
-    .subscribe({
-      complete: () => {
-        this.billingService
-          .pay(record.id)
-          .pipe(
-            withNotification(
-              this.notificationService,
-              {
-                success:
-                  'Factura pagada correctamente',
-              },
-            ),
-          )
-          .subscribe({
-            next: () => {
-              this.billingResource.reload();
-              this.summaryResource.reload();
-            },
-          });
-      },
-    });
-}
+    this.dialogs
+      .open<boolean>(
+        new PolymorpheusComponent(
+          BillingPayDialog,
+        ),
+        {
+          label: 'Registrar cobro',
+          size: 's',
+          data,
+        },
+      )
+      .pipe(
+        // Cerrar con la X completa el diálogo sin valor: solo se cobra con true
+        switchMap(confirmed =>
+          confirmed
+            ? this.billingService
+                .pay(record.id)
+                .pipe(
+                  withNotification(
+                    this.notificationService,
+                    {
+                      success:
+                        'Factura pagada correctamente',
+                    },
+                  ),
+                )
+            : EMPTY,
+        ),
+      )
+      .subscribe({
+        next: () => {
+          this.billingResource.reload();
+          this.summaryResource.reload();
+        },
+      });
+  }
 
   // --------------------------------------------------
   // DETALLE
@@ -459,8 +519,8 @@ export class BillingPage {
           BillingDetailDialog,
         ),
         {
-          label: `Factura #${record.id}`,
-          size: 's',
+          label: 'Detalle de factura',
+          size: 'm',
           data: record,
         },
       )

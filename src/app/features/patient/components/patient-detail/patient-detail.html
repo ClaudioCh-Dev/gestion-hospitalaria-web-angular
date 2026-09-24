@@ -59,8 +59,19 @@
     </div>
   </header>
 
+  <tui-tabs class="px-4" [activeItemIndex]="activeTab()" (activeItemIndexChange)="activeTab.set($event)">
+    <button iconStart="@tui.user" tuiTab type="button">Información</button>
+    <button iconStart="@tui.calendar" tuiTab type="button">Citas</button>
+    <button iconStart="@tui.wallet" tuiTab type="button">Facturas</button>
+    <button iconStart="@tui.file-text" tuiTab type="button">Historial</button>
+  </tui-tabs>
+
 
   @if (patient(); as currentPatient) {
+
+    @switch (activeTab()) {
+
+    @case (Tab.INFO) {
 
     <div class="flex flex-col gap-6 p-4">
 
@@ -105,7 +116,7 @@
             </span>
 
             <p class="ml-6">
-              {{ currentPatient.gender || 'No especificado' }}
+              {{ currentPatient.gender === 'MALE' ? 'Masculino' : currentPatient.gender === 'FEMALE' ? 'Femenino' : 'No especificado' }}
             </p>
 
           </div>
@@ -121,7 +132,7 @@
             </span>
 
             <p class="ml-6">
-              {{ currentPatient.birthDate }}
+              {{ currentPatient.birthDate ? (currentPatient.birthDate | date: 'dd/MM/yyyy') : 'No especificada' }}
             </p>
 
           </div>
@@ -269,6 +280,144 @@
 
 
     </div>
+
+    }
+
+    <!-- ================================================= -->
+    <!-- CITAS -->
+    <!-- ================================================= -->
+
+    @case (Tab.APPOINTMENTS) {
+      <div class="flex flex-col gap-2 p-4">
+        @if (appointmentsResource.isLoading()) {
+          @for (item of [1, 2, 3]; track item) {
+            <div class="h-16 animate-pulse rounded-lg bg-slate-100"></div>
+          }
+        } @else if (appointmentsResource.error()) {
+          <p class="py-8 text-center text-sm text-slate-500">No se pudieron cargar las citas.</p>
+        } @else {
+          @for (appointment of appointmentsResource.value(); track appointment.id) {
+            <div class="flex items-center justify-between rounded-lg border border-slate-200 p-3">
+              <div>
+                <p class="text-sm font-medium text-slate-900">
+                  {{ appointment.scheduledAt | date: 'dd/MM/yyyy HH:mm' }}
+                </p>
+
+                <p class="text-xs text-slate-500">
+                  {{ appointment.doctorName }} · {{ appointment.reason || 'Consulta médica' }}
+                </p>
+              </div>
+
+              <span tuiBadge size="m" [appearance]="appointmentStatusAppearances[appointment.status]">
+                {{ appointmentStatusLabels[appointment.status] }}
+              </span>
+            </div>
+          } @empty {
+            <p class="py-8 text-center text-sm text-slate-500">El paciente no tiene citas registradas.</p>
+          }
+        }
+      </div>
+    }
+
+    <!-- ================================================= -->
+    <!-- FACTURAS -->
+    <!-- ================================================= -->
+
+    @case (Tab.BILLING) {
+      <div class="flex flex-col gap-2 p-4">
+        @if (billingResource.isLoading()) {
+          @for (item of [1, 2, 3]; track item) {
+            <div class="h-16 animate-pulse rounded-lg bg-slate-100"></div>
+          }
+        } @else if (billingResource.error()) {
+          <p class="py-8 text-center text-sm text-slate-500">No se pudieron cargar las facturas.</p>
+        } @else if (billingResource.value(); as page) {
+          @if (pendingAmount() > 0) {
+            <div class="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              Saldo pendiente: <strong>{{ pendingAmount() | currency: 'PEN' : 'symbol' : '1.2-2' : 'es-PE' }}</strong>
+            </div>
+          }
+
+          @for (record of page.content; track record.id) {
+            <div class="flex items-center justify-between rounded-lg border border-slate-200 p-3">
+              <div>
+                <p class="text-sm font-medium text-slate-900">
+                  Factura #{{ record.id }}
+                  <span class="text-xs font-normal text-slate-400">· Cita #{{ record.appointmentId }}</span>
+                </p>
+
+                <p class="text-xs text-slate-500">
+                  Emitida {{ record.issuedAt | date: 'dd/MM/yyyy' }}
+                  @if (record.paidAt) {
+                    · Pagada {{ record.paidAt | date: 'dd/MM/yyyy' }}
+                  }
+                </p>
+              </div>
+
+              <div class="flex flex-col items-end gap-1">
+                <span class="text-sm font-semibold text-slate-900">
+                  {{ record.amount | currency: record.currency : 'symbol' : '1.2-2' : 'es-PE' }}
+                </span>
+
+                <span tuiBadge size="s" [appearance]="billingStatusAppearances[record.status]">
+                  {{ billingStatusLabels[record.status] }}
+                </span>
+              </div>
+            </div>
+          } @empty {
+            <p class="py-8 text-center text-sm text-slate-500">El paciente no tiene facturas.</p>
+          }
+
+          @if (page.totalElements > page.content.length) {
+            <p class="text-center text-xs text-slate-400">
+              Mostrando {{ page.content.length }} de {{ page.totalElements }} facturas
+            </p>
+          }
+        }
+      </div>
+    }
+
+    <!-- ================================================= -->
+    <!-- HISTORIAL -->
+    <!-- ================================================= -->
+
+    @case (Tab.HISTORY) {
+      <div class="flex flex-col gap-2 p-4">
+        @if (historyResource.isLoading()) {
+          @for (item of [1, 2, 3]; track item) {
+            <div class="h-16 animate-pulse rounded-lg bg-slate-100"></div>
+          }
+        } @else if (historyResource.error()) {
+          <p class="py-8 text-center text-sm text-slate-500">No se pudo cargar el historial.</p>
+        } @else if (historyResource.value(); as page) {
+          @for (record of page.content; track record.id) {
+            <div class="rounded-lg border border-slate-200 p-3">
+              <div class="flex items-center justify-between">
+                <p class="text-sm font-medium text-slate-900">{{ record.specialty }}</p>
+
+                <span class="text-xs text-slate-400">
+                  {{ record.scheduledAt | date: 'dd/MM/yyyy HH:mm' }}
+                </span>
+              </div>
+
+              <p class="mt-1 text-xs text-slate-500">
+                {{ record.doctorName }} · {{ record.reason || 'Consulta médica' }}
+              </p>
+            </div>
+          } @empty {
+            <p class="py-8 text-center text-sm text-slate-500">El paciente no tiene historial médico.</p>
+          }
+
+          @if (page.totalElements > page.content.length) {
+            <p class="text-center text-xs text-slate-400">
+              Mostrando {{ page.content.length }} de {{ page.totalElements }} registros
+            </p>
+          }
+        }
+      </div>
+    }
+
+    }
 
   }
 

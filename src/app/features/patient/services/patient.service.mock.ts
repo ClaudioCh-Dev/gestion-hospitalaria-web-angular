@@ -140,7 +140,18 @@ export class PatientMockService extends PatientService {
 
   findById(id: number): Observable<PatientDetailResponse> {
 
-    const patient = this._patientDetails().find(
+    const detail = this._patientDetails().find(
+      (item) => item.id === id,
+    );
+
+    if (detail) {
+      return of(detail).pipe(
+        delay(this.MOCK_DELAY),
+      );
+    }
+
+    // Sin ficha detallada en el mock: se arma a partir del listado, como la devolvería el backend
+    const patient = this._patients().content.find(
       (item) => item.id === id,
     );
 
@@ -153,7 +164,17 @@ export class PatientMockService extends PatientService {
       );
     }
 
-    return of(patient).pipe(
+    const now = new Date().toISOString();
+
+    return of<PatientDetailResponse>({
+      ...patient,
+      birthDate: patient.birthDate ?? '',
+      address: '',
+      bloodType: undefined,
+      allergies: '',
+      createdAt: now,
+      updatedAt: now,
+    }).pipe(
       delay(this.MOCK_DELAY),
     );
   }

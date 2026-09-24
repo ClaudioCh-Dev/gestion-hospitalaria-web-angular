@@ -57,7 +57,7 @@
 
     <app-patient-table
       [patients]="filteredPatients()"
-      [loading]="patientsResource.isLoading()"
+      [loading]="tableLoading()"
       [(selected)]="selected"
       [loadingPatientId]="loadingPatientId()"
       [selectedPatient]="selectedPatient()"

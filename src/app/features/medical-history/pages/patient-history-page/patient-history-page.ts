@@ -6,7 +6,7 @@ import {
   signal,
 } from '@angular/core';
 
-import { CommonModule } from '@angular/common';
+import { CommonModule, formatDate } from '@angular/common';
 import {
   FormControl,
   FormGroup,
@@ -24,6 +24,7 @@ import { tuiCountFilledControls } from '@taiga-ui/cdk';
 import {
   TuiAppearance,
   TuiButton,
+  TuiDialogService,
   TuiIcon,
   TuiInput,
   TuiLink,
@@ -47,6 +48,8 @@ import {
   MedicalRecordService,
 } from '../../services/medical-record.service';
 import { MedicalRecordResponse } from '../../interfaces/medical-record-response';
+import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
+import { MedicalRecordDetailDialog } from '../../components/medical-record-detail-dialog/medical-record-detail-dialog';
 
 // Registros usados para calcular el resumen y las categorías
 const SUMMARY_SIZE = 1000;
@@ -88,6 +91,7 @@ interface Stat {
 export class MedicalRecords {
 
   private readonly service = inject(MedicalRecordService);
+  private readonly dialogs = inject(TuiDialogService);
 
   protected readonly form = new FormGroup({
     search: new FormControl(''),
@@ -191,6 +195,16 @@ export class MedicalRecords {
           .includes(term)),
     );
   });
+
+  protected viewDetail(record: MedicalRecordResponse): void {
+    this.dialogs
+      .open(new PolymorpheusComponent(MedicalRecordDetailDialog), {
+        label: `Atención del ${formatDate(record.scheduledAt, 'dd/MM/yyyy', 'es-PE')}`,
+        size: 'm',
+        data: record,
+      })
+      .subscribe();
+  }
 
   protected statusLabel(status: string): string {
     return STATUS_LABELS[status] ?? status;
