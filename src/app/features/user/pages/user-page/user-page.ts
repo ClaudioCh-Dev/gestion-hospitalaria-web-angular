@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
+import { ConfirmService } from '@shared/services/confirm.service';
 import { HasPermission } from '@shared/directives/has-permission.directive';
 import { FormField, form } from '@angular/forms/signals';
 import { rxResource } from '@angular/core/rxjs-interop';
@@ -15,7 +16,7 @@ import {
   TuiTextfield,
   TuiTitle,
 } from '@taiga-ui/core';
-import { TUI_CONFIRM, TuiBadge, TuiButtonLoading, TuiStatus, type TuiConfirmData } from '@taiga-ui/kit';
+import { TuiBadge, TuiButtonLoading, TuiStatus } from '@taiga-ui/kit';
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 
 import { AuthService } from '@core/services/auth.service';
@@ -67,6 +68,7 @@ export class UserPage {
   private readonly userService = inject(UserService);
   private readonly authService = inject(AuthService);
   private readonly dialogs = inject(TuiDialogService);
+  private readonly confirm = inject(ConfirmService);
   private readonly notificationService = inject(NotificationService);
 
   protected readonly statusConfig = STATUS_CONFIG;
@@ -188,19 +190,15 @@ export class UserPage {
   protected resendActivation(user: UserResponse): void {
     const pending = this.getStatus(user) === 'pending';
 
-    const data: TuiConfirmData = {
-      content: pending
-        ? `Se enviará un nuevo enlace de activación a <strong>${user.email}</strong>. El enlace anterior dejará de funcionar.`
-        : `La cuenta <strong>${user.email}</strong> está desactivada. Se le enviará un enlace para que la vuelva a activar y cree una nueva contraseña.`,
-      yes: 'Enviar',
-      no: 'Cancelar',
-    };
-
-    this.dialogs
-      .open<boolean>(TUI_CONFIRM, {
-        label: pending ? '¿Reenviar activación?' : '¿Enviar activación?',
-        size: 's',
-        data,
+    this.confirm
+      .ask({
+        title: pending ? '¿Reenviar activación?' : '¿Enviar activación?',
+        message: pending
+          ? 'Se enviará un nuevo enlace de activación a este correo. El enlace anterior dejará de funcionar.'
+          : 'La cuenta está desactivada. Se enviará un enlace para que la vuelva a activar y cree una nueva contraseña.',
+        subject: user.email,
+        confirmLabel: 'Enviar enlace',
+        variant: 'info',
       })
       .pipe(
         filter(Boolean),
@@ -224,18 +222,13 @@ export class UserPage {
   }
 
   protected deactivate(user: UserResponse): void {
-    const data: TuiConfirmData = {
-      content: `<strong>${user.email}</strong> no podrá iniciar sesión y se cerrarán sus sesiones abiertas.`,
-      yes: 'Desactivar',
-      no: 'Cancelar',
-      appearance: 'primary-destructive',
-    };
-
-    this.dialogs
-      .open<boolean>(TUI_CONFIRM, {
-        label: '¿Desactivar usuario?',
-        size: 's',
-        data,
+    this.confirm
+      .ask({
+        title: '¿Desactivar usuario?',
+        message: 'No podrá iniciar sesión y se cerrarán sus sesiones abiertas.',
+        subject: user.email,
+        confirmLabel: 'Desactivar',
+        variant: 'warning',
       })
       .pipe(
         filter(Boolean),

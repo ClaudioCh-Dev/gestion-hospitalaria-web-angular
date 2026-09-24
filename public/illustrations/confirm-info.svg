@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150" role="img" aria-label="Enviar">
+  <!-- Fondo -->
+  <ellipse cx="100" cy="136" rx="62" ry="7" fill="#e2e8f0"/>
+  <circle cx="100" cy="72" r="58" fill="#f1f5f9"/>
+  <circle cx="40" cy="42" r="3" fill="#bfdbfe"/>
+  <circle cx="160" cy="112" r="4" fill="#bfdbfe"/>
+  <circle cx="34" cy="98" r="2.5" fill="#cbd5e1"/>
+
+  <!-- Sobre -->
+  <rect x="42" y="62" width="88" height="58" rx="7" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+  <path d="M44 66l42 30 42-30" fill="none" stroke="#2563eb" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/>
+  <path d="M44 118l30-24M128 118l-30-24" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-linecap="round"/>
+
+  <!-- Rastro -->
+  <path d="M118 58c10-10 18-14 26-16" fill="none" stroke="#93c5fd" stroke-width="2.5" stroke-dasharray="4 5" stroke-linecap="round"/>
+
+  <!-- Avión de papel -->
+  <g transform="translate(140 22)">
+    <path d="M0 22L40 2 30 40 18 28z" fill="#3b82f6"/>
+    <path d="M18 28L40 2 12 26z" fill="#1d4ed8"/>
+    <path d="M18 28l-2 12 8-8z" fill="#1e40af"/>
+  </g>
+</svg>

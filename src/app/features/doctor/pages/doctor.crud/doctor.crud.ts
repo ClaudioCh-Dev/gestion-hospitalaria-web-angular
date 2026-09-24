@@ -1,4 +1,5 @@
 import { HasPermission } from '@shared/directives/has-permission.directive';
+import { ConfirmService } from '@shared/services/confirm.service';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -32,7 +33,7 @@ import {
 
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 
-import { TUI_CONFIRM, TuiButtonLoading, type TuiConfirmData } from '@taiga-ui/kit';
+import { TuiButtonLoading } from '@taiga-ui/kit';
 
 import {
   DoctorResponse,
@@ -82,6 +83,8 @@ export class DoctorCrud {
 
   private readonly dialogs =
     inject(TuiDialogService);
+
+  private readonly confirm = inject(ConfirmService);
 
   private readonly notificationService =
     inject(NotificationService);
@@ -421,18 +424,13 @@ export class DoctorCrud {
   protected deactivateSelected(): void {
     const doctors = this.selectedActive();
 
-    const data: TuiConfirmData = {
-      content: `Se desactivarán <strong>${doctors.length} médicos</strong>. Dejarán de estar disponibles para nuevas citas.`,
-      yes: 'Desactivar',
-      no: 'Cancelar',
-      appearance: 'primary-destructive',
-    };
-
-    this.dialogs
-      .open<boolean>(TUI_CONFIRM, {
-        label: '¿Desactivar médicos seleccionados?',
-        size: 's',
-        data,
+    this.confirm
+      .ask({
+        title: '¿Desactivar médicos seleccionados?',
+        message: 'Dejarán de estar disponibles para nuevas citas. Sus datos y su historial se conservan.',
+        subject: `${doctors.length} ${doctors.length === 1 ? 'médico' : 'médicos'}`,
+        confirmLabel: 'Desactivar',
+        variant: 'warning',
       })
       .pipe(
         filter(Boolean),

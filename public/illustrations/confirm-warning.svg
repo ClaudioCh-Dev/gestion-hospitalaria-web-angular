@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150" role="img" aria-label="Desactivar">
+  <!-- Fondo -->
+  <ellipse cx="100" cy="136" rx="62" ry="7" fill="#e2e8f0"/>
+  <circle cx="100" cy="72" r="58" fill="#f1f5f9"/>
+  <circle cx="36" cy="52" r="3" fill="#fde68a"/>
+  <circle cx="168" cy="40" r="4" fill="#fde68a"/>
+  <circle cx="44" cy="108" r="2.5" fill="#cbd5e1"/>
+
+  <!-- Ficha de usuario -->
+  <rect x="46" y="36" width="92" height="72" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+  <rect x="46" y="36" width="92" height="16" rx="8" fill="#e2e8f0"/>
+  <rect x="46" y="44" width="92" height="8" fill="#e2e8f0"/>
+  <circle cx="68" cy="72" r="11" fill="#cbd5e1"/>
+  <circle cx="68" cy="68.5" r="4.5" fill="#94a3b8"/>
+  <path d="M60 79.5a8 8 0 0 1 16 0z" fill="#94a3b8"/>
+  <rect x="86" y="64" width="38" height="5" rx="2.5" fill="#94a3b8"/>
+  <rect x="86" y="75" width="28" height="4" rx="2" fill="#e2e8f0"/>
+  <rect x="58" y="92" width="66" height="4" rx="2" fill="#e2e8f0"/>
+
+  <!-- Bloqueo -->
+  <circle cx="140" cy="100" r="24" fill="#ffffff"/>
+  <circle cx="140" cy="100" r="20" fill="#f59e0b"/>
+  <circle cx="140" cy="100" r="11" fill="none" stroke="#ffffff" stroke-width="4"/>
+  <path d="M132.2 107.8l15.6-15.6" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+</svg>

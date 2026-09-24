@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 150" role="img" aria-label="Eliminar">
+  <!-- Fondo -->
+  <ellipse cx="100" cy="136" rx="62" ry="7" fill="#e2e8f0"/>
+  <circle cx="100" cy="72" r="58" fill="#f1f5f9"/>
+  <circle cx="38" cy="36" r="3" fill="#fecaca"/>
+  <circle cx="166" cy="48" r="4" fill="#fecaca"/>
+  <circle cx="158" cy="104" r="2.5" fill="#cbd5e1"/>
+
+  <!-- Documento -->
+  <g transform="rotate(-10 78 70)">
+    <rect x="48" y="30" width="58" height="76" rx="6" fill="#ffffff" stroke="#cbd5e1" stroke-width="2"/>
+    <rect x="58" y="44" width="30" height="5" rx="2.5" fill="#94a3b8"/>
+    <rect x="58" y="56" width="38" height="4" rx="2" fill="#e2e8f0"/>
+    <rect x="58" y="66" width="34" height="4" rx="2" fill="#e2e8f0"/>
+    <rect x="58" y="76" width="38" height="4" rx="2" fill="#e2e8f0"/>
+    <rect x="58" y="86" width="24" height="4" rx="2" fill="#e2e8f0"/>
+  </g>
+
+  <!-- Papelera -->
+  <g>
+    <rect x="104" y="58" width="50" height="8" rx="4" fill="#dc2626"/>
+    <rect x="120" y="51" width="18" height="8" rx="3" fill="#dc2626"/>
+    <path d="M109 70h40l-4.5 56a6 6 0 0 1-6 5.5h-19a6 6 0 0 1-6-5.5z" fill="#ef4444"/>
+    <rect x="119" y="80" width="4" height="40" rx="2" fill="#fecaca"/>
+    <rect x="127" y="80" width="4" height="40" rx="2" fill="#fecaca"/>
+    <rect x="135" y="80" width="4" height="40" rx="2" fill="#fecaca"/>
+  </g>
+</svg>

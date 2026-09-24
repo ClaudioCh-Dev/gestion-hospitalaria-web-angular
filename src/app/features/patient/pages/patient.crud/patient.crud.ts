@@ -1,4 +1,5 @@
 import { HasPermission } from '@shared/directives/has-permission.directive';
+import { ConfirmService } from '@shared/services/confirm.service';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -25,13 +26,11 @@ import {
 } from '@taiga-ui/core';
 
 import {
-  TUI_CONFIRM,
   TuiButtonLoading,
   TuiComboBox,
   TuiDataListWrapper,
   TuiItemsWithMore,
   TuiSelect,
-  type TuiConfirmData,
 } from '@taiga-ui/kit';
 
 import {
@@ -93,6 +92,7 @@ export class PatientCrud {
 
   private readonly patientService = inject(PatientService);
   private readonly dialogs = inject(TuiDialogService);
+  private readonly confirm = inject(ConfirmService);
   private readonly notificationService = inject(NotificationService);
 
   protected readonly loadingPatientId = signal<number | null>(null);
@@ -260,18 +260,14 @@ export class PatientCrud {
   // ============================
 
   protected deletePatient(patient: PatientResponse): void {
-    const data: TuiConfirmData = {
-      content: `Se eliminará a <strong>${patient.firstName} ${patient.lastName}</strong> (DNI ${patient.documentNumber}). Esta acción no se puede deshacer.`,
-      yes: 'Eliminar',
-      no: 'Cancelar',
-      appearance: 'primary-destructive',
-    };
-
-    this.dialogs
-      .open<boolean>(TUI_CONFIRM, {
-        label: '¿Eliminar paciente?',
-        size: 's',
-        data,
+    this.confirm
+      .ask({
+        title: '¿Eliminar paciente?',
+        message: 'Se eliminarán sus datos del sistema. Esta acción no se puede deshacer.',
+        subject: `${patient.firstName} ${patient.lastName}`,
+        subjectDetail: `DNI ${patient.documentNumber}`,
+        confirmLabel: 'Eliminar',
+        variant: 'danger',
       })
       .pipe(
         filter(Boolean),
@@ -372,18 +368,13 @@ export class PatientCrud {
   protected deleteSelected(): void {
     const patients = this.selected();
 
-    const data: TuiConfirmData = {
-      content: `Se eliminarán <strong>${patients.length} pacientes</strong>. Esta acción no se puede deshacer.`,
-      yes: 'Eliminar',
-      no: 'Cancelar',
-      appearance: 'primary-destructive',
-    };
-
-    this.dialogs
-      .open<boolean>(TUI_CONFIRM, {
-        label: '¿Eliminar pacientes seleccionados?',
-        size: 's',
-        data,
+    this.confirm
+      .ask({
+        title: '¿Eliminar pacientes seleccionados?',
+        message: 'Se eliminarán sus datos del sistema. Esta acción no se puede deshacer.',
+        subject: `${patients.length} ${patients.length === 1 ? 'paciente' : 'pacientes'}`,
+        confirmLabel: 'Eliminar',
+        variant: 'danger',
       })
       .pipe(
         filter(Boolean),

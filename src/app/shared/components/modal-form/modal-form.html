@@ -3,7 +3,7 @@
   <!-- FIELDS -->
   <!-- ================================================= -->
 
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+  <div class="grid grid-cols-1 gap-4" [class.sm:grid-cols-2]="columns() === 2">
     @for (field of fields(); track field.name) {
       <div class="flex flex-col gap-1" [class.sm:col-span-2]="field.type === 'color'">
         <!-- =========================================== -->

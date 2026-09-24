@@ -1,4 +1,5 @@
 import { CurrencyPipe } from '@angular/common';
+import { ConfirmService } from '@shared/services/confirm.service';
 import { HasPermission } from '@shared/directives/has-permission.directive';
 import {
   ChangeDetectionStrategy,
@@ -20,11 +21,9 @@ import {
   TuiTitle,
 } from '@taiga-ui/core';
 import {
-  TUI_CONFIRM,
   TuiBadge,
   TuiButtonLoading,
   TuiStatus,
-  type TuiConfirmData,
 } from '@taiga-ui/kit';
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 
@@ -72,6 +71,7 @@ export class AppointmentTypesPage {
   private readonly appointmentTypeService = inject(AppointmentTypeService);
   private readonly tariffService = inject(BillingTariffService);
   private readonly dialogs = inject(TuiDialogService);
+  private readonly confirm = inject(ConfirmService);
   private readonly notificationService = inject(NotificationService);
 
   protected readonly getColor = getAppointmentTypeColor;
@@ -147,18 +147,13 @@ export class AppointmentTypesPage {
   }
 
   protected deactivate(row: AppointmentTypeRow): void {
-    const data: TuiConfirmData = {
-      content: `El tipo de cita <strong>${row.appointmentType.title}</strong> dejará de estar disponible para nuevas citas.`,
-      yes: 'Desactivar',
-      no: 'Cancelar',
-      appearance: 'primary-destructive',
-    };
-
-    this.dialogs
-      .open<boolean>(TUI_CONFIRM, {
-        label: '¿Desactivar tipo de cita?',
-        size: 's',
-        data,
+    this.confirm
+      .ask({
+        title: '¿Desactivar tipo de cita?',
+        message: 'Dejará de estar disponible para nuevas citas. Las citas ya registradas no cambian.',
+        subject: row.appointmentType.title,
+        confirmLabel: 'Desactivar',
+        variant: 'warning',
       })
       .pipe(
         filter(Boolean),

@@ -105,6 +105,9 @@ export class ModalForm {
 
   readonly submitted = input(false);
 
+  // Columnas de la grilla de campos desde sm (en móvil siempre 1). Modales angostos: 1
+  readonly columns = input<1 | 2>(2);
+
   readonly submit = output<void>();
 
   readonly cancel = output<void>();
