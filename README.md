@@ -149,8 +149,3 @@ Abre **http://localhost:4200**
 
 Angular 22 · TypeScript · RxJS · Signals · Standalone Components · Reactive Forms · Angular CDK · Taiga UI · Tailwind CSS · Vitest
 
----
-
-# 👨‍💻 Autor
-
-**Rider**
