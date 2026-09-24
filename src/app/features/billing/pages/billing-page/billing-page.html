@@ -154,7 +154,10 @@
     <!-- Data -->
     @else if (billingResource.value()) {
       @for (record of filteredRecords(); track record.id) {
-        <div tuiAppearance="secondary" tuiCardLarge>
+<div
+          tuiCardLarge
+          class="border! border-slate-200! bg-white! shadow-sm! transition-shadow hover:shadow-md!"
+        >
           <!-- Header -->
           <header tuiHeader>
             <div class="flex flex-col gap-1">

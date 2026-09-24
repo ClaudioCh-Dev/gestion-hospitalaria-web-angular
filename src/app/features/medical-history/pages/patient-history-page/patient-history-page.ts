@@ -54,6 +54,16 @@ import { MedicalRecordDetailDialog } from '../../components/medical-record-detai
 // Registros usados para calcular el resumen y las categorías
 const SUMMARY_SIZE = 1000;
 
+// Colores de la etiqueta de estado
+const STATUS_BADGE_CLASSES: Record<string, string> = {
+  SCHEDULED: 'bg-sky-50 text-sky-700',
+  CONFIRMED: 'bg-blue-50 text-blue-700',
+  COMPLETED: 'bg-emerald-50 text-emerald-700',
+  CANCELLED: 'bg-red-50 text-red-700',
+};
+
+const DEFAULT_STATUS_BADGE_CLASS = 'bg-slate-100 text-slate-700';
+
 const STATUS_LABELS: Record<string, string> = {
   SCHEDULED: 'Programada',
   CONFIRMED: 'Confirmada',
@@ -204,6 +214,10 @@ export class MedicalRecords {
         data: record,
       })
       .subscribe();
+  }
+
+  protected statusBadgeClass(status: string): string {
+    return STATUS_BADGE_CLASSES[status] ?? DEFAULT_STATUS_BADGE_CLASS;
   }
 
   protected statusLabel(status: string): string {

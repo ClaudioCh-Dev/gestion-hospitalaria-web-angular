@@ -13,7 +13,6 @@ import { TuiTable } from '@taiga-ui/addon-table';
 import {
   TuiButton,
   TuiDialogService,
-  TuiLoader,
   TuiTitle,
 } from '@taiga-ui/core';
 import {
@@ -48,7 +47,6 @@ interface AppointmentTypeRow {
     TuiBadge,
     TuiButton,
     TuiButtonLoading,
-    TuiLoader,
     TuiTable,
     TuiTitle,
   ],
