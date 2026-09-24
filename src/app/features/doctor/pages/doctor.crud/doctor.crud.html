@@ -36,43 +36,58 @@
 
   </div>
 
-  <!-- Acciones masivas -->
-  @if (selected().length) {
-    <app-bulk-actions-bar
-      itemLabel="médicos"
-      itemLabelSingular="médico"
-      [count]="selected().length"
-      [busy]="bulkBusy()"
-      (clear)="selected.set([])"
-    >
+  <!-- Segunda fila: siempre visible para que la tabla no se mueva al seleccionar -->
+  <div class="flex min-h-8 items-center justify-between gap-4">
+    <span class="text-sm text-slate-500">
+      @if (selected().length) {
+        <strong class="text-slate-900">{{ selected().length }}</strong>
+        {{ selected().length === 1 ? 'médico seleccionado' : 'médicos seleccionados' }}
+      } @else {
+        {{ doctorsResource.value()?.totalElements ?? 0 }} médicos
+      }
+    </span>
+
+    <div class="flex items-center gap-2">
+      @if (selected().length) {
+        <button
+          tuiIconButton
+          type="button"
+          size="s"
+          appearance="flat"
+          iconStart="@tui.x"
+          [disabled]="bulkBusy()"
+          (click)="selected.set([])"
+        >
+          Limpiar selección
+        </button>
+
+        <button
+          tuiButton
+          type="button"
+          size="s"
+          appearance="secondary-destructive"
+          iconStart="@tui.ban"
+          [disabled]="bulkBusy() || !selectedActive().length"
+          (click)="deactivateSelected()"
+        >
+          Desactivar ({{ selectedActive().length }})
+        </button>
+      }
+
       <button
         tuiButton
         type="button"
         size="s"
         appearance="secondary"
         iconStart="@tui.download"
+        [loading]="exporting()"
         [disabled]="bulkBusy()"
-        (click)="exportSelected()"
+        (click)="exportCsv()"
       >
-        Exportar CSV
+        {{ selected().length ? 'Exportar (' + selected().length + ')' : 'Exportar CSV' }}
       </button>
-
-      <button
-        tuiButton
-        type="button"
-        size="s"
-        appearance="secondary-destructive"
-        iconStart="@tui.ban"
-        [disabled]="bulkBusy() || !selectedActive().length"
-        (click)="deactivateSelected()"
-      >
-        Desactivar
-        @if (selectedActive().length !== selected().length) {
-          ({{ selectedActive().length }} activos)
-        }
-      </button>
-    </app-bulk-actions-bar>
-  }
+    </div>
+  </div>
 
   <!-- Error -->
   @if (doctorsResource.error()) {

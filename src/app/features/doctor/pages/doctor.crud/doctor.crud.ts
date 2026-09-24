@@ -31,7 +31,7 @@ import {
 
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 
-import { TUI_CONFIRM, type TuiConfirmData } from '@taiga-ui/kit';
+import { TUI_CONFIRM, TuiButtonLoading, type TuiConfirmData } from '@taiga-ui/kit';
 
 import {
   DoctorResponse,
@@ -54,7 +54,7 @@ import { DoctorTableComponent } from '../../components/doctor-table/doctor-table
 
 import { SpecialtyModal } from '../../components/specialty-modal/specialty-modal';
 import { StateMessage } from '@shared/components/state-message/state-message';
-import { BulkActionsBar } from '@shared/components/bulk-actions-bar/bulk-actions-bar';
+import { fetchAllPages } from '@shared/utils/paging';
 import { downloadCsv } from '@shared/utils/csv';
 import { NotificationService } from '@core/services/alert-notification.service';
 
@@ -62,7 +62,7 @@ import { NotificationService } from '@core/services/alert-notification.service';
   selector: 'app-doctor-crud',
   imports: [
     StateMessage,
-    BulkActionsBar,
+    TuiButtonLoading,
     DoctorFiltersComponent,
     DoctorTableComponent,
     TuiTable,
@@ -103,6 +103,9 @@ export class DoctorCrud {
     signal<DoctorResponse[]>([]);
 
   protected readonly bulkBusy =
+    signal(false);
+
+  protected readonly exporting =
     signal(false);
 
   // Solo los activos se pueden desactivar
@@ -357,9 +360,39 @@ export class DoctorCrud {
   // ACCIONES MASIVAS
   // =====================================================
 
-  protected exportSelected(): void {
+  // Con selección exporta los seleccionados; sin selección, todos los que cumplen los filtros
+  protected exportCsv(): void {
+    const selected = this.selected();
+
+    if (selected.length) {
+      this.downloadDoctors(selected, `medicos-seleccionados-${selected.length}.csv`);
+      return;
+    }
+
+    const specialtyId = this.specialtyId();
+    const search = this.debouncedSearch();
+
+    this.exporting.set(true);
+
+    fetchAllPages((page, size) =>
+      specialtyId === null
+        ? this.doctorService.findAll(page, size, search)
+        : this.doctorService.findBySpecialty(specialtyId, page, size, search),
+    ).subscribe({
+      next: (doctors) => {
+        this.exporting.set(false);
+        this.downloadDoctors(doctors, `medicos-${doctors.length}.csv`);
+      },
+      error: () => this.exporting.set(false),
+    });
+  }
+
+  private downloadDoctors(
+    doctors: DoctorResponse[],
+    fileName: string,
+  ): void {
     downloadCsv(
-      `medicos-seleccionados-${this.selected().length}.csv`,
+      fileName,
       [
         'Colegiatura',
         'Nombres',
@@ -370,7 +403,7 @@ export class DoctorCrud {
         'Horario',
         'Estado',
       ],
-      this.selected().map((doctor) => [
+      doctors.map((doctor) => [
         doctor.licenseNumber,
         doctor.firstName,
         doctor.lastName,

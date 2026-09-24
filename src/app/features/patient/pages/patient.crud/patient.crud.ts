@@ -25,6 +25,7 @@ import {
 
 import {
   TUI_CONFIRM,
+  TuiButtonLoading,
   TuiComboBox,
   TuiDataListWrapper,
   TuiItemsWithMore,
@@ -61,14 +62,13 @@ import {
 
 import { PatientTableComponent } from '../../components/patient-table/patient-table';
 import { StateMessage } from '@shared/components/state-message/state-message';
-import { BulkActionsBar } from '@shared/components/bulk-actions-bar/bulk-actions-bar';
+import { fetchAllPages } from '@shared/utils/paging';
 import { downloadCsv } from '@shared/utils/csv';
 
 @Component({
   selector: 'app-patient-crud',
   imports: [
     StateMessage,
-    BulkActionsBar,
     FormsModule,
     PatientFiltersComponent,
     PatientTableComponent,
@@ -82,6 +82,7 @@ import { downloadCsv } from '@shared/utils/csv';
     TuiTableControl,
     TuiTablePagination,
     TuiButton,
+    TuiButtonLoading,
   ],
   templateUrl: 'patient.crud.html',
   styleUrl: 'patient.crud.less',
@@ -102,6 +103,8 @@ export class PatientCrud {
   protected readonly selected = signal<PatientResponse[]>([]);
 
   protected readonly bulkBusy = signal(false);
+
+  protected readonly exporting = signal(false);
 
   protected readonly selectedPatient =
     signal<PatientDetailResponse | null>(null);
@@ -318,16 +321,41 @@ export class PatientCrud {
   // Acciones masivas
   // ============================
 
-  protected exportSelected(): void {
+  // Con selección exporta los seleccionados; sin selección, todos los que cumplen los filtros
+  protected exportCsv(): void {
+    const selected = this.selected();
+
+    if (selected.length) {
+      this.downloadPatients(selected, `pacientes-seleccionados-${selected.length}.csv`);
+      return;
+    }
+
+    const gender = this.gender() ?? undefined;
+    const search = this.debouncedSearch();
+
+    this.exporting.set(true);
+
+    fetchAllPages((page, size) =>
+      this.patientService.findAll(page, size, gender, search),
+    ).subscribe({
+      next: (patients) => {
+        this.exporting.set(false);
+        this.downloadPatients(patients, `pacientes-${patients.length}.csv`);
+      },
+      error: () => this.exporting.set(false),
+    });
+  }
+
+  private downloadPatients(patients: PatientResponse[], fileName: string): void {
     const genders: Record<string, string> = {
       [Gender.MALE]: 'Masculino',
       [Gender.FEMALE]: 'Femenino',
     };
 
     downloadCsv(
-      `pacientes-seleccionados-${this.selected().length}.csv`,
+      fileName,
       ['DNI', 'Nombres', 'Apellidos', 'Género', 'Nacimiento', 'Teléfono', 'Correo', 'Estado'],
-      this.selected().map((patient) => [
+      patients.map((patient) => [
         patient.documentNumber,
         patient.firstName,
         patient.lastName,
