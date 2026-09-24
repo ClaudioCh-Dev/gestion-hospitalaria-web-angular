@@ -16,7 +16,7 @@ export class BillingRecordHttpService implements BillingRecordService {
   private readonly http = inject(HttpClient);
 
   private readonly apiUrl =
-    `${environment.api.baseUrl}/billing/crud`;
+    `${environment.api.baseUrl}/billings/crud`;
 
   findAll(
     page: number = 0,

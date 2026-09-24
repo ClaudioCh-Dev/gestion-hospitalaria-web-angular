@@ -12,12 +12,13 @@ import {
 } from '../intefaces';
 
 import { DoctorService } from './doctor.service';
+import { environment } from '@environments/environment';
 
 @Injectable()
 export class DoctorHttpService implements DoctorService {
   private readonly http = inject(HttpClient);
 
-  private readonly apiUrl = 'http://localhost:4040/doctor-ms';
+  private readonly apiUrl = `${environment.api.baseUrl}/doctors`;
 
   private readonly _doctors = signal<PageResponse<DoctorResponse> | null>(null);
 
@@ -26,10 +27,10 @@ export class DoctorHttpService implements DoctorService {
   findAll(page: number = 0, size: number = 10): Observable<PageResponse<DoctorResponse>> {
     const params = new HttpParams().set('page', page).set('size', size);
 
-    console.log('📤 GET doctores:', `${this.apiUrl}/doctors`);
+    console.log('📤 GET doctores:', `${this.apiUrl}/crud`);
     console.log('📤 Params:', params.toString());
 
-    return this.http.get<PageResponse<DoctorResponse>>(`${this.apiUrl}/doctors`, { params }).pipe(
+    return this.http.get<PageResponse<DoctorResponse>>(`${this.apiUrl}/crud`, { params }).pipe(
       tap((response) => {
         console.log('📥 DoctorHttpService recibió:', response);
 
@@ -47,7 +48,7 @@ export class DoctorHttpService implements DoctorService {
   }
 
   findById(id: number): Observable<DoctorResponse> {
-    return this.http.get<DoctorResponse>(`${this.apiUrl}/doctors/${id}`);
+    return this.http.get<DoctorResponse>(`${this.apiUrl}/crud/${id}`);
   }
 
   findBySpecialty(
@@ -58,7 +59,7 @@ export class DoctorHttpService implements DoctorService {
     const params = new HttpParams().set('page', page).set('size', size);
 
     return this.http.get<PageResponse<DoctorResponse>>(
-      `${this.apiUrl}/doctors/specialty/${specialtyId}`,
+      `${this.apiUrl}/crud/specialty/${specialtyId}`,
       { params },
     );
   }
@@ -66,7 +67,7 @@ export class DoctorHttpService implements DoctorService {
   create(doctor: CreateDoctorRequest): Observable<DoctorResponse> {
     console.log('📤 Enviando doctor:', doctor);
 
-    return this.http.post<DoctorResponse>(`${this.apiUrl}/doctors`, doctor).pipe(
+    return this.http.post<DoctorResponse>(`${this.apiUrl}/crud`, doctor).pipe(
       tap((created) => {
         console.log('✅ Doctor creado:', created);
 
@@ -96,7 +97,7 @@ export class DoctorHttpService implements DoctorService {
   }
 
   update(id: number, doctor: UpdateDoctorRequest): Observable<DoctorResponse> {
-    return this.http.put<DoctorResponse>(`${this.apiUrl}/doctors/${id}`, doctor).pipe(
+    return this.http.put<DoctorResponse>(`${this.apiUrl}/crud/${id}`, doctor).pipe(
       tap((updated) => {
         const current = this._doctors();
 

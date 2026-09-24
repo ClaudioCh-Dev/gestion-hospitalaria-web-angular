@@ -5,17 +5,26 @@ require('dotenv').config();
 const environmentsPath = './src/environments';
 
 const productionUrl = process.env.API_URL;
+const productionAuthUrl = process.env.AUTH_URL;
 
 if (!productionUrl) {
   throw new Error('API_URL not found in .env file');
 }
 
-const createEnvironment = ({ useMocks, baseUrl }) => `
+if (!productionAuthUrl) {
+  throw new Error('AUTH_URL not found in .env file');
+}
+
+const localBaseUrl = 'http://localhost:4040';
+const localAuthUrl = 'http://localhost:3000/auth-server';
+
+const createEnvironment = ({ useMocks, baseUrl, authUrl }) => `
 export const environment = {
   useMocks: ${useMocks},
 
   api: {
     baseUrl: '${baseUrl}',
+    authUrl: '${authUrl}',
   }
 };
 `;
@@ -23,22 +32,26 @@ export const environment = {
 const environments = {
   'environment.ts': createEnvironment({
     useMocks: true,
-    baseUrl: 'http://localhost:4040',
+    baseUrl: localBaseUrl,
+    authUrl: localAuthUrl,
   }),
 
-  'environment.development.ts': createEnvironment({
+  'environment.dev.ts': createEnvironment({
     useMocks: false,
-    baseUrl: 'http://localhost:4040',
+    baseUrl: localBaseUrl,
+    authUrl: localAuthUrl,
   }),
 
   'environment.mock.ts': createEnvironment({
     useMocks: true,
-    baseUrl: 'http://localhost:4040',
+    baseUrl: localBaseUrl,
+    authUrl: localAuthUrl,
   }),
 
   'environment.prod.ts': createEnvironment({
     useMocks: false,
     baseUrl: productionUrl,
+    authUrl: productionAuthUrl,
   }),
 };
 
