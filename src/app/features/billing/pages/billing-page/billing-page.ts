@@ -41,7 +41,6 @@ import {
   TuiIcon,
   TuiInput,
   TuiLink,
-  TuiTitle,
 } from '@taiga-ui/core';
 
 import {
@@ -51,8 +50,6 @@ import {
 } from '@taiga-ui/kit';
 
 import {
-  TuiCardLarge,
-  TuiHeader,
   TuiSearch,
 } from '@taiga-ui/layout';
 
@@ -75,6 +72,11 @@ import {
   BillingPayDialogData,
 } from '../../components/billing-pay-dialog/billing-pay-dialog';
 import { StateMessage } from '@shared/components/state-message/state-message';
+import { InfoItem } from '@shared/components/info-item/info-item';
+import { RecordCard } from '@shared/components/record-card/record-card';
+import { RecordList } from '@shared/components/record-list/record-list';
+import { SimplePager } from '@shared/components/simple-pager/simple-pager';
+import { StatCard } from '@shared/components/stat-card/stat-card';
 
 const ALL_STATUSES = 'Todos los estados';
 
@@ -107,12 +109,15 @@ interface Stat {
 
   imports: [
     StateMessage,
+    InfoItem,
+    RecordCard,
+    RecordList,
+    SimplePager,
+    StatCard,
     CommonModule,
     ReactiveFormsModule,
 
     TuiButton,
-    TuiCardLarge,
-    TuiHeader,
     TuiIcon,
     TuiInput,
     TuiLink,
@@ -120,7 +125,6 @@ interface Stat {
     TuiSelect,
     TuiChevron,
     TuiDataListWrapper,
-    TuiTitle,
     TuiAppearance,
   ],
 

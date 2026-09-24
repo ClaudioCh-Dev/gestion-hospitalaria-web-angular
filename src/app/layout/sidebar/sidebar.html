@@ -1,6 +1,7 @@
+<!-- Alto de la pantalla menos el header (3rem): el aside ya es sticky en Taiga, así el botón de colapsar siempre queda visible -->
 <aside
   [tuiNavigationAside]="expanded()"
-  class="h-full"
+  class="h-[calc(100vh-3rem)]"
   style="
     background: linear-gradient(
       180deg,
@@ -9,6 +10,8 @@
     );
   "
 >
+  <!-- Opciones: si no caben, hacen scroll sin empujar el botón de colapsar -->
+  <nav class="-mx-2 flex min-h-0 flex-1 flex-col overflow-y-auto px-2">
   @for (group of groupsOptions(); track group.item.route) {
     @if (group.children?.length) {
       <tui-aside-group>
@@ -42,7 +45,10 @@
     }
   }
 
-  <footer>
+  </nav>
+
+  <!-- flex-none y sin el ::before espaciador de Taiga: el que crece ahora es el nav -->
+  <footer class="mt-2 flex-none! border-t border-white/10 pt-2 before:hidden">
     <button
       tuiAsideItem
       tuiTextfieldSize="s"

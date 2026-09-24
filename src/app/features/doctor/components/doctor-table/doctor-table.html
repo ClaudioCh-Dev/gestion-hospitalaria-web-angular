@@ -1,4 +1,4 @@
-<div class="flex w-full items-center justify-center overflow-x-auto rounded-xl py-1">
+<div class="hidden w-full items-center justify-center overflow-x-auto rounded-xl py-1 md:flex">
   <table tuiTable [size]="'s'" [style.width.rem]="58" [(ngModel)]="selected">
     <!-- ================================================= -->
     <!-- HEADER -->
@@ -245,6 +245,124 @@
     </tbody>
   </table>
 </div>
+
+<!-- Lista para pantallas pequeñas: una tuiCell por médico (tocar abre el detalle) -->
+<div class="flex flex-col divide-y divide-slate-100 md:hidden">
+    @if (loading()) {
+      @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+        <div class="flex animate-pulse items-center gap-3 px-4 py-3">
+          <div class="h-8 w-8 shrink-0 rounded-full bg-slate-200"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-3 w-40 rounded bg-slate-200"></div>
+            <div class="h-2 w-28 rounded bg-slate-200"></div>
+          </div>
+        </div>
+      }
+    } @else {
+      @for (doctor of doctors(); track doctor.id) {
+        <div tuiCell="m">
+          <button
+            type="button"
+            class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
+            [attr.aria-label]="'Ver detalle de ' + doctor.firstName + ' ' + doctor.lastName"
+            (click)="openMobileDetail(doctor)"
+          >
+            <div tuiAvatar>
+              <img alt="" [src]="doctor.photoUrl | avatarDefaultDoctor" />
+            </div>
+
+            <span tuiTitle class="min-w-0">
+              <span class="truncate">{{ doctor.firstName }} {{ doctor.lastName }}</span>
+
+              <span tuiSubtitle class="truncate">
+                {{ doctor.specialtyName }} · {{ doctor.scheduleStart | timeRange: doctor.scheduleEnd }}
+              </span>
+
+              <span tuiSubtitle>
+                <span [tuiStatus]="doctor.active ? 'var(--tui-status-positive)' : 'var(--tui-status-negative)'">
+                  {{ doctor.active ? 'Activo' : 'Inactivo' }}
+                </span>
+              </span>
+            </span>
+          </button>
+
+          <div tuiAccessories>
+            @if (loadingDoctorId() === doctor.id) {
+              <tui-loader />
+            } @else {
+              <button
+                tuiButton
+                type="button"
+                size="xs"
+                appearance="secondary"
+                (click)="openMobileDetail(doctor)"
+              >
+                Detalle
+              </button>
+            }
+          </div>
+        </div>
+      } @empty {
+        <app-state-message
+          [compact]="true"
+          icon="@tui.stethoscope"
+          title="No se encontraron médicos"
+          description="Prueba con otro nombre o especialidad."
+        />
+      }
+    }
+</div>
+
+<!-- Detalle a pantalla completa (móvil) -->
+<ng-template #mobileDetail let-observer let-data="data">
+  @let doctor = data;
+
+  <tui-app-bar tuiAppBarSize class="box-content! pt-3!">
+    <span class="truncate">{{ doctor.firstName + ' ' + doctor.lastName }}</span>
+
+    <button
+      tuiIconButton
+      tuiSlot="end"
+      type="button"
+      appearance="flat"
+      iconStart="@tui.x"
+      (click)="observer.complete()"
+    >
+      Cerrar
+    </button>
+  </tui-app-bar>
+
+  <app-mobile-detail [fields]="doctorFields(doctor)">
+    <div class="flex flex-col items-center gap-2 text-center">
+      <div tuiAvatar size="xl">
+        <img alt="" [src]="doctor.photoUrl | avatarDefaultDoctor" />
+      </div>
+
+      <p class="text-base font-semibold text-slate-900">{{ doctor.firstName }} {{ doctor.lastName }}</p>
+
+      <span [tuiStatus]="doctor.active ? 'var(--tui-status-positive)' : 'var(--tui-status-negative)'">
+        {{ doctor.active ? 'Activo' : 'Inactivo' }}
+      </span>
+    </div>
+  </app-mobile-detail>
+
+  <footer tuiFloatingContainer class="mt-auto flex flex-col gap-3">
+
+    <button
+      tuiButton
+      type="button"
+      appearance="secondary"
+      iconStart="@tui.calendar"
+      (click)="observer.complete(); moreDoctor(doctor)"
+    >
+      Ver agenda y detalle completo
+    </button>
+
+    <button tuiButton type="button" iconStart="@tui.pencil" (click)="observer.complete(); editDoctor(doctor)">
+      Editar
+    </button>
+  </footer>
+</ng-template>
 
 <!-- ===================================================== -->
 <!-- DETALLE -->

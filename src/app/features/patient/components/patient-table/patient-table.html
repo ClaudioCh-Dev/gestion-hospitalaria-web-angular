@@ -1,4 +1,4 @@
-<div class="flex w-full items-center justify-center overflow-x-auto rounded-xl py-1">
+<div class="hidden w-full items-center justify-center overflow-x-auto rounded-xl py-1 md:flex">
   <table tuiTable [size]="'s'" [style.width.rem]="58" [(ngModel)]="selected">
     <thead>
       <tr>
@@ -210,6 +210,133 @@
     </tbody>
   </table>
 </div>
+
+<!-- Lista para pantallas pequeñas: una tuiCell por paciente (tocar abre el detalle) -->
+<div class="flex flex-col divide-y divide-slate-100 md:hidden">
+    @if (loading()) {
+      @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+        <div class="flex animate-pulse items-center gap-3 px-4 py-3">
+          <div class="h-8 w-8 shrink-0 rounded-full bg-slate-200"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-3 w-40 rounded bg-slate-200"></div>
+            <div class="h-2 w-28 rounded bg-slate-200"></div>
+          </div>
+        </div>
+      }
+    } @else {
+      @for (patient of patients(); track patient.id) {
+        <div tuiCell="m">
+          <button
+            type="button"
+            class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
+            [attr.aria-label]="'Ver detalle de ' + patient.firstName + ' ' + patient.lastName"
+            (click)="openMobileDetail(patient)"
+          >
+            <div tuiAvatar>
+              <img alt="" [src]="patient.photoUrl | avatarDefaultPatient: patient.gender" />
+            </div>
+
+            <span tuiTitle class="min-w-0">
+              <span class="truncate">{{ patient.firstName }} {{ patient.lastName }}</span>
+
+              <span tuiSubtitle>
+                DNI {{ patient.documentNumber }} ·
+                <span [tuiStatus]="patient.active ? 'var(--tui-status-positive)' : 'var(--tui-status-negative)'">
+                  {{ patient.active ? 'Activo' : 'Inactivo' }}
+                </span>
+              </span>
+            </span>
+          </button>
+
+          <div tuiAccessories>
+            @if (loadingPatientId() === patient.id) {
+              <tui-loader />
+            } @else {
+              <button
+                tuiButton
+                type="button"
+                size="xs"
+                appearance="secondary"
+                (click)="openMobileDetail(patient)"
+              >
+                Detalle
+              </button>
+            }
+          </div>
+        </div>
+      } @empty {
+        <app-state-message
+          [compact]="true"
+          icon="@tui.users"
+          title="No se encontraron pacientes"
+          description="Prueba con otro nombre, DNI o filtro de género."
+        />
+      }
+    }
+</div>
+
+<!-- Detalle a pantalla completa (móvil) -->
+<ng-template #mobileDetail let-observer let-data="data">
+  @let patient = data;
+
+  <tui-app-bar tuiAppBarSize class="box-content! pt-3!">
+    <span class="truncate">{{ patient.firstName + ' ' + patient.lastName }}</span>
+
+    <button
+      tuiIconButton
+      tuiSlot="end"
+      type="button"
+      appearance="flat"
+      iconStart="@tui.x"
+      (click)="observer.complete()"
+    >
+      Cerrar
+    </button>
+  </tui-app-bar>
+
+  <app-mobile-detail [fields]="patientFields(patient)">
+    <div class="flex flex-col items-center gap-2 text-center">
+      <div tuiAvatar size="xl">
+        <img alt="" [src]="patient.photoUrl | avatarDefaultPatient: patient.gender" />
+      </div>
+
+      <p class="text-base font-semibold text-slate-900">{{ patient.firstName }} {{ patient.lastName }}</p>
+
+      <span [tuiStatus]="patient.active ? 'var(--tui-status-positive)' : 'var(--tui-status-negative)'">
+        {{ patient.active ? 'Activo' : 'Inactivo' }}
+      </span>
+    </div>
+  </app-mobile-detail>
+
+  <footer tuiFloatingContainer class="mt-auto flex flex-col gap-3">
+
+    <button
+      tuiButton
+      type="button"
+      appearance="secondary"
+      iconStart="@tui.folder-open"
+      (click)="observer.complete(); morePatient(patient)"
+    >
+      Citas, facturas e historial
+    </button>
+
+    <div class="grid grid-cols-2 gap-3">
+      <button tuiButton type="button" appearance="secondary" iconStart="@tui.pencil" (click)="observer.complete(); editPatient(patient)">
+        Editar
+      </button>
+
+      <button
+        tuiButton
+        type="button"
+        appearance="secondary-destructive"
+        iconStart="@tui.trash-2"
+        (click)="observer.complete(); remove.emit(patient)"
+      >
+        Eliminar
+      </button>
+    </div>
+  </footer>
+</ng-template>
 
 <!-- Detalle del paciente -->
 <app-patient-detail [patient]="selectedPatient()" (close)="closeDetail.emit()" />

@@ -37,7 +37,7 @@ export class AuthService {
 
   readonly accessToken = this._accessToken.asReadonly();
 
-  readonly currentUser = computed(() => {
+  readonly currentUser = computed<AuthUser | null>(() => {
     const token = this._accessToken();
 
     return token ? this.decodeToken(token) : null;

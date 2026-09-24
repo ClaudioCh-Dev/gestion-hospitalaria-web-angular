@@ -29,7 +29,6 @@ import {
   TuiIcon,
   TuiInput,
   TuiLink,
-  TuiTitle,
 } from '@taiga-ui/core';
 
 import {
@@ -40,8 +39,6 @@ import {
 } from '@taiga-ui/kit';
 
 import {
-  TuiCardLarge,
-  TuiHeader,
   TuiSearch,
 } from '@taiga-ui/layout';
 
@@ -53,6 +50,11 @@ import { downloadCsv } from '@shared/utils/csv';
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 import { MedicalRecordDetailDialog } from '../../components/medical-record-detail-dialog/medical-record-detail-dialog';
 import { StateMessage } from '@shared/components/state-message/state-message';
+import { InfoItem } from '@shared/components/info-item/info-item';
+import { RecordCard } from '@shared/components/record-card/record-card';
+import { RecordList } from '@shared/components/record-list/record-list';
+import { SimplePager } from '@shared/components/simple-pager/simple-pager';
+import { StatCard } from '@shared/components/stat-card/stat-card';
 
 // Colores de la etiqueta de estado
 const STATUS_BADGE_CLASSES: Record<string, string> = {
@@ -81,11 +83,14 @@ interface Stat {
   selector: 'app-medical-records',
   imports: [
     StateMessage,
+    InfoItem,
+    RecordCard,
+    RecordList,
+    SimplePager,
+    StatCard,
     CommonModule,
     ReactiveFormsModule,
     TuiButton,
-    TuiCardLarge,
-    TuiHeader,
     TuiIcon,
     TuiInput,
     TuiLink,
@@ -93,7 +98,6 @@ interface Stat {
     TuiSelect,
     TuiChevron,
     TuiDataListWrapper,
-    TuiTitle,
     TuiAppearance,
   ],
   templateUrl: 'patient-history-page.html',

@@ -163,6 +163,29 @@ export class CellCalendarAdmin {
       return Math.min(minutes - start, end - start) / (end - start) * 100;
     });
 
+  // Ancho de la columna de médicos (grid-cols-[180px_...]). Todo en px: una clase en rem
+  // (left-45) solo equivale a 180px con fuente raíz de 16px y desfasaba la hora del rayado
+  protected readonly doctorColumnWidth = 180;
+
+  // Estilos de posición calculados una sola vez para el rayado y la etiqueta de la hora
+  protected readonly elapsedWidth =
+    computed(() => {
+      const percent = this.nowPercent();
+      const column = this.doctorColumnWidth;
+
+      return percent === null ? null : `calc((100% - ${column}px) * ${percent / 100})`;
+    });
+
+  protected readonly nowLeft =
+    computed(() => {
+      const percent = this.nowPercent();
+      const column = this.doctorColumnWidth;
+
+      return percent === null
+        ? null
+        : `calc(${column}px + (100% - ${column}px) * ${percent / 100})`;
+    });
+
   protected readonly showNowLine =
     computed(() => {
       const percent = this.nowPercent();

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, input, model, output, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, TemplateRef, inject, input, model, output, signal, viewChild } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 
@@ -6,6 +6,7 @@ import {
   TuiButton,
   TuiCell,
   TuiCheckbox,
+  TuiDialogService,
   TuiDropdown,
   TuiInput,
   TuiLoader,
@@ -32,10 +33,15 @@ import { PatientDetailResponse, PatientResponse } from '../../interfaces';
 import { AvatarDefaultPatientPipe } from '@shared/pipes/avatar-default-patient-pipe';
 import { DatePipe, I18nSelectPipe } from '@angular/common';
 import { StateMessage } from '@shared/components/state-message/state-message';
+import { MobileDetail, MobileDetailField } from '@shared/components/mobile-detail/mobile-detail';
+import { TuiAppBar, TuiFloatingContainer } from '@taiga-ui/layout';
 
 @Component({
   selector: 'app-patient-table',
   imports: [
+    MobileDetail,
+    TuiAppBar,
+    TuiFloatingContainer,
     StateMessage,
     FormsModule,
 
@@ -106,6 +112,38 @@ export class PatientTableComponent {
   // ============================
 
   readonly loadingAction = signal<string | null>(null);
+
+  private readonly dialogs = inject(TuiDialogService);
+
+  private readonly mobileDetailTemplate = viewChild.required<TemplateRef<unknown>>('mobileDetail');
+
+  // ============================
+  // Detalle móvil
+  // ============================
+
+  protected openMobileDetail(patient: PatientResponse): void {
+    this.dialogs
+      .open(this.mobileDetailTemplate(), { appearance: 'fullscreen', data: patient })
+      .subscribe();
+  }
+
+  protected patientFields(patient: PatientResponse): MobileDetailField[] {
+    const gender = patient.gender
+      ? (this.genderMap as Record<string, string>)[patient.gender] ?? patient.gender
+      : 'Sin registrar';
+
+    return [
+      { icon: '@tui.id-card', label: 'DNI', value: patient.documentNumber },
+      { icon: '@tui.user', label: 'Género', value: gender },
+      {
+        icon: '@tui.cake',
+        label: 'Fecha de nacimiento',
+        value: patient.birthDate ? patient.birthDate.split('-').reverse().join('/') : 'Sin registrar',
+      },
+      { icon: '@tui.phone', label: 'Teléfono', value: patient.phone || 'Sin teléfono' },
+      { icon: '@tui.mail', label: 'Correo', value: patient.email || 'Sin correo', wide: true },
+    ];
+  }
 
   // ============================
   // Acciones

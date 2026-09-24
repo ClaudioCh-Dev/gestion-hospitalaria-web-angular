@@ -63,7 +63,75 @@
       (action)="resource.reload()"
     />
   } @else {
-    <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white p-4 shadow-md">
+    <!-- Pantallas pequeñas: lista de tuiCell -->
+    <div class="flex flex-col divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white py-2 shadow-md md:hidden">
+    @if (resource.isLoading()) {
+      @for (item of [1, 2, 3, 4, 5, 6]; track item) {
+        <div class="flex animate-pulse items-center gap-3 px-4 py-3">
+          <div class="h-8 w-8 shrink-0 rounded-full bg-slate-200"></div>
+          <div class="flex-1 space-y-2">
+            <div class="h-3 w-40 rounded bg-slate-200"></div>
+            <div class="h-2 w-28 rounded bg-slate-200"></div>
+          </div>
+        </div>
+      }
+    } @else {
+        @for (user of rows(); track user.id) {
+          <div tuiCell="m">
+            <button
+              type="button"
+              class="flex min-w-0 flex-1 cursor-pointer items-center gap-3 text-left"
+              [attr.aria-label]="'Ver detalle de ' + user.email"
+              (click)="openMobileDetail(user)"
+            >
+            <span
+              class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-600"
+            >
+              {{ initials(user.email) }}
+            </span>
+
+            <span tuiTitle class="min-w-0">
+              <span class="flex min-w-0 items-center gap-1.5">
+                <span class="truncate">{{ user.email }}</span>
+                @if (isSelf(user)) {
+                  <span tuiBadge size="s" appearance="info">Tú</span>
+                }
+              </span>
+
+              <span tuiSubtitle>
+                {{ roleLabel(user.role) }} ·
+                <span [tuiStatus]="statusColor[getStatus(user)]">
+                  {{ statusConfig[getStatus(user)].label }}
+                </span>
+              </span>
+            </span>
+            </button>
+
+            <div tuiAccessories>
+              <button
+                tuiButton
+                type="button"
+                size="xs"
+                appearance="secondary"
+                [loading]="busyId() === user.id"
+                (click)="openMobileDetail(user)"
+              >
+                Detalle
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <app-state-message
+            [compact]="true"
+            icon="@tui.users"
+            [title]="search() || statusFilter() !== 'all' ? 'Sin resultados' : 'No hay usuarios registrados'"
+            [description]="search() || statusFilter() !== 'all' ? 'Prueba con otra búsqueda o filtro.' : 'Crea el primero con el botón «Nuevo usuario».'"
+          />
+        }
+      }
+    </div>
+
+    <div class="hidden overflow-x-auto rounded-xl border border-slate-200 bg-white p-4 shadow-md md:block">
       <table tuiTable size="m" class="w-full">
         <thead>
           <tr>
@@ -197,6 +265,84 @@
         </tbody>
       </table>
     </div>
+
+    <!-- Detalle a pantalla completa (móvil) -->
+    <ng-template #mobileDetail let-observer let-data="data">
+      @let user = data;
+
+      <tui-app-bar tuiAppBarSize class="box-content! pt-3!">
+        <span class="truncate">{{ user.email }}</span>
+
+        <button
+          tuiIconButton
+          tuiSlot="end"
+          type="button"
+          appearance="flat"
+          iconStart="@tui.x"
+          (click)="observer.complete()"
+        >
+          Cerrar
+        </button>
+      </tui-app-bar>
+
+      <app-mobile-detail [fields]="userFields(user)">
+        <div class="flex flex-col items-center gap-2 text-center">
+          <span
+            class="flex h-14 w-14 items-center justify-center rounded-full bg-slate-100 text-lg font-semibold text-slate-600"
+          >
+            {{ initials(user.email) }}
+          </span>
+
+          <p class="flex items-center gap-2 text-base font-semibold text-slate-900">
+            {{ user.email }}
+            @if (isSelf(user)) {
+              <span tuiBadge size="s" appearance="info">Tú</span>
+            }
+          </p>
+
+          <span [tuiStatus]="statusColor[getStatus(user)]">{{ statusConfig[getStatus(user)].label }}</span>
+        </div>
+      </app-mobile-detail>
+
+      <footer tuiFloatingContainer class="mt-auto flex flex-col gap-3">
+
+        @if (!user.active) {
+          <button tuiButton type="button" iconStart="@tui.send" (click)="observer.complete(); resendActivation(user)">
+            {{ getStatus(user) === 'pending' ? 'Reenviar activación' : 'Enviar activación' }}
+          </button>
+        }
+
+        @if (canEdit(user)) {
+          <button
+            tuiButton
+            type="button"
+            appearance="secondary"
+            iconStart="@tui.pencil"
+            (click)="observer.complete(); edit(user)"
+          >
+            Editar
+          </button>
+        }
+
+        @if (canDeactivate(user)) {
+          <button
+            tuiButton
+            type="button"
+            appearance="secondary-destructive"
+            iconStart="@tui.ban"
+            (click)="observer.complete(); deactivate(user)"
+          >
+            Desactivar
+          </button>
+        }
+
+        @if (!canEdit(user)) {
+          <p class="text-center text-xs text-slate-400">
+            Las cuentas de médicos se editan desde Médicos.
+          </p>
+        }
+      </footer>
+    </ng-template>
 
     <p class="text-xs text-slate-400">
       Las cuentas de médicos se crean y editan desde <strong>Médicos</strong>. Los administradores no

@@ -9,31 +9,14 @@
   </div>
 
   <!-- Estadísticas -->
-  <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+  <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
     @for (stat of stats(); track stat.title) {
-      <div class="rounded-lg! border! border-slate-200! bg-white! px-4! py-4! shadow-sm!">
-        <header class="flex items-center justify-between">
-          <div>
-            <p class="text-xs text-slate-500">
-              {{ stat.title }}
-            </p>
-
-            <h2 class="mt-1 text-xl font-semibold text-slate-900">
-              @if (summaryResource.isLoading()) {
-                <span class="inline-block h-5 w-20 animate-pulse rounded bg-slate-200"></span>
-              } @else {
-                {{ stat.value }}
-              }
-            </h2>
-          </div>
-
-          <div
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600"
-          >
-            <tui-icon [icon]="stat.icon" />
-          </div>
-        </header>
-      </div>
+      <app-stat-card
+        [title]="stat.title"
+        [value]="stat.value"
+        [icon]="stat.icon"
+        [loading]="summaryResource.isLoading()"
+      />
     }
   </div>
 
@@ -55,7 +38,7 @@
         </tui-textfield>
 
         <!-- Buscar -->
-        <button size="s" tuiButton type="button" (click)="searchRecords()">Buscar</button>
+        <button size="s" tuiButton type="button" class="max-sm:w-full" (click)="searchRecords()">Buscar</button>
       </fieldset>
 
       <!-- Segunda fila -->
@@ -88,56 +71,8 @@
   </search>
 
   <!-- Historial -->
-  <div
-    class="grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-md xl:grid-cols-2"
-  >
-    @if (medicalRecordsResource.isLoading()) {
-      @for (item of [1, 2, 3, 4]; track item) {
-        <div class="animate-pulse rounded-lg border border-slate-200 bg-white p-5">
-          <!-- Header -->
-          <div class="flex items-center justify-between">
-            <div class="space-y-2">
-              <!-- Fecha -->
-              <div class="h-3 w-24 rounded bg-slate-200"></div>
-
-              <!-- Especialidad -->
-              <div class="h-5 w-36 rounded bg-slate-200"></div>
-            </div>
-
-            <!-- Estado -->
-            <div class="h-6 w-20 rounded-full bg-slate-200"></div>
-          </div>
-
-          <!-- Información -->
-          <div class="mt-6 grid grid-cols-1 gap-5 md:grid-cols-3">
-            @for (info of [1, 2, 3]; track info) {
-              <div class="flex items-center gap-3">
-                <!-- Icono -->
-                <div class="h-8 w-8 shrink-0 rounded bg-slate-200"></div>
-
-                <!-- Texto -->
-                <div class="space-y-2">
-                  <div class="h-2 w-20 rounded bg-slate-200"></div>
-
-                  <div class="h-3 w-24 rounded bg-slate-200"></div>
-                </div>
-              </div>
-            }
-          </div>
-
-          <!-- Footer -->
-          <div class="mt-5 flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <div class="h-3 w-20 rounded bg-slate-200"></div>
-
-              <div class="h-4 w-16 rounded bg-slate-200"></div>
-            </div>
-
-            <div class="h-9 w-28 rounded bg-slate-200"></div>
-          </div>
-        </div>
-      }
-    } @else if (medicalRecordsResource.error()) {
+  <app-record-list [loading]="medicalRecordsResource.isLoading()">
+    @if (medicalRecordsResource.error()) {
       <app-state-message
         class="col-span-full"
         variant="error"
@@ -145,102 +80,38 @@
         description="Ocurrió un error al obtener los registros médicos."
         (action)="medicalRecordsResource.reload()"
       />
-    } @else if (medicalRecordsResource.value(); as page) {
+    } @else if (medicalRecordsResource.value()) {
       @for (record of records(); track record.id) {
-<div
-          tuiCardLarge
-          class="border! border-slate-200! bg-white! shadow-sm! transition-shadow hover:shadow-md!"
+        <app-record-card
+          [date]="record.scheduledAt"
+          [title]="record.specialty"
+          [status]="statusLabel(record.status)"
+          [statusClass]="statusBadgeClass(record.status)"
         >
-          <!-- Header -->
-          <header tuiHeader>
-            <div class="flex flex-col gap-1">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-medium text-slate-400">
-                  {{ record.scheduledAt | date: 'dd MMM yyyy' }}
-                </span>
+          <app-info-item card-content icon="@tui.user" label="Paciente">
+            <span class="font-medium">{{ record.patientName }}</span>
+          </app-info-item>
 
-                <span class="text-xs text-slate-400"> • </span>
+          <app-info-item card-content icon="@tui.stethoscope" label="Médico">
+            <span class="font-medium">{{ record.doctorName }}</span>
+          </app-info-item>
 
-                <span class="text-xs text-slate-400">
-                  {{ record.scheduledAt | date: 'HH:mm' }}
-                </span>
-              </div>
+          <!-- Motivo a lo ancho en móvil (texto largo) -->
+          <app-info-item card-content class="col-span-2 md:col-span-1" icon="@tui.file-text" label="Motivo de consulta">
+            <span class="text-slate-700">{{ record.reason }}</span>
+          </app-info-item>
 
-              <h2 tuiTitle>
-                {{ record.specialty }}
-              </h2>
-            </div>
+          <div card-footer class="flex items-center gap-4">
+            <span class="text-xs text-slate-400">Cita #{{ record.appointmentId }}</span>
 
-            <aside tuiAccessories class="ml-auto!">
-              <span
-                class="rounded-full px-2.5 py-1 text-xs font-medium"
-                [ngClass]="statusBadgeClass(record.status)"
-              >
-                {{ statusLabel(record.status) }}
-              </span>
-            </aside>
-          </header>
+            <span class="text-sm font-semibold text-slate-900">S/ {{ record.amount | number: '1.2-2' }}</span>
+          </div>
 
-          <!-- Información -->
-          <section class="grid grid-cols-1 gap-5 pt-2! md:grid-cols-3 md:pl-8">
-            <!-- Paciente -->
-            <div class="flex items-center gap-3">
-              <tui-icon icon="@tui.user" class="mt-0.5 shrink-0 text-slate-400" />
-
-              <div>
-                <p class="text-xs text-slate-400">Paciente</p>
-
-                <p class="mt-1 text-sm font-medium text-slate-800">
-                  {{ record.patientName }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Médico -->
-            <div class="flex items-center gap-3">
-              <tui-icon icon="@tui.stethoscope" class="mt-0.5 shrink-0 text-slate-400" />
-
-              <div>
-                <p class="text-xs text-slate-400">Médico</p>
-
-                <p class="mt-1 text-sm font-medium text-slate-800">
-                  {{ record.doctorName }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Motivo -->
-            <div class="flex items-center gap-3">
-              <tui-icon icon="@tui.file-text" class="mt-0.5 shrink-0 text-slate-400" />
-
-              <div>
-                <p class="text-xs text-slate-400">Motivo de consulta</p>
-
-                <p class="mt-1 text-sm text-slate-700">
-                  {{ record.reason }}
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <!-- Footer -->
-          <footer class="mt-4! flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <span class="text-xs text-slate-400"> Cita #{{ record.appointmentId }} </span>
-
-              <span class="text-sm font-semibold text-slate-900">
-                S/
-                {{ record.amount | number: '1.2-2' }}
-              </span>
-            </div>
-
-            <button appearance="secondary" size="s" tuiButton type="button" (click)="viewDetail(record)">
-              Ver detalle
-
-              <tui-icon icon="@tui.arrow-right" />
-            </button>
-          </footer>
-        </div>
+          <button card-footer appearance="secondary" size="s" tuiButton type="button" (click)="viewDetail(record)">
+            Ver detalle
+            <tui-icon icon="@tui.arrow-right" />
+          </button>
+        </app-record-card>
       } @empty {
         <app-state-message
           class="col-span-full"
@@ -250,46 +121,15 @@
         />
       }
     }
-  </div>
+  </app-record-list>
 
   <!-- Paginación -->
   @if (medicalRecordsResource.value(); as page) {
-    <div class="flex items-center justify-between">
-      <span class="text-sm text-slate-500">
-        Mostrando
-        {{ page.numberOfElements }}
-        de
-        {{ page.totalElements }}
-        registros
-      </span>
-
-      <div class="flex items-center gap-2">
-        <button
-          appearance="secondary"
-          size="s"
-          tuiButton
-          type="button"
-          [disabled]="page.first || medicalRecordsResource.isLoading()"
-          (click)="previousPage()"
-        >
-          <tui-icon icon="@tui.chevron-left" />
-        </button>
-
-        <span class="text-sm text-slate-600">
-          Página {{ page.number + 1 }} de {{ page.totalPages }}
-        </span>
-
-        <button
-          appearance="secondary"
-          size="s"
-          tuiButton
-          type="button"
-          [disabled]="page.last || medicalRecordsResource.isLoading()"
-          (click)="nextPage()"
-        >
-          <tui-icon icon="@tui.chevron-right" />
-        </button>
-      </div>
-    </div>
+    <app-simple-pager
+      [page]="page"
+      [loading]="medicalRecordsResource.isLoading()"
+      (previous)="previousPage()"
+      (next)="nextPage()"
+    />
   }
 </div>

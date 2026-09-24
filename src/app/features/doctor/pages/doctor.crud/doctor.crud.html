@@ -1,10 +1,11 @@
 <div class="flex w-full flex-col gap-5">
 
   <!-- Header -->
-  <div class="flex w-full items-center gap-4">
+  <!-- En pantallas pequeñas todo en una columna, como los filtros -->
+  <div class="flex w-full flex-col gap-4 lg:flex-row lg:items-center">
 
     <!-- Filtros -->
-    <div class="flex-1">
+    <div class="w-full lg:flex-1">
       <app-doctor-filters
         (filtersChange)="onFiltersChange($event)"
       />
@@ -17,6 +18,7 @@
       iconStart="@tui.plus"
       size="s"
       appearance="secondary"
+      class="w-full lg:w-auto"
       (click)="createSpecialtyModal()"
     >
       Nueva especialidad
@@ -29,6 +31,7 @@
       iconStart="@tui.plus"
       size="s"
       appearance="primary"
+      class="w-full lg:w-auto"
       (click)="createDoctorModal()"
     >
       Nuevo doctor

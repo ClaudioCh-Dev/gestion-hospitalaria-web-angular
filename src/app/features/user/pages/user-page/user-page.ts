@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { filter, forkJoin, switchMap } from 'rxjs';
@@ -6,6 +6,7 @@ import { filter, forkJoin, switchMap } from 'rxjs';
 import { TuiTable } from '@taiga-ui/addon-table';
 import {
   TuiButton,
+  TuiCell,
   TuiDialogService,
   TuiHint,
   TuiIcon,
@@ -13,12 +14,14 @@ import {
   TuiTextfield,
   TuiTitle,
 } from '@taiga-ui/core';
-import { TUI_CONFIRM, TuiBadge, TuiButtonLoading, type TuiConfirmData } from '@taiga-ui/kit';
+import { TUI_CONFIRM, TuiBadge, TuiButtonLoading, TuiStatus, type TuiConfirmData } from '@taiga-ui/kit';
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 
 import { AuthService } from '@core/services/auth.service';
 import { NotificationService } from '@core/services/alert-notification.service';
 import { StateMessage } from '@shared/components/state-message/state-message';
+import { MobileDetail, MobileDetailField } from '@shared/components/mobile-detail/mobile-detail';
+import { TuiAppBar, TuiFloatingContainer } from '@taiga-ui/layout';
 import { withNotification } from '@shared/operators/with-notification';
 
 import { UserModal, UserModalData } from '../../components/user-modal/user-modal';
@@ -40,13 +43,18 @@ const STATUS_CONFIG: Record<UserStatus, { label: string; appearance: string; ico
   selector: 'app-user-page',
   imports: [
     FormsModule,
+    MobileDetail,
+    TuiAppBar,
+    TuiFloatingContainer,
     StateMessage,
     TuiBadge,
     TuiButton,
     TuiButtonLoading,
+    TuiCell,
     TuiHint,
     TuiIcon,
     TuiInput,
+    TuiStatus,
     TuiTable,
     TuiTextfield,
     TuiTitle,
@@ -61,6 +69,13 @@ export class UserPage {
   private readonly notificationService = inject(NotificationService);
 
   protected readonly statusConfig = STATUS_CONFIG;
+
+  // Punto de color de tuiStatus en la lista para pantallas pequeñas
+  protected readonly statusColor: Record<UserStatus, string> = {
+    active: 'var(--tui-status-positive)',
+    pending: 'var(--tui-status-warning)',
+    inactive: 'var(--tui-status-neutral)',
+  };
 
   protected readonly roleLabel = getRoleLabel;
 
@@ -144,6 +159,22 @@ export class UserPage {
 
   protected create(): void {
     this.openModal('Nuevo usuario', null);
+  }
+
+  private readonly mobileDetailTemplate = viewChild.required<TemplateRef<unknown>>('mobileDetail');
+
+  protected openMobileDetail(user: UserResponse): void {
+    this.dialogs
+      .open(this.mobileDetailTemplate(), { appearance: 'fullscreen', data: user })
+      .subscribe();
+  }
+
+  protected userFields(user: UserResponse): MobileDetailField[] {
+    return [
+      { icon: '@tui.mail', label: 'Correo', value: user.email, wide: true },
+      { icon: user.role === ROLE_DOCTOR ? '@tui.stethoscope' : '@tui.shield', label: 'Rol', value: this.roleLabel(user.role) },
+      { icon: '@tui.hash', label: 'ID de usuario', value: String(user.id) },
+    ];
   }
 
   protected edit(user: UserResponse): void {

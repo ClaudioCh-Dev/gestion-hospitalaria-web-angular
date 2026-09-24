@@ -9,33 +9,15 @@
   </div>
 
   <!-- Estadísticas -->
-  <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+  <div class="grid grid-cols-2 gap-3 xl:grid-cols-4">
     @for (stat of stats(); track stat.title) {
-      <div class="rounded-lg! border! border-slate-200! bg-white! px-4! py-4! shadow-sm!">
-        <header class="flex items-center justify-between">
-          <div>
-            <p class="text-xs text-slate-500">
-              {{ stat.title }}
-            </p>
-
-            <h2 class="mt-1 text-xl font-semibold text-slate-900">
-              @if (summaryResource.isLoading()) {
-                <span class="inline-block h-5 w-24 animate-pulse rounded bg-slate-200"></span>
-              } @else {
-                S/ {{ stat.value | number: '1.2-2' }}
-              }
-            </h2>
-
-            <p class="mt-0.5 text-xs text-slate-400">{{ stat.count }} facturas</p>
-          </div>
-
-          <div
-            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 text-blue-600"
-          >
-            <tui-icon [icon]="stat.icon" />
-          </div>
-        </header>
-      </div>
+      <app-stat-card
+        [title]="stat.title"
+        [value]="'S/ ' + (stat.value | number: '1.2-2')"
+        [caption]="stat.count + ' facturas'"
+        [icon]="stat.icon"
+        [loading]="summaryResource.isLoading()"
+      />
     }
   </div>
 
@@ -57,7 +39,7 @@
         </tui-textfield>
 
         <!-- Buscar -->
-        <button size="s" tuiButton type="button" (click)="searchBillings()">Buscar</button>
+        <button size="s" tuiButton type="button" class="max-sm:w-full" (click)="searchBillings()">Buscar</button>
       </fieldset>
 
       <!-- Segunda fila -->
@@ -97,40 +79,8 @@
   </search>
 
   <!-- Facturación -->
-  <div
-    class="grid grid-cols-1 gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-md xl:grid-cols-2"
-  >
-    <!-- Loading -->
-    @if (billingResource.isLoading()) {
-      @for (item of [1, 2, 3, 4]; track item) {
-        <div class="animate-pulse rounded-lg border border-slate-200 bg-white p-5">
-          <div class="flex items-center justify-between">
-            <div class="space-y-2">
-              <div class="h-3 w-24 rounded bg-slate-200"></div>
-              <div class="h-5 w-32 rounded bg-slate-200"></div>
-            </div>
-
-            <div class="h-6 w-20 rounded-full bg-slate-200"></div>
-          </div>
-
-          <div class="mt-6 grid grid-cols-3 gap-5">
-            @for (info of [1, 2, 3]; track info) {
-              <div class="flex items-center gap-3">
-                <div class="h-8 w-8 rounded bg-slate-200"></div>
-
-                <div class="space-y-2">
-                  <div class="h-2 w-16 rounded bg-slate-200"></div>
-                  <div class="h-3 w-20 rounded bg-slate-200"></div>
-                </div>
-              </div>
-            }
-          </div>
-        </div>
-      }
-    }
-
-    <!-- Error -->
-    @else if (billingResource.error()) {
+  <app-record-list [loading]="billingResource.isLoading()">
+    @if (billingResource.error()) {
       <app-state-message
         class="col-span-full"
         variant="error"
@@ -138,175 +88,72 @@
         description="Ocurrió un error al obtener los registros."
         (action)="billingResource.reload()"
       />
-    }
-
-    <!-- Data -->
-    @else if (billingResource.value()) {
+    } @else if (billingResource.value()) {
       @for (record of records(); track record.id) {
-<div
-          tuiCardLarge
-          class="border! border-slate-200! bg-white! shadow-sm! transition-shadow hover:shadow-md!"
+        <app-record-card
+          [date]="record.issuedAt"
+          [title]="'Factura #' + record.id"
+          [status]="getStatusLabel(record.status)"
+          [statusClass]="getStatusClass(record.status)"
         >
-          <!-- Header -->
-          <header tuiHeader>
-            <div class="flex flex-col gap-1">
-              <div class="flex items-center gap-2">
-                <span class="text-xs font-medium text-slate-400">
-                  {{ record.issuedAt | date: 'dd MMM yyyy' }}
-                </span>
-
-                <span class="text-xs text-slate-400"> • </span>
-
-                <span class="text-xs text-slate-400">
-                  {{ record.issuedAt | date: 'HH:mm' }}
-                </span>
-              </div>
-
-              <h2 tuiTitle>Factura #{{ record.id }}</h2>
-            </div>
-
-            <!-- Estado -->
-            <aside tuiAccessories class="ml-auto!">
-              <span
-                class="rounded-full px-2.5 py-1 text-xs font-medium"
-                [class]="getStatusClass(record.status)"
-              >
-                {{ getStatusLabel(record.status) }}
-              </span>
-            </aside>
-          </header>
-
-          <!-- Información -->
-          <section class="grid grid-cols-1 gap-5 pt-2! md:grid-cols-3 md:pl-8">
-            <!-- Paciente -->
-            <div class="flex items-center gap-3">
-              <tui-icon icon="@tui.user" class="shrink-0 text-slate-400" />
-
-              <div>
-                <p class="text-xs text-slate-400">Paciente</p>
-
-                <p class="mt-1 text-sm font-medium text-slate-800">
-                  @if (patientNamesResource.isLoading()) {
-                    <span class="inline-block h-3 w-28 animate-pulse rounded bg-slate-200"></span>
-                  } @else {
-                    {{ patientName(record.patientId) }}
-                  }
-                </p>
-              </div>
-            </div>
-
-            <!-- Cita -->
-            <div class="flex items-center gap-3">
-              <tui-icon icon="@tui.calendar" class="shrink-0 text-slate-400" />
-
-              <div>
-                <p class="text-xs text-slate-400">Cita</p>
-
-                <p class="mt-1 text-sm font-medium text-slate-800">#{{ record.appointmentId }}</p>
-              </div>
-            </div>
-
-            <!-- Monto -->
-            <div class="flex items-center gap-3">
-              <tui-icon icon="@tui.wallet" class="shrink-0 text-slate-400" />
-
-              <div>
-                <p class="text-xs text-slate-400">Monto</p>
-
-                <p class="mt-1 text-sm font-semibold text-slate-900">
-                  {{ record.currency }}
-                  {{ record.amount | number: '1.2-2' }}
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <!-- Segunda información -->
-          <section class="mt-4! grid grid-cols-1 gap-5 md:grid-cols-3 md:pl-8">
-            <!-- Estado -->
-            <div class="flex items-center gap-3">
-              <tui-icon icon="@tui.circle-check" class="shrink-0 text-slate-400" />
-
-              <div>
-                <p class="text-xs text-slate-400">Estado</p>
-
-                <p class="mt-1 text-sm font-medium text-slate-700">
-                  {{ getStatusLabel(record.status) }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Fecha emisión -->
-            <div class="flex items-center gap-3">
-              <tui-icon icon="@tui.file-text" class="shrink-0 text-slate-400" />
-
-              <div>
-                <p class="text-xs text-slate-400">Emitida</p>
-
-                <p class="mt-1 text-sm text-slate-700">
-                  {{ record.issuedAt | date: 'dd/MM/yyyy HH:mm' }}
-                </p>
-              </div>
-            </div>
-
-            <!-- Fecha pago -->
-            <div class="flex items-center gap-3">
-              <tui-icon icon="@tui.credit-card" class="shrink-0 text-slate-400" />
-
-              <div>
-                <p class="text-xs text-slate-400">Fecha de pago</p>
-
-                <p class="mt-1 text-sm text-slate-700">
-                  @if (record.paidAt) {
-                    {{ record.paidAt | date: 'dd/MM/yyyy HH:mm' }}
-                  } @else {
-                    <span class="text-slate-400"> Pendiente </span>
-                  }
-                </p>
-              </div>
-            </div>
-          </section>
-
-          <!-- Footer -->
-          <footer class="mt-5! flex items-center justify-between">
-            <div class="flex items-center gap-4">
-              <span class="text-xs text-slate-400"> Factura #{{ record.id }} </span>
-
-              <span class="text-sm font-semibold text-slate-900">
-                {{ record.currency }}
-                {{ record.amount | number: '1.2-2' }}
-              </span>
-            </div>
-
-            <div class="flex items-center gap-2">
-              @if (record.status === 'PENDING') {
-                <button
-                  appearance="primary"
-                  size="s"
-                  tuiButton
-                  type="button"
-                  (click)="payBilling(record)"
-                >
-                  Cobrar
-
-                  <tui-icon icon="@tui.credit-card" />
-                </button>
+          <!-- Paciente a lo ancho en móvil (nombres largos) -->
+          <app-info-item card-content class="col-span-2 md:col-span-1" icon="@tui.user" label="Paciente">
+            <span class="font-medium">
+              @if (patientNamesResource.isLoading()) {
+                <span class="inline-block h-3 w-28 animate-pulse rounded bg-slate-200"></span>
               } @else {
-                <button
-                  appearance="secondary"
-                  size="s"
-                  tuiButton
-                  type="button"
-                  (click)="viewDetail(record)"
-                >
-                  Ver detalle
-
-                  <tui-icon icon="@tui.arrow-right" />
-                </button>
+                {{ patientName(record.patientId) }}
               }
-            </div>
-          </footer>
-        </div>
+            </span>
+          </app-info-item>
+
+          <app-info-item card-content icon="@tui.calendar" label="Cita">
+            <span class="font-medium">#{{ record.appointmentId }}</span>
+          </app-info-item>
+
+          <app-info-item card-content icon="@tui.wallet" label="Monto">
+            <span class="font-semibold text-slate-900">{{ record.currency }} {{ record.amount | number: '1.2-2' }}</span>
+          </app-info-item>
+
+          <!-- Estado y emisión: en móvil ya se ven en la cabecera -->
+          <app-info-item card-content class="max-md:hidden" icon="@tui.circle-check" label="Estado">
+            {{ getStatusLabel(record.status) }}
+          </app-info-item>
+
+          <app-info-item card-content class="max-md:hidden" icon="@tui.file-text" label="Emitida">
+            {{ record.issuedAt | date: 'dd/MM/yyyy HH:mm' }}
+          </app-info-item>
+
+          <app-info-item card-content icon="@tui.credit-card" label="Fecha de pago">
+            @if (record.paidAt) {
+              {{ record.paidAt | date: 'dd/MM/yyyy HH:mm' }}
+            } @else {
+              <span class="text-slate-400">Pendiente</span>
+            }
+          </app-info-item>
+
+          <div card-footer class="flex items-center gap-4">
+            <span class="text-xs text-slate-400 max-sm:hidden">Factura #{{ record.id }}</span>
+
+            <span class="text-sm font-semibold text-slate-900">
+              {{ record.currency }} {{ record.amount | number: '1.2-2' }}
+            </span>
+          </div>
+
+          <div card-footer class="flex items-center gap-2">
+            @if (record.status === 'PENDING') {
+              <button appearance="primary" size="s" tuiButton type="button" (click)="payBilling(record)">
+                Cobrar
+                <tui-icon icon="@tui.credit-card" />
+              </button>
+            } @else {
+              <button appearance="secondary" size="s" tuiButton type="button" (click)="viewDetail(record)">
+                Ver detalle
+                <tui-icon icon="@tui.arrow-right" />
+              </button>
+            }
+          </div>
+        </app-record-card>
       } @empty {
         <app-state-message
           class="col-span-full"
@@ -316,46 +163,15 @@
         />
       }
     }
-  </div>
+  </app-record-list>
 
   <!-- Paginación -->
   @if (billingResource.value(); as page) {
-    <div class="flex items-center justify-between">
-      <span class="text-sm text-slate-500">
-        Mostrando
-        {{ page.numberOfElements }}
-        de
-        {{ page.totalElements }}
-        registros
-      </span>
-
-      <div class="flex items-center gap-2">
-        <button
-          appearance="secondary"
-          size="s"
-          tuiButton
-          type="button"
-          [disabled]="page.first || billingResource.isLoading()"
-          (click)="previousPage()"
-        >
-          <tui-icon icon="@tui.chevron-left" />
-        </button>
-
-        <span class="text-sm text-slate-600">
-          Página {{ page.number + 1 }} de {{ page.totalPages }}
-        </span>
-
-        <button
-          appearance="secondary"
-          size="s"
-          tuiButton
-          type="button"
-          [disabled]="page.last || billingResource.isLoading()"
-          (click)="nextPage()"
-        >
-          <tui-icon icon="@tui.chevron-right" />
-        </button>
-      </div>
-    </div>
+    <app-simple-pager
+      [page]="page"
+      [loading]="billingResource.isLoading()"
+      (previous)="previousPage()"
+      (next)="nextPage()"
+    />
   }
 </div>

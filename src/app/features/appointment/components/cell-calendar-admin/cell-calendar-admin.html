@@ -1,7 +1,7 @@
 <!-- Calendar toolbar -->
 
 <div
-  class="mb-4 grid grid-cols-3 items-center rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
+  class="mb-4 flex flex-wrap items-center justify-between gap-3 md:grid md:grid-cols-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
 >
   <!-- Navigation -->
 
@@ -48,9 +48,9 @@
     </button>
   </div>
 
-  <!-- Current day -->
+  <!-- Current day (en móvil va arriba, a todo el ancho) -->
 
-  <div class="text-center">
+  <div class="order-first w-full text-center md:order-none md:w-auto">
     <h2
       class="text-base font-semibold capitalize tracking-tight text-slate-900"
     >
@@ -64,7 +64,7 @@
 
   <!-- Date picker -->
 
-  <div class="ml-auto w-52">
+  <div class="ml-auto w-40 sm:w-52">
     <tui-textfield
       [disabledItemHandler]="handler"
       tuiTextfieldSize="s"
@@ -86,7 +86,8 @@
 
 
 <div class="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_300px]">
-<div class="min-w-0">
+<!-- En pantallas pequeñas solo se muestra el panel de hoy; la grilla no cabe -->
+<div class="hidden min-w-0 md:block">
 
 <!-- Loading -->
 
@@ -138,15 +139,15 @@
       <!-- Header -->
 
       <div
-        class="sticky top-0 z-[25] grid grid-cols-[180px_repeat(29,minmax(48px,1fr))] border-b border-slate-300"
+        class="sticky top-0 z-25 grid grid-cols-[180px_repeat(29,minmax(48px,1fr))] border-b border-slate-300"
       >
 
         <!-- Current time badge -->
 
         @if (showNowLine()) {
           <div
-            class="pointer-events-none absolute bottom-1 z-[16] -translate-x-1/2 rounded-full bg-(--tui-background-accent-1) px-1.5 py-0.5 text-[9px] font-semibold leading-none text-white shadow-sm"
-            [style.left]="'calc(180px + (100% - 180px) * ' + nowPercent()! / 100 + ')'"
+            class="pointer-events-none absolute bottom-1 z-16 -translate-x-1/2 rounded-full bg-(--tui-background-accent-1) px-1.5 py-0.5 text-[9px] font-semibold leading-none text-white shadow-sm"
+            [style.left]="nowLeft()"
           >
             {{ nowLabel() }}
           </div>
@@ -189,18 +190,19 @@
 
       <!-- Elapsed time overlay + current time line -->
 
-      @if (nowPercent() !== null) {
+      <!-- La línea es el borde derecho del rayado: avanzan juntos por construcción -->
+      @if (elapsedWidth(); as width) {
         <div
-          class="pointer-events-none absolute inset-y-0 left-[180px] z-[15] bg-[repeating-linear-gradient(135deg,rgb(148_163_184/0.14)_0px,rgb(148_163_184/0.14)_1px,transparent_1px,transparent_8px)] bg-slate-50/50"
-          [style.width]="'calc((100% - 180px) * ' + nowPercent()! / 100 + ')'"
-        ></div>
-      }
-
-      @if (showNowLine()) {
-        <div
-          class="pointer-events-none absolute inset-y-0 z-[16] w-0.5 -translate-x-1/2 bg-(--tui-background-accent-1) shadow-[0_0_6px_rgba(37,99,235,0.45)]"
-          [style.left]="'calc(180px + (100% - 180px) * ' + nowPercent()! / 100 + ')'"
-        ></div>
+          class="pointer-events-none absolute inset-y-0 z-15 bg-[repeating-linear-gradient(135deg,rgb(148_163_184/0.14)_0px,rgb(148_163_184/0.14)_1px,transparent_1px,transparent_8px)] bg-slate-50/50"
+          [style.left.px]="doctorColumnWidth"
+          [style.width]="width"
+        >
+          @if (showNowLine()) {
+            <div
+              class="absolute inset-y-0 right-0 w-0.5 translate-x-1/2 bg-(--tui-background-accent-1) shadow-[0_0_6px_rgba(37,99,235,0.45)]"
+            ></div>
+          }
+        </div>
       }
 
       @for (doctor of doctors; track doctor.id) {

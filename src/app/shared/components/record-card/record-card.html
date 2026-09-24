@@ -1,53 +1,39 @@
-<div tuiAppearance="secondary" tuiCardLarge>
-
+<div
+  tuiCardLarge
+  class="h-full border! border-slate-200! bg-white! shadow-sm! transition-shadow hover:shadow-md! max-sm:p-4!"
+>
   <!-- Header -->
   <header tuiHeader>
-
-    <div class="flex flex-col gap-1">
-
+    <div class="flex min-w-0 flex-col gap-1">
       <div class="flex items-center gap-2">
-
         <span class="text-xs font-medium text-slate-400">
           {{ date() | date: 'dd MMM yyyy' }}
         </span>
 
-        <span class="text-xs text-slate-400">
-          •
-        </span>
+        <span class="text-xs text-slate-400">•</span>
 
         <span class="text-xs text-slate-400">
           {{ date() | date: 'HH:mm' }}
         </span>
-
       </div>
 
-      <h2 tuiTitle>
-        {{ title() }}
-      </h2>
-
+      <h2 tuiTitle>{{ title() }}</h2>
     </div>
 
     <aside tuiAccessories class="ml-auto!">
-
-      <span
-        class="rounded-full px-2.5 py-1 text-xs font-medium"
-        [class]="statusClass()"
-      >
+      <span class="rounded-full px-2.5 py-1 text-xs font-medium whitespace-nowrap" [class]="statusClass()">
         {{ status() }}
       </span>
-
     </aside>
-
   </header>
 
-  <!-- Contenido específico -->
-  <section class="pt-2!">
+  <!-- Datos: 2 columnas en móvil, 3 desde md -->
+  <section class="grid grid-cols-2 gap-x-4 gap-y-3 pt-2! sm:gap-5 md:grid-cols-3 md:pl-8">
     <ng-content select="[card-content]" />
   </section>
 
-  <!-- Footer específico -->
-  <footer class="mt-4! flex items-center justify-between">
+  <!-- Pie -->
+  <footer class="mt-4! flex items-center justify-between gap-3">
     <ng-content select="[card-footer]" />
   </footer>
-
 </div>

@@ -1,9 +1,10 @@
 <div class="flex w-full flex-col gap-5">
 
   <!-- Header -->
-  <div class="flex w-full items-center gap-4">
+  <!-- En pantallas pequeñas: filtros arriba y el botón debajo a todo el ancho -->
+  <div class="flex w-full flex-col gap-4 lg:flex-row lg:items-center">
 
-    <div class="flex-1">
+    <div class="w-full lg:flex-1">
       <app-patient-filters
         (filtersChange)="onFiltersChange($event)"
       />
@@ -15,6 +16,7 @@
       iconStart="@tui.plus"
       size="s"
       appearance="primary"
+      class="w-full lg:w-auto"
       [disabled]="patientsResource.isLoading()"
       (click)="createPatientModal()"
     >

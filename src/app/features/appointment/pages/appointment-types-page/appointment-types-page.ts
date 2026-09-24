@@ -2,9 +2,11 @@ import { CurrencyPipe } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  TemplateRef,
   computed,
   inject,
   signal,
+  viewChild,
 } from '@angular/core';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { catchError, filter, forkJoin, of, switchMap } from 'rxjs';
@@ -12,6 +14,7 @@ import { catchError, filter, forkJoin, of, switchMap } from 'rxjs';
 import { TuiTable } from '@taiga-ui/addon-table';
 import {
   TuiButton,
+  TuiCell,
   TuiDialogService,
   TuiTitle,
 } from '@taiga-ui/core';
@@ -19,6 +22,7 @@ import {
   TUI_CONFIRM,
   TuiBadge,
   TuiButtonLoading,
+  TuiStatus,
   type TuiConfirmData,
 } from '@taiga-ui/kit';
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
@@ -36,6 +40,8 @@ import {
   AppointmentTypeModalData,
 } from '../../components/appointment-type-modal/appointment-type-modal';
 import { StateMessage } from '@shared/components/state-message/state-message';
+import { MobileDetail, MobileDetailField } from '@shared/components/mobile-detail/mobile-detail';
+import { TuiAppBar, TuiFloatingContainer } from '@taiga-ui/layout';
 
 interface AppointmentTypeRow {
   appointmentType: AppointmentTypeResponse;
@@ -45,11 +51,16 @@ interface AppointmentTypeRow {
 @Component({
   selector: 'app-appointment-types-page',
   imports: [
+    MobileDetail,
+    TuiAppBar,
+    TuiFloatingContainer,
     StateMessage,
     CurrencyPipe,
     TuiBadge,
     TuiButton,
     TuiButtonLoading,
+    TuiCell,
+    TuiStatus,
     TuiTable,
     TuiTitle,
   ],
@@ -108,6 +119,26 @@ export class AppointmentTypesPage {
 
   protected create(): void {
     this.openModal('Nuevo tipo de cita', null);
+  }
+
+  private readonly mobileDetailTemplate = viewChild.required<TemplateRef<unknown>>('mobileDetail');
+
+  protected openMobileDetail(row: AppointmentTypeRow): void {
+    this.dialogs
+      .open(this.mobileDetailTemplate(), { appearance: 'fullscreen', data: row })
+      .subscribe();
+  }
+
+  protected typeFields(row: AppointmentTypeRow): MobileDetailField[] {
+    const price = row.tariff
+      ? new Intl.NumberFormat('es-PE', { style: 'currency', currency: row.tariff.currency }).format(row.tariff.price)
+      : 'Sin tarifa';
+
+    return [
+      { icon: '@tui.file-text', label: 'Descripción', value: row.appointmentType.description || 'Sin descripción' },
+      { icon: '@tui.banknote', label: 'Precio', value: price },
+      { icon: '@tui.palette', label: 'Color en la agenda', value: this.getColor(row.appointmentType.color).label },
+    ];
   }
 
   protected edit(row: AppointmentTypeRow): void {
