@@ -10,17 +10,16 @@ const HOME_CANDIDATES: { url: string; permissions: string[] }[] = [
 ];
 
 /**
- * Primera página a la que el usuario tiene acceso (admin → dashboard, médico → su agenda).
+ * Primera página a la que el usuario tiene acceso (admin → dashboard, médico → su agenda,
+ * cualquier otro → bienvenida).
  * Se usa en redirectTo de las rutas y como destino del permissionGuard.
  * Debe llamarse en un contexto de inyección.
  */
 export function homeUrl(): string {
   const authService = inject(AuthService);
 
-  const home = HOME_CANDIDATES.find((candidate) =>
-    candidate.permissions.some((permission) => authService.hasPermission(permission)),
-  );
+  const home = HOME_CANDIDATES.find(candidate => authService.hasAnyPermission(candidate.permissions));
 
-  // Sin ninguna: la agenda (su guard decidirá); no se vuelve a /login para no crear un bucle con guestGuard
-  return home?.url ?? '/appointments';
+  // Sin ninguna: la bienvenida (no exige permiso, así nunca hay bucle de redirecciones)
+  return home?.url ?? '/welcome';
 }

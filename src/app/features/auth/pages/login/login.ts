@@ -1,17 +1,10 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormField, email, form, required, submit } from '@angular/forms/signals';
 import { ActivatedRoute, Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 
-import {
-  TuiButton,
-  TuiError,
-  TuiIcon,
-  TuiInput,
-  TuiLabel,
-  TuiTextfield,
-  tuiValidationErrorsProvider,
-} from '@taiga-ui/core';
+import { TuiButton, TuiIcon, TuiInput, TuiLabel, TuiTextfield } from '@taiga-ui/core';
 import { TuiButtonLoading, TuiPassword } from '@taiga-ui/kit';
 
 import { AuthService } from '@core/services/auth.service';
@@ -25,10 +18,9 @@ interface Highlight {
 @Component({
   selector: 'app-login',
   imports: [
-    ReactiveFormsModule,
+    FormField,
     TuiButton,
     TuiButtonLoading,
-    TuiError,
     TuiIcon,
     TuiInput,
     TuiLabel,
@@ -37,12 +29,6 @@ interface Highlight {
   ],
   templateUrl: './login.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  providers: [
-    tuiValidationErrorsProvider({
-      required: 'Este campo es obligatorio',
-      email: 'Ingresa un correo válido',
-    }),
-  ],
 })
 export class Login {
   private readonly authService = inject(AuthService);
@@ -51,19 +37,18 @@ export class Login {
 
   protected readonly year = new Date().getFullYear();
 
-  protected readonly loading = signal(false);
-
   protected readonly errorMessage = signal<string | null>(null);
 
-  protected readonly form = new FormGroup({
-    email: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required, Validators.email],
-    }),
-    password: new FormControl('', {
-      nonNullable: true,
-      validators: [Validators.required],
-    }),
+  // =========================
+  // FORMULARIO (Signal Forms)
+  // =========================
+
+  private readonly credentials = signal({ email: '', password: '' });
+
+  protected readonly form = form(this.credentials, (path) => {
+    required(path.email, { message: 'Este campo es obligatorio' });
+    email(path.email, { message: 'Ingresa un correo válido' });
+    required(path.password, { message: 'Este campo es obligatorio' });
   });
 
   protected readonly highlights: Highlight[] = [
@@ -89,31 +74,36 @@ export class Login {
     },
   ];
 
-  protected login(): void {
-    if (this.form.invalid) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const { email, password } = this.form.getRawValue();
-
-    this.loading.set(true);
+  // submit() marca todo como tocado, solo ejecuta la acción si es válido
+  // y deja form().submitting() en true mientras dura (loading del botón)
+  protected async login(): Promise<void> {
     this.errorMessage.set(null);
 
-    this.authService.login({ username: email, password }).subscribe({
-      next: () => {
-        this.loading.set(false);
+    await submit(this.form, async () => {
+      const { email, password } = this.credentials();
+
+      try {
+        await firstValueFrom(this.authService.login({ username: email, password }));
+
         const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+
+        // Solo rutas internas: evita redirecciones abiertas (returnUrl=https://otro-sitio)
         this.router.navigateByUrl(
           returnUrl?.startsWith('/') && !returnUrl.startsWith('//') ? returnUrl : '/',
         );
-      },
-      error: (error: HttpErrorResponse) => {
-        this.loading.set(false);
-        this.form.controls.password.reset();
-        this.errorMessage.set(this.toMessage(error));
-      },
+      } catch (error) {
+        // Contraseña vacía y sin "tocado", para no mostrar "obligatorio" junto al error
+        this.form.password().reset('');
+        this.errorMessage.set(this.toMessage(error as HttpErrorResponse));
+      }
     });
+  }
+
+  // Primer error de un campo ya tocado
+  protected fieldError(field: 'email' | 'password'): string | null {
+    const state = this.form[field]();
+
+    return state.touched() ? (state.errors()[0]?.message ?? null) : null;
   }
 
   private toMessage(error: HttpErrorResponse): string {

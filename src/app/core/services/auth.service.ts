@@ -4,7 +4,7 @@ import { Observable, of, tap, throwError } from 'rxjs';
 
 import { environment } from '@environments/environment';
 
-import { AuthMockStore } from '../mocks/auth-mock.store';
+import { AUTH_MOCK_BACKEND } from '../mocks/auth-mock.token';
 
 export interface LoginRequest {
   username: string;
@@ -31,7 +31,8 @@ export class AuthService {
   private readonly http = inject(HttpClient);
 
   // Modo mock: auth-server simulado en memoria (no hace falta levantar el backend)
-  private readonly mockStore = environment.useMocks ? inject(AuthMockStore) : null;
+  // Solo existe con --configuration mock (data-providers.mock.ts); en producción es null
+  private readonly mockStore = inject(AUTH_MOCK_BACKEND, { optional: true });
 
   private readonly _accessToken = signal<string | null>(null);
 
@@ -145,6 +146,13 @@ export class AuthService {
 
   hasPermission(permission: string): boolean {
     return this.currentUser()?.permissions.includes(permission) ?? false;
+  }
+
+  // Sin permisos (undefined o lista vacía) = acceso libre; con una lista basta con tener cualquiera
+  hasAnyPermission(permission: string | readonly string[] | undefined): boolean {
+    const permissions = typeof permission === 'string' ? [permission] : permission ?? [];
+
+    return !permissions.length || permissions.some(item => this.hasPermission(item));
   }
 
   // Solo lee el payload para la UI; la firma la valida el backend en cada petición

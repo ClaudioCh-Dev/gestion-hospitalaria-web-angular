@@ -9,9 +9,8 @@ import { homeUrl } from './home';
 export const permissionGuard: CanMatchFn = route => {
   const authService = inject(AuthService);
   const required = route.data?.['permission'] as string | string[] | undefined;
-  const permissions = typeof required === 'string' ? [required] : required ?? [];
 
-  if (!permissions.length || permissions.some(permission => authService.hasPermission(permission))) {
+  if (authService.hasAnyPermission(required)) {
     return true;
   }
 

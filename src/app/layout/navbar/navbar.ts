@@ -1,155 +1,91 @@
-import {ChangeDetectionStrategy, Component, computed, inject, input, signal} from '@angular/core';
-import {FormsModule} from '@angular/forms';
-import { TuiActiveZone, TuiObscured } from '@taiga-ui/cdk';
-import {
-    TuiButton,
-    TuiDataList,
-    TuiDialogService,
-    TuiDropdown,
-    TuiIcon,
-    TuiInput,
-    TuiOption,
-    TuiTitle,
-} from '@taiga-ui/core';
-import { TuiAvatar, TuiBadge, TuiBadgeNotification, TuiChevron, TuiFade, TuiTabs, TuiBadgedContentComponent, TuiBadgedContent } from '@taiga-ui/kit';
-import { TuiNavigation} from '@taiga-ui/layout';
-import { SidebarGroup } from '../types';
+import { ChangeDetectionStrategy, Component, WritableSignal, computed, inject, input, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { AuthService } from '@core/services/auth.service';
+
+import { TuiActiveZone, TuiObscured } from '@taiga-ui/cdk';
+import { TuiButton, TuiDataList, TuiDialogService, TuiDropdown, TuiIcon, TuiOption, TuiTitle } from '@taiga-ui/core';
+import { TuiAvatar } from '@taiga-ui/kit';
+import { TuiNavigation } from '@taiga-ui/layout';
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
- 
-	interface ExampleAction {
-    readonly description: string;
-    readonly title: string;
-}
+
+import { AuthService } from '@core/services/auth.service';
+
+import { SidebarGroup } from '../types';
 
 @Component({
-    imports: [
-    FormsModule,
+  selector: 'app-navbar',
+  imports: [
+    RouterLink,
+    TuiActiveZone,
     TuiAvatar,
-    TuiBadgeNotification,
     TuiButton,
     TuiDataList,
     TuiDropdown,
     TuiIcon,
-    TuiInput,
     TuiNavigation,
-    TuiTabs,
-    TuiActiveZone,
-    TuiDataList,
-    TuiDropdown,
     TuiObscured,
-    TuiTitle,
-    TuiBadgedContent,
-    RouterLink,
     TuiOption,
-],
-  selector: 'app-navbar',
+    TuiTitle,
+  ],
   templateUrl: 'navbar.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class Navbar {
+  private readonly authService = inject(AuthService);
+  private readonly router = inject(Router);
+  private readonly dialogs = inject(TuiDialogService);
 
-      private readonly authService = inject(AuthService);
-      private readonly router = inject(Router);
-      private readonly dialogs = inject(TuiDialogService);
+  // Secciones del menú móvil (las mismas del sidebar, ya filtradas por permiso)
+  readonly groupsOptions = input<SidebarGroup[]>([]);
 
-    // Iniciales del correo del usuario autenticado para el avatar
-    protected readonly initials = computed(
-        () => (this.authService.currentUser()?.email.slice(0, 2) ?? '').toUpperCase(),
-    );
-
-    readonly groupsOptions = input<SidebarGroup[]>([]);
-
-    protected readonly openSandwich = signal(false);
-
-     protected readonly actions: readonly ExampleAction[] = [
-        {
-            title: 'Create task',
-            description: 'Draft a follow-up item for the team',
-        },
-        {
-            title: 'Schedule sync',
-            description: 'Find a 30-minute window for everyone',
-        },
-        {
-            title: 'Share update',
-            description: 'Post the latest progress to the channel',
-        },
-    ];
- 
-    protected readonly open = signal(false);
-    protected readonly selected = signal<ExampleAction | null>(null);
- 
-    protected onClick(): void {
-        this.open.update((open) => !open);
-    }
- 
-    protected onObscured(obscured: boolean): void {
-        if (obscured) {
-            this.open.set(false);
-        }
-    }
- 
-    protected onActiveZone(active: boolean): void {
-        if (!active) {
-            this.open.set(false);
-        }
-    }
- 
-    protected onSelect(action: ExampleAction): void {
-        this.selected.set(action);
-        this.open.set(false);
-    }
-
-
-    protected readonly avatarOpen = signal(false);
-
-protected onAvatarClick(): void {
-  this.avatarOpen.update((open) => !open);
-}
-
-protected onAvatarActiveZone(
-  event: any
-): void {
-  if (!event) {
-    this.avatarOpen.set(false);
-  }
-}
-
-protected onAvatarObscured(
-  event: boolean
-): void {
-  if (event) {
-    this.avatarOpen.set(false);
-  }
-}
-
-protected onProfile(): void {
-  this.avatarOpen.set(false);
-
-  // Carga diferida: el perfil no pesa en el bundle inicial
-  import('../../features/profile/components/profile-dialog/profile-dialog').then(({ ProfileDialog }) =>
-    this.dialogs
-      .open(new PolymorpheusComponent(ProfileDialog), {
-        label: 'Mi perfil',
-        size: 'm',
-      })
-      .subscribe(),
+  // Iniciales del correo del usuario autenticado para el avatar
+  protected readonly initials = computed(
+    () => (this.authService.currentUser()?.email.slice(0, 2) ?? '').toUpperCase(),
   );
-}
 
-protected onLogout(): void {
-  this.avatarOpen.set(false);
+  // =========================
+  // DESPLEGABLES
+  // =========================
 
-  this.authService.logout().subscribe({
-    next: () => {
-      this.router.navigate(['/login']);
-    },
-    error: () => {
-      this.authService.clearAccessToken();
-      this.router.navigate(['/login']);
+  protected readonly menuOpen = signal(false);
+  protected readonly notificationsOpen = signal(false);
+  protected readonly avatarOpen = signal(false);
+
+  protected toggle(dropdown: WritableSignal<boolean>): void {
+    dropdown.update((open) => !open);
+  }
+
+  // Se cierra al hacer clic fuera (tuiActiveZone) o si el ancla sale de la vista (tuiObscured)
+  protected closeWhen(dropdown: WritableSignal<boolean>, close: boolean): void {
+    if (close) {
+      dropdown.set(false);
     }
-  });
-}
+  }
+
+  // =========================
+  // ACCIONES DEL AVATAR
+  // =========================
+
+  protected onProfile(): void {
+    this.avatarOpen.set(false);
+
+    // Carga diferida: el perfil no pesa en el bundle inicial
+    import('../../features/profile/components/profile-dialog/profile-dialog').then(({ ProfileDialog }) =>
+      this.dialogs
+        .open(new PolymorpheusComponent(ProfileDialog), { label: 'Mi perfil', size: 'm' })
+        .subscribe(),
+    );
+  }
+
+  protected onLogout(): void {
+    this.avatarOpen.set(false);
+
+    // Aunque el backend falle, la sesión local se cierra igual
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: () => {
+        this.authService.clearAccessToken();
+        this.router.navigate(['/login']);
+      },
+    });
+  }
 }

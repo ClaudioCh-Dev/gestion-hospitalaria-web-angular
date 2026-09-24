@@ -102,7 +102,8 @@
           <p class="mt-2 text-sm text-slate-500">Ingresa con tu cuenta para continuar.</p>
         </header>
 
-        <form class="flex flex-col gap-5" [formGroup]="form" (ngSubmit)="login()">
+        <!-- novalidate: valida Signal Forms; submit() marca los campos como tocados -->
+        <form class="flex flex-col gap-5" novalidate (submit)="$event.preventDefault(); login()">
           <!-- Error de autenticación -->
           @if (errorMessage(); as message) {
             <div
@@ -123,11 +124,13 @@
                 type="email"
                 autocomplete="username"
                 placeholder="nombre@hospital.com"
-                formControlName="email"
+                [formField]="form.email"
               />
             </tui-textfield>
 
-            <tui-error formControlName="email" />
+            @if (fieldError('email'); as error) {
+              <p class="mt-1 text-xs text-red-500">{{ error }}</p>
+            }
           </div>
 
           <!-- Contraseña -->
@@ -138,15 +141,17 @@
                 tuiInput
                 type="password"
                 autocomplete="current-password"
-                formControlName="password"
+                [formField]="form.password"
               />
               <tui-icon tuiPassword />
             </tui-textfield>
 
-            <tui-error formControlName="password" />
+            @if (fieldError('password'); as error) {
+              <p class="mt-1 text-xs text-red-500">{{ error }}</p>
+            }
           </div>
 
-          <button tuiButton type="submit" size="l" class="mt-2 w-full" [loading]="loading()">
+          <button tuiButton type="submit" size="l" class="mt-2 w-full" [loading]="form().submitting()">
             Iniciar sesión
           </button>
         </form>

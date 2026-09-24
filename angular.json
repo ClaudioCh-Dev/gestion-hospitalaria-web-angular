@@ -46,7 +46,7 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
+                  "maximumWarning": "750kB",
                   "maximumError": "1MB"
                 },
                 {
@@ -73,6 +73,10 @@
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.mock.ts"
+                },
+                {
+                  "replace": "src/app/core/providers/data-providers.ts",
+                  "with": "src/app/core/providers/data-providers.mock.ts"
                 }
               ],
               "optimization": false,

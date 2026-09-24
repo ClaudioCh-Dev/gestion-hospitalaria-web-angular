@@ -4,6 +4,8 @@ export interface SidebarItem {
   icon: string;
   // sin permiso = visible para todos; con una lista basta con tener cualquiera
   permission?: string | string[];
+  // Texto corto para la página de bienvenida
+  description?: string;
 }
 
 export interface SidebarGroup {

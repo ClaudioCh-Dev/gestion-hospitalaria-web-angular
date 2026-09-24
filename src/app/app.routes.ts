@@ -3,14 +3,14 @@ import { guestGuard } from './core/guards/guest.guard';
 import { permissionGuard } from './core/guards/permission.guard';
 import { homeUrl } from './core/guards/home';
 import { Routes } from '@angular/router';
-import { Login } from './features/auth/pages/login/login';
-import { Layout } from './layout/layout';
-import { DashboardPage } from './features/dashboard/page/dashboard-page/dashboard-page';
+
+// Todas las páginas (y el layout) se cargan bajo demanda: el bundle inicial solo lleva el
+// arranque, los guards y los servicios. Login no descarga el layout ni el dashboard.
 
 export const routes: Routes = [
   {
     path: 'login',
-    component: Login,
+    loadComponent: () => import('./features/auth/pages/login/login').then(m => m.Login),
     canMatch: [guestGuard],
   },
   // Enlace del correo de activación ({frontendUrl}/activate?token=...): público, sin sesión
@@ -21,13 +21,14 @@ export const routes: Routes = [
   },
   {
     path: '',
-    component: Layout,
-    canMatch: [authGuard], // protege TODO lo que cuelga del layout
+    loadComponent: () => import('./layout/layout').then(m => m.Layout),
+    canMatch: [authGuard], // protege TODO lo que cuelga del layout (y el layout no se descarga sin sesión)
 
     children: [
       {
         path: 'dashboard',
-        component: DashboardPage,
+        loadComponent: () =>
+          import('./features/dashboard/page/dashboard-page/dashboard-page').then(m => m.DashboardPage),
         canMatch: [permissionGuard],
         data: { permission: 'DASHBOARD_READ' }, // solo administración
       },
@@ -81,7 +82,12 @@ export const routes: Routes = [
         data: { permission: 'BILLING_READ' },
         loadComponent: () => import('./features/billing/pages/billing-page/billing-page').then(m => m.BillingPage),
       },
-      // Inicio según permisos: admin → dashboard, médico → su agenda
+      // Bienvenida: inicio de quien no tiene dashboard ni agenda (sin permiso propio)
+      {
+        path: 'welcome',
+        loadComponent: () => import('./features/welcome/welcome-page').then(m => m.WelcomePage),
+      },
+      // Inicio según permisos: admin → dashboard, médico → su agenda, resto → bienvenida
       { path: '', redirectTo: () => homeUrl(), pathMatch: 'full' },
       { path: '**', redirectTo: () => homeUrl() },
     ],

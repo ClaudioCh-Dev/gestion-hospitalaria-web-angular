@@ -3,96 +3,90 @@
   class="flex items-center justify-between"
   style="background: linear-gradient(90deg, rgb(15, 23, 42), rgb(30, 41, 59))"
 >
+  <!-- Menú móvil: las mismas secciones del sidebar -->
   <button
     class="block md:hidden!"
     portal
-    title="Menu"
+    title="Menú"
     tuiIconButton
     tuiNavigationDrawer
     type="button"
-    [(open)]="openSandwich"
+    [(open)]="menuOpen"
   >
     <tui-data-list>
       @for (group of groupsOptions(); track group.item.route) {
-        <!-- Item principal -->
         <button
           tuiOption
           type="button"
-          [iconStart]="group.item.icon"
-          (click)="openSandwich.set(false)"
-          [routerLink]="group.item.route"
           size="xs"
+          [iconStart]="group.item.icon"
+          [routerLink]="group.item.route"
+          (click)="menuOpen.set(false)"
         >
           {{ group.item.label }}
         </button>
 
-        <!-- Hijos -->
-        @if (group.children?.length) {
-          @for (child of group.children; track child.route) {
-            <button
-              tuiOption
-              type="button"
-              [iconStart]="child.icon"
-              (click)="openSandwich.set(false)"
-              size="xs"
-            >
-              {{ child.label }}
-            </button>
-          }
+        @for (child of group.children ?? []; track child.route) {
+          <button
+            tuiOption
+            type="button"
+            size="xs"
+            [iconStart]="child.icon"
+            [routerLink]="child.route"
+            (click)="menuOpen.set(false)"
+          >
+            {{ child.label }}
+          </button>
         }
       }
     </tui-data-list>
   </button>
+
+  <!-- Marca -->
   <span tuiNavigationLogo class="flex items-center gap-3">
     <tui-icon icon="@tui.heart-pulse" class="text-white" style="font-size: 28px" />
 
     <span class="flex items-baseline gap-2">
-      <span class="text-xl font-semibold tracking-tight text-white"> Aura </span>
-
-      <span class="text-xs font-semibold uppercase tracking-[0.25em] text-slate-300">
-        Bioclinic
-      </span>
+      <span class="text-xl font-semibold tracking-tight text-white">Aura</span>
+      <span class="text-xs font-semibold uppercase tracking-[0.25em] text-slate-300">Bioclinic</span>
     </span>
   </span>
+
   <div class="flex items-center gap-2">
+    <!-- Notificaciones: pendiente del stream SSE (docs/GUIA-SSE.md) -->
     <button
       iconStart="@tui.bell"
       tuiIconButton
       type="button"
-      type="button"
-      [attr.aria-expanded]="open()"
-      [tuiDropdown]="dropdownContent"
-      [tuiDropdownManual]="open()"
-      [tuiObscuredEnabled]="open()"
-      (click)="onClick()"
-      (tuiActiveZoneChange)="onActiveZone($event)"
-      (tuiObscured)="onObscured($event)"
+      aria-label="Notificaciones"
+      [attr.aria-expanded]="notificationsOpen()"
+      [tuiDropdown]="notificationsDropdown"
+      [tuiDropdownManual]="notificationsOpen()"
+      [tuiObscuredEnabled]="notificationsOpen()"
+      (click)="toggle(notificationsOpen)"
+      (tuiActiveZoneChange)="closeWhen(notificationsOpen, !$event)"
+      (tuiObscured)="closeWhen(notificationsOpen, $event)"
     >
-      <ng-template #dropdownContent>
-        <tui-data-list>
-          @for (action of actions; track action.title) {
-            <button tuiOption type="button" (click)="onSelect(action)">
-              <span tuiTitle>
-                {{ action.title }}
-                <span tuiSubtitle>{{ action.description }}</span>
-              </span>
-            </button>
-          }
-        </tui-data-list>
+      <ng-template #notificationsDropdown>
+        <div class="flex w-64 flex-col items-center gap-2 px-4 py-6 text-center">
+          <tui-icon icon="@tui.bell-off" class="text-2xl text-slate-300" />
+          <p class="text-sm text-slate-500">No tienes notificaciones</p>
+        </div>
       </ng-template>
-      <tui-badge-notification />
     </button>
 
+    <!-- Usuario -->
     <button
       tuiIconButton
       type="button"
+      aria-label="Cuenta"
       [attr.aria-expanded]="avatarOpen()"
       [tuiDropdown]="avatarDropdown"
       [tuiDropdownManual]="avatarOpen()"
       [tuiObscuredEnabled]="avatarOpen()"
-      (click)="onAvatarClick()"
-      (tuiActiveZoneChange)="onAvatarActiveZone($event)"
-      (tuiObscured)="onAvatarObscured($event)"
+      (click)="toggle(avatarOpen)"
+      (tuiActiveZoneChange)="closeWhen(avatarOpen, !$event)"
+      (tuiObscured)="closeWhen(avatarOpen, $event)"
     >
       <tui-avatar [tuiAvatar]="initials() || '@tui.user'" />
 
@@ -100,16 +94,12 @@
         <tui-data-list>
           <button tuiOption type="button" (click)="onProfile()">
             <tui-icon icon="@tui.user" />
-            <span tuiTitle>
-              Perfil
-            </span>
+            <span tuiTitle>Perfil</span>
           </button>
 
           <button tuiOption type="button" (click)="onLogout()">
             <tui-icon icon="@tui.log-out" />
-            <span tuiTitle>
-              Cerrar sesión
-            </span>
+            <span tuiTitle>Cerrar sesión</span>
           </button>
         </tui-data-list>
       </ng-template>

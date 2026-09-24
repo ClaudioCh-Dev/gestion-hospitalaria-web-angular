@@ -5,6 +5,8 @@ import { delay, switchMap } from 'rxjs/operators';
 
 import { ProblemDetailMicroservice } from '@shared/models/problem.type';
 
+import { AuthMockBackend } from './auth-mock.token';
+
 interface MockAccount {
   userId: number;
   email: string;
@@ -53,8 +55,9 @@ const MOCK_DELAY = 800;
  * Las contraseñas viven en memoria: un cambio de contraseña sirve para el
  * siguiente login, y al recargar la página vuelven a 123456.
  */
-@Injectable({ providedIn: 'root' })
-export class AuthMockStore {
+// Sin providedIn: solo lo registra data-providers.mock.ts, para que no entre en el bundle de producción
+@Injectable()
+export class AuthMockStore implements AuthMockBackend {
 
   private readonly accounts: MockAccount[] = [
     { userId: 1, email: 'admin@example.com', password: '123456', role: 'ADMIN', permissions: ADMIN_PERMISSIONS },

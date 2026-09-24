@@ -1,13 +1,6 @@
 import { ChangeDetectionStrategy, Component, inject, output, signal } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import {
-  AbstractControl,
-  FormControl,
-  FormGroup,
-  ReactiveFormsModule,
-  ValidationErrors,
-  Validators,
-} from '@angular/forms';
+import { FormField, form, pattern, required, submit, validate } from '@angular/forms/signals';
+import { firstValueFrom } from 'rxjs';
 
 import { TuiButton, TuiIcon, TuiInput, TuiLabel, TuiTextfield } from '@taiga-ui/core';
 import { TuiButtonLoading, TuiPassword } from '@taiga-ui/kit';
@@ -18,15 +11,11 @@ import { withNotification } from '@shared/operators/with-notification';
 import { PASSWORD_PATTERN, PASSWORD_RULES } from '../../../user/constants/user-roles';
 import { UserService } from '../../../user/services/user.service';
 
-const passwordsMatch = (group: AbstractControl): ValidationErrors | null => {
-  const { newPassword, confirmPassword } = group.value;
-
-  return confirmPassword && newPassword !== confirmPassword ? { mismatch: true } : null;
-};
+type PasswordField = 'currentPassword' | 'newPassword' | 'confirmPassword';
 
 @Component({
   selector: 'app-change-password-form',
-  imports: [ReactiveFormsModule, TuiButton, TuiButtonLoading, TuiIcon, TuiInput, TuiLabel, TuiPassword, TuiTextfield],
+  imports: [FormField, TuiButton, TuiButtonLoading, TuiIcon, TuiInput, TuiLabel, TuiPassword, TuiTextfield],
   templateUrl: './change-password-form.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -42,63 +31,58 @@ export class ChangePasswordForm {
 
   protected readonly rules = PASSWORD_RULES;
 
-  protected readonly saving = signal(false);
+  // =========================
+  // FORMULARIO (Signal Forms)
+  // =========================
 
-  protected readonly submitted = signal(false);
+  private readonly model = signal({ currentPassword: '', newPassword: '', confirmPassword: '' });
 
-  protected readonly form = new FormGroup(
-    {
-      currentPassword: new FormControl('', { nonNullable: true, validators: Validators.required }),
+  protected readonly form = form(this.model, (path) => {
+    required(path.currentPassword, { message: 'Ingresa tu contraseña actual' });
 
-      newPassword: new FormControl('', {
-        nonNullable: true,
-        validators: [Validators.required, Validators.pattern(PASSWORD_PATTERN)],
-      }),
+    required(path.newPassword, { message: 'Ingresa la nueva contraseña' });
+    // Misma regla que valida auth-server
+    pattern(path.newPassword, PASSWORD_PATTERN, { message: 'La contraseña no cumple los requisitos' });
+    validate(path.newPassword, ({ value, valueOf }) =>
+      value() && value() === valueOf(path.currentPassword)
+        ? { kind: 'sameAsCurrent', message: 'La nueva contraseña debe ser distinta de la actual' }
+        : undefined,
+    );
 
-      confirmPassword: new FormControl('', { nonNullable: true, validators: Validators.required }),
-    },
-    { validators: passwordsMatch },
-  );
-
-  protected readonly newPassword = toSignal(this.form.controls.newPassword.valueChanges, {
-    initialValue: '',
+    required(path.confirmPassword, { message: 'Confirma la nueva contraseña' });
+    validate(path.confirmPassword, ({ value, valueOf }) =>
+      value() && value() !== valueOf(path.newPassword)
+        ? { kind: 'mismatch', message: 'Las contraseñas no coinciden' }
+        : undefined,
+    );
   });
 
-  protected get sameAsCurrent(): boolean {
-    const { currentPassword, newPassword } = this.form.getRawValue();
+  // submit() marca todo como tocado, solo ejecuta la acción si es válido
+  // y deja form().submitting() en true mientras dura (loading del botón)
+  protected async save(): Promise<void> {
+    await submit(this.form, async () => {
+      const { currentPassword, newPassword } = this.model();
 
-    return !!newPassword && currentPassword === newPassword;
+      try {
+        await firstValueFrom(
+          this.userService.changePasswordMe({ currentPassword, newPassword }).pipe(
+            withNotification(this.notificationService, {
+              success: 'Contraseña actualizada. Vuelve a iniciar sesión con la nueva contraseña.',
+            }),
+          ),
+        );
+
+        this.changed.emit();
+      } catch {
+        // withNotification ya muestra el error del backend (p. ej. contraseña actual incorrecta)
+      }
+    });
   }
 
-  protected get mismatch(): boolean {
-    return this.form.hasError('mismatch') && this.form.controls.confirmPassword.touched;
-  }
+  // Primer error de un campo ya tocado
+  protected fieldError(field: PasswordField): string | null {
+    const state = this.form[field]();
 
-  protected save(): void {
-    this.submitted.set(true);
-
-    if (this.form.invalid || this.sameAsCurrent) {
-      this.form.markAllAsTouched();
-      return;
-    }
-
-    const { currentPassword, newPassword } = this.form.getRawValue();
-
-    this.saving.set(true);
-
-    this.userService
-      .changePasswordMe({ currentPassword, newPassword })
-      .pipe(
-        withNotification(this.notificationService, {
-          success: 'Contraseña actualizada. Vuelve a iniciar sesión con la nueva contraseña.',
-        }),
-      )
-      .subscribe({
-        next: () => {
-          this.saving.set(false);
-          this.changed.emit();
-        },
-        error: () => this.saving.set(false),
-      });
+    return state.touched() ? (state.errors()[0]?.message ?? null) : null;
   }
 }

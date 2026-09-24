@@ -27,8 +27,7 @@
       <input
         tuiInput
         placeholder="Buscar por correo o rol..."
-        [ngModel]="search()"
-        (ngModelChange)="search.set($event)"
+        [formField]="searchField"
       />
     </tui-textfield>
 

@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
 import { HasPermission } from '@shared/directives/has-permission.directive';
-import { FormsModule } from '@angular/forms';
+import { FormField, form } from '@angular/forms/signals';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { filter, forkJoin, switchMap } from 'rxjs';
 
@@ -43,7 +43,7 @@ const STATUS_CONFIG: Record<UserStatus, { label: string; appearance: string; ico
 @Component({
   selector: 'app-user-page',
   imports: [HasPermission, 
-    FormsModule,
+    FormField,
     MobileDetail,
     TuiAppBar,
     TuiFloatingContainer,
@@ -81,6 +81,9 @@ export class UserPage {
   protected readonly roleLabel = getRoleLabel;
 
   protected readonly search = signal('');
+
+  // Buscador con Signal Forms: el input escribe directamente en el signal search
+  protected readonly searchField = form(this.search);
 
   protected readonly statusFilter = signal<StatusFilter>('all');
 
