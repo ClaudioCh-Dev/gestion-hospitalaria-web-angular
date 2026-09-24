@@ -110,6 +110,13 @@ npm run start:mock
 
 Abre **http://localhost:4200**
 
+En modo Mock puedes entrar con estas cuentas de prueba:
+
+| Rol            | Correo               | Contraseña |
+| -------------- | -------------------- | ---------- |
+| Administrador  | `admin@example.com`  | `123456`   |
+| Médico         | `doctor@example.com` | `123456`   |
+
 ---
 
 # 📜 Scripts
@@ -127,39 +134,139 @@ Abre **http://localhost:4200**
 
 # 🧩 Módulos
 
-| Módulo             | Ruta                 | Qué permite                                                             |
-| ------------------ | -------------------- | ----------------------------------------------------------------------- |
+| Módulo             | Ruta                 | Qué permite                                                                 |
+| ------------------ | -------------------- | --------------------------------------------------------------------------- |
 | Dashboard          | `/dashboard`         | Totales, citas de los últimos 7 días, pacientes por género y próximas citas |
-| Pacientes          | `/patients`          | Listar, filtrar, crear, editar, ver detalle y eliminar                  |
-| Médicos            | `/doctors`           | Listar, filtrar por especialidad, crear, editar y crear especialidades  |
-| Citas              | `/appointments`      | Agenda diaria por médico; confirmar, completar y cancelar citas         |
-| Tipos de cita      | `/appointment-types` | Crear, editar y desactivar tipos de cita con su tarifa                  |
-| Historias clínicas | `/medical-records`   | Historial de atenciones con filtros y exportación CSV                   |
-| Facturación        | `/billing`           | Facturas, cobro, resumen de montos y exportación CSV                    |
+| Pacientes          | `/patients`          | Listar, filtrar, crear, editar, ver detalle y eliminar                      |
+| Médicos            | `/doctors`           | Listar, filtrar por especialidad, crear, editar y crear especialidades      |
+| Citas              | `/appointments`      | Agenda diaria de todos los médicos; confirmar, completar y cancelar citas   |
+| Mi agenda          | `/appointments`      | El médico ve solo su día: línea de tiempo, ocupación y ficha del paciente   |
+| Tipos de cita      | `/appointment-types` | Crear, editar y desactivar tipos de cita con su tarifa y color              |
+| Historias clínicas | `/medical-records`   | Historial de atenciones con filtros y exportación CSV                       |
+| Facturación        | `/billing`           | Facturas, cobro, resumen de montos y exportación CSV                        |
+| Usuarios           | `/users`             | Cuentas del sistema: crear, cambiar rol, reenviar activación y desactivar   |
+| Activar cuenta     | `/activate`          | El usuario define su contraseña desde el enlace que recibe por correo       |
+| Bienvenida         | `/welcome`           | Inicio para usuarios sin acceso al dashboard                                |
+
+> El menú y las rutas se filtran por los **permisos** del token (JWT): cada usuario solo ve y puede abrir las secciones de su rol.
 
 ---
 
 # 📸 Vistas de la aplicación
 
-## Dashboard
+> Capturas tomadas en modo Mock. Haz clic en cualquier imagen para verla en tamaño completo.
 
-<img width="2129" height="1240" alt="Dashboard" src="https://github.com/user-attachments/assets/71064222-f9a8-4679-a84f-aa137b7cd594" />
+### 🖥️ Escritorio
 
-## Gestión de pacientes
+<table>
+  <tr>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/01-login.png"><img src="docs/screenshots/01-login.png" alt="Inicio de sesión" width="400"></a>
+      <br><sub><b>Inicio de sesión</b></sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/02-dashboard.png"><img src="docs/screenshots/02-dashboard.png" alt="Dashboard" width="400"></a>
+      <br><sub><b>Dashboard</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/03-agenda.png"><img src="docs/screenshots/03-agenda.png" alt="Agenda de citas" width="400"></a>
+      <br><sub><b>Agenda de citas</b></sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/04-nueva-cita.png"><img src="docs/screenshots/04-nueva-cita.png" alt="Nueva cita" width="400"></a>
+      <br><sub><b>Nueva cita</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/14-mi-agenda.png"><img src="docs/screenshots/14-mi-agenda.png" alt="Mi agenda (médico)" width="400"></a>
+      <br><sub><b>Mi agenda (médico)</b></sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/05-pacientes.png"><img src="docs/screenshots/05-pacientes.png" alt="Pacientes" width="400"></a>
+      <br><sub><b>Pacientes</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/06-medicos.png"><img src="docs/screenshots/06-medicos.png" alt="Médicos" width="400"></a>
+      <br><sub><b>Médicos</b></sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/07-tipos-cita.png"><img src="docs/screenshots/07-tipos-cita.png" alt="Tipos de cita y tarifas" width="400"></a>
+      <br><sub><b>Tipos de cita y tarifas</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/08-historias.png"><img src="docs/screenshots/08-historias.png" alt="Historias clínicas" width="400"></a>
+      <br><sub><b>Historias clínicas</b></sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/09-facturacion.png"><img src="docs/screenshots/09-facturacion.png" alt="Facturación" width="400"></a>
+      <br><sub><b>Facturación</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/10-usuarios.png"><img src="docs/screenshots/10-usuarios.png" alt="Usuarios" width="400"></a>
+      <br><sub><b>Usuarios</b></sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/11-editar-usuario.png"><img src="docs/screenshots/11-editar-usuario.png" alt="Editar usuario" width="400"></a>
+      <br><sub><b>Editar usuario</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/12-confirmacion.png"><img src="docs/screenshots/12-confirmacion.png" alt="Diálogo de confirmación" width="400"></a>
+      <br><sub><b>Diálogo de confirmación</b></sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/13-perfil.png"><img src="docs/screenshots/13-perfil.png" alt="Mi perfil" width="400"></a>
+      <br><sub><b>Mi perfil</b></sub>
+    </td>
+  </tr>
+</table>
 
-<img width="2126" height="1241" alt="Gestión de pacientes" src="https://github.com/user-attachments/assets/73e75790-d9fc-4fe6-8b18-c3bf233a9a97" />
+### 📱 Móvil
 
-## Gestión de doctores
-
-<img width="2126" height="1237" alt="Gestión de doctores" src="https://github.com/user-attachments/assets/7ece434c-90e1-4d60-a038-86ba669e24be" />
-
-## Gestión de citas
-
-<img width="2124" height="1241" alt="Gestión de citas" src="https://github.com/user-attachments/assets/ecc975f5-724d-4c84-8087-97537cb956c6" />
+<table>
+  <tr>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/19-movil-login.png"><img src="docs/screenshots/19-movil-login.png" alt="Login" width="220"></a>
+      <br><sub><b>Login</b></sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/20-movil-pacientes.png"><img src="docs/screenshots/20-movil-pacientes.png" alt="Pacientes" width="220"></a>
+      <br><sub><b>Pacientes</b></sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/21-movil-detalle.png"><img src="docs/screenshots/21-movil-detalle.png" alt="Detalle a pantalla completa" width="220"></a>
+      <br><sub><b>Detalle a pantalla completa</b></sub>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/22-movil-agenda.png"><img src="docs/screenshots/22-movil-agenda.png" alt="Agenda" width="220"></a>
+      <br><sub><b>Agenda</b></sub>
+    </td>
+    <td align="center" valign="top">
+      <a href="docs/screenshots/23-movil-mi-agenda.png"><img src="docs/screenshots/23-movil-mi-agenda.png" alt="Mi agenda (médico)" width="220"></a>
+      <br><sub><b>Mi agenda (médico)</b></sub>
+    </td>
+  </tr>
+</table>
 
 ---
 
 # 🚀 Tecnologías
 
-Angular 22 · TypeScript · RxJS · Signals · Standalone Components · Reactive Forms · Angular CDK · Taiga UI · Tailwind CSS · Vitest
+Angular 22 · TypeScript · RxJS · Signals · Signal Forms · Standalone Components · Lazy loading · Guards por permisos · Reactive Forms · Angular CDK · Taiga UI · Tailwind CSS · Vitest
+
+- **Zoneless + OnPush** con signals, `rxResource` y `linkedSignal`.
+- **Rutas lazy** y bundle inicial reducido; los mocks se sustituyen en build (`fileReplacements`) y no llegan a producción.
+- **Diseño responsive**: tablas en escritorio, listas `tuiCell` y detalle a pantalla completa en móvil.
 
