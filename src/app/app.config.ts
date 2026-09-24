@@ -31,6 +31,9 @@ import { MedicalRecordMockService } from './features/medical-history/services/me
 import { AppointmentService } from './features/appointment/services/appointment.service';
 import { AppointmentMockService } from './features/appointment/services/impl/appointment-mock.service';
 import { AppointmentHttpService } from './features/appointment/services/impl/appointment-http.service';
+import { UserService } from './features/user/services/user.service';
+import { UserMockService } from './features/user/services/user.service.mock';
+import { UserHttpService } from './features/user/services/user.service.http';
 
 // Formato de moneda (S/) y fechas en español de Perú para los pipes con locale 'es-PE'
 registerLocaleData(localeEsPe);
@@ -89,6 +92,13 @@ export const appConfig: ApplicationConfig = {
       useClass: environment.useMocks
         ? BillingTariffMockService
         : BillingTariffHttpService,
+    },
+
+    {
+      provide: UserService,
+      useClass: environment.useMocks
+        ? UserMockService
+        : UserHttpService,
     },
 
     {

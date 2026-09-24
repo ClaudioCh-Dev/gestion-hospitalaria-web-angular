@@ -94,7 +94,7 @@
       (tuiActiveZoneChange)="onAvatarActiveZone($event)"
       (tuiObscured)="onAvatarObscured($event)"
     >
-      <tui-avatar tuiAvatar="AI" />
+      <tui-avatar [tuiAvatar]="initials() || '@tui.user'" />
 
       <ng-template #avatarDropdown>
         <tui-data-list>

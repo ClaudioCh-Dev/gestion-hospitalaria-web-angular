@@ -1,6 +1,8 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
+  inject,
   signal,
 } from '@angular/core';
 
@@ -19,6 +21,7 @@ import {TuiBreadcrumbs, TuiFade} from '@taiga-ui/kit';
 import {SidebarGroup} from './types';
 import {Sidebar} from './sidebar/sidebar';
 import {Navbar} from './navbar/navbar';
+import {AuthService} from '@core/services/auth.service';
 
 interface Breadcrumb {
   label: string;
@@ -42,7 +45,9 @@ interface Breadcrumb {
 })
 export class Layout {
 
-  protected readonly sidebarItems = signal<SidebarGroup[]>([
+  private readonly authService = inject(AuthService);
+
+  private readonly baseSidebarItems: SidebarGroup[] = [
     {
       item: {
         label: 'Dashboard',
@@ -92,7 +97,23 @@ export class Layout {
         route: '/billing',
       },
     },
-  ]);
+  ];
+
+  // Usuarios solo para quien puede listarlos (el backend también lo exige)
+  protected readonly sidebarItems = computed<SidebarGroup[]>(() =>
+    this.authService.hasPermission('USER_READ')
+      ? [
+          ...this.baseSidebarItems,
+          {
+            item: {
+              label: 'Usuarios',
+              icon: '@tui.user-cog',
+              route: '/users',
+            },
+          },
+        ]
+      : this.baseSidebarItems,
+  );
 
   protected readonly breadcrumbs = signal<Breadcrumb[]>([]);
 

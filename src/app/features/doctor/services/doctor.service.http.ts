@@ -40,6 +40,10 @@ export class DoctorHttpService implements DoctorService {
     return this.http.get<DoctorResponse>(`${this.apiUrl}/crud/${id}`);
   }
 
+  findMe(): Observable<DoctorResponse> {
+    return this.http.get<DoctorResponse>(`${this.apiUrl}/crud/me`);
+  }
+
   findBySpecialty(
     specialtyId: number,
     page: number = 0,

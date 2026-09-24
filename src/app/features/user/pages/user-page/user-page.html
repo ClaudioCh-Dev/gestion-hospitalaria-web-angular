@@ -1,0 +1,206 @@
+<div class="flex w-full flex-col gap-5">
+  <!-- Header -->
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="text-lg font-semibold text-slate-900">Usuarios</h1>
+      <p class="text-sm text-slate-500">
+        Cuentas con acceso al sistema. Cada usuario activa su cuenta desde el correo que recibe.
+      </p>
+    </div>
+
+    <button
+      tuiButton
+      type="button"
+      size="s"
+      appearance="primary"
+      iconStart="@tui.plus"
+      [disabled]="resource.isLoading()"
+      (click)="create()"
+    >
+      Nuevo usuario
+    </button>
+  </div>
+
+  <!-- Filtros -->
+  <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+    <tui-textfield iconStart="@tui.search" tuiTextfieldSize="s" class="flex-1">
+      <input
+        tuiInput
+        placeholder="Buscar por correo o rol..."
+        [ngModel]="search()"
+        (ngModelChange)="search.set($event)"
+      />
+    </tui-textfield>
+
+    <div class="flex rounded-lg border border-slate-200 bg-slate-50 p-0.5" role="radiogroup" aria-label="Estado">
+      @for (option of filters; track option.value) {
+        <button
+          type="button"
+          role="radio"
+          class="flex cursor-pointer items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
+          [class.bg-white]="statusFilter() === option.value"
+          [class.text-slate-900]="statusFilter() === option.value"
+          [class.shadow-sm]="statusFilter() === option.value"
+          [class.text-slate-500]="statusFilter() !== option.value"
+          [attr.aria-checked]="statusFilter() === option.value"
+          (click)="statusFilter.set(option.value)"
+        >
+          {{ option.label }}
+          @if (resource.hasValue()) {
+            <span class="text-[10px] text-slate-400">{{ counts()[option.value] }}</span>
+          }
+        </button>
+      }
+    </div>
+  </div>
+
+  <!-- Error -->
+  @if (resource.error()) {
+    <app-state-message
+      variant="error"
+      title="No se pudieron cargar los usuarios"
+      description="Ocurrió un problema al obtener la información."
+      (action)="resource.reload()"
+    />
+  } @else {
+    <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white p-4 shadow-md">
+      <table tuiTable size="m" class="w-full">
+        <thead>
+          <tr>
+            <th tuiTh>Usuario</th>
+            <th tuiTh>Rol</th>
+            <th tuiTh>Estado</th>
+            <th tuiTh>Acciones</th>
+          </tr>
+        </thead>
+
+        <tbody tuiTbody>
+          @if (resource.isLoading()) {
+            @for (item of [1, 2, 3, 4, 5]; track item) {
+              <tr class="animate-pulse">
+                <td tuiTd>
+                  <div class="flex items-center gap-3 py-1">
+                    <div class="h-8 w-8 rounded-full bg-slate-200"></div>
+                    <div class="h-3 w-48 rounded bg-slate-200"></div>
+                  </div>
+                </td>
+                <td tuiTd><div class="h-3 w-24 rounded bg-slate-200"></div></td>
+                <td tuiTd><div class="h-6 w-24 rounded-full bg-slate-200"></div></td>
+                <td tuiTd>
+                  <div class="flex items-center gap-2">
+                    <div class="h-7 w-7 rounded bg-slate-200"></div>
+                    <div class="h-7 w-7 rounded bg-slate-200"></div>
+                  </div>
+                </td>
+              </tr>
+            }
+          } @else {
+            @for (user of rows(); track user.id) {
+              <tr>
+                <td tuiTd>
+                  <div class="flex items-center gap-3">
+                    <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-[11px] font-semibold text-slate-600">{{ initials(user.email) }}</span>
+
+                    <span tuiTitle>
+                      <span class="flex items-center gap-2">
+                        {{ user.email }}
+                        @if (isSelf(user)) {
+                          <span tuiBadge size="s" appearance="info">Tú</span>
+                        }
+                      </span>
+                    </span>
+                  </div>
+                </td>
+
+                <td tuiTd>
+                  <span class="flex items-center gap-1.5 text-sm text-slate-700">
+                    <tui-icon
+                      class="text-slate-400"
+                      [icon]="user.role === 'DOCTOR' ? '@tui.stethoscope' : '@tui.shield'"
+                    />
+                    {{ roleLabel(user.role) }}
+                  </span>
+                </td>
+
+                <td tuiTd>
+                  <span
+                    tuiBadge
+                    size="m"
+                    [appearance]="statusConfig[getStatus(user)].appearance"
+                    [iconStart]="statusConfig[getStatus(user)].icon"
+                  >
+                    {{ statusConfig[getStatus(user)].label }}
+                  </span>
+                </td>
+
+                <td tuiTd>
+                  <div class="flex items-center gap-1">
+                    @if (!user.active) {
+                      <button
+                        tuiIconButton
+                        type="button"
+                        size="xs"
+                        appearance="action"
+                        iconStart="@tui.send"
+                        [tuiHint]="getStatus(user) === 'pending' ? 'Reenviar activación' : 'Enviar activación'"
+                        [loading]="busyId() === user.id"
+                        (click)="resendActivation(user)"
+                      >
+                        Reenviar activación
+                      </button>
+                    }
+
+                    @if (canEdit(user)) {
+                      <button
+                        tuiIconButton
+                        type="button"
+                        size="xs"
+                        appearance="action"
+                        iconStart="@tui.pencil"
+                        tuiHint="Editar"
+                        (click)="edit(user)"
+                      >
+                        Editar
+                      </button>
+                    }
+
+                    @if (canDeactivate(user)) {
+                      <button
+                        tuiIconButton
+                        type="button"
+                        size="xs"
+                        appearance="action-destructive"
+                        iconStart="@tui.ban"
+                        tuiHint="Desactivar"
+                        [loading]="busyId() === user.id"
+                        (click)="deactivate(user)"
+                      >
+                        Desactivar
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td tuiTd colspan="4">
+                  <app-state-message
+                    [compact]="true"
+                    icon="@tui.users"
+                    [title]="search() || statusFilter() !== 'all' ? 'Sin resultados' : 'No hay usuarios registrados'"
+                    [description]="search() || statusFilter() !== 'all' ? 'Prueba con otra búsqueda o filtro.' : 'Crea el primero con el botón «Nuevo usuario».'"
+                  />
+                </td>
+              </tr>
+            }
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <p class="text-xs text-slate-400">
+      Las cuentas de médicos se crean y editan desde <strong>Médicos</strong>. Los administradores no
+      se pueden desactivar.
+    </p>
+  }
+</div>

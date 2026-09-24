@@ -22,6 +22,9 @@ export abstract class DoctorService {
     id: number,
   ): Observable<DoctorResponse>;
 
+  // Médico vinculado al usuario autenticado
+  abstract findMe(): Observable<DoctorResponse>;
+
   abstract findBySpecialty(
     specialtyId: number,
     page?: number,

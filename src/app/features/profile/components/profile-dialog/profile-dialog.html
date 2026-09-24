@@ -1,0 +1,152 @@
+<div class="flex flex-col gap-5">
+  @if (user(); as user) {
+    <!-- Cabecera -->
+    <div class="flex items-center gap-4">
+      @if (isDoctor() && doctorResource.value(); as doctor) {
+        <img
+          class="h-14 w-14 shrink-0 rounded-full object-cover ring-2 ring-slate-100"
+          [src]="doctor.photoUrl | avatarDefaultDoctor"
+          [alt]="displayName()"
+        />
+      } @else {
+        <span
+          class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-(--tui-background-accent-1) text-lg font-semibold text-white"
+        >
+          {{ initials() }}
+        </span>
+      }
+
+      <div class="min-w-0">
+        @if (isDoctor() && doctorResource.isLoading()) {
+          <div class="h-4 w-40 animate-pulse rounded bg-slate-200"></div>
+        } @else {
+          <p class="truncate text-base font-semibold text-slate-900">{{ displayName() }}</p>
+        }
+
+        <div class="mt-1 flex flex-wrap items-center gap-2">
+          <span tuiBadge size="m" appearance="info" [iconStart]="isDoctor() ? '@tui.stethoscope' : '@tui.shield'">
+            {{ roleLabel() }}
+          </span>
+
+          @if (isDoctor() && doctorResource.value()?.specialtyName; as specialty) {
+            <span class="text-xs text-slate-500">{{ specialty }}</span>
+          }
+        </div>
+      </div>
+    </div>
+
+    <!-- Cuenta -->
+    <section class="rounded-lg border border-slate-200 p-4">
+      <h3 class="mb-3 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Cuenta</h3>
+
+      <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <dt class="flex items-center gap-1 text-xs text-slate-500"><tui-icon icon="@tui.mail" /> Correo</dt>
+          <dd class="mt-0.5 truncate text-sm font-medium text-slate-900">{{ user.email }}</dd>
+        </div>
+
+        <div>
+          <dt class="flex items-center gap-1 text-xs text-slate-500"><tui-icon icon="@tui.hash" /> ID de usuario</dt>
+          <dd class="mt-0.5 text-sm font-medium text-slate-900">{{ user.userId }}</dd>
+        </div>
+      </dl>
+    </section>
+
+    <!-- Datos del médico -->
+    @if (isDoctor()) {
+      <section class="rounded-lg border border-slate-200 p-4">
+        <h3 class="mb-3 text-[11px] font-semibold uppercase tracking-wide text-slate-500">Datos del médico</h3>
+
+        @if (doctorResource.isLoading()) {
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            @for (item of [1, 2, 3, 4]; track item) {
+              <div class="h-9 animate-pulse rounded bg-slate-100"></div>
+            }
+          </div>
+        } @else if (doctorResource.error()) {
+          <p class="text-sm text-slate-500">
+            No se pudieron cargar tus datos de médico.
+            <button type="button" class="cursor-pointer font-medium text-(--tui-background-accent-1) hover:underline" (click)="doctorResource.reload()">
+              Reintentar
+            </button>
+          </p>
+        } @else if (doctorResource.value(); as doctor) {
+          <dl class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div>
+              <dt class="flex items-center gap-1 text-xs text-slate-500"><tui-icon icon="@tui.id-card" /> Colegiatura</dt>
+              <dd class="mt-0.5 text-sm font-medium text-slate-900">{{ doctor.licenseNumber }}</dd>
+            </div>
+
+            <div>
+              <dt class="flex items-center gap-1 text-xs text-slate-500"><tui-icon icon="@tui.stethoscope" /> Especialidad</dt>
+              <dd class="mt-0.5 text-sm font-medium text-slate-900">{{ doctor.specialtyName }}</dd>
+            </div>
+
+            <div>
+              <dt class="flex items-center gap-1 text-xs text-slate-500"><tui-icon icon="@tui.phone" /> Teléfono</dt>
+              <dd class="mt-0.5 text-sm font-medium text-slate-900">{{ doctor.phone || 'Sin registrar' }}</dd>
+            </div>
+
+            <div>
+              <dt class="flex items-center gap-1 text-xs text-slate-500"><tui-icon icon="@tui.clock" /> Horario de atención</dt>
+              <dd class="mt-0.5 text-sm font-medium text-slate-900">
+                {{ formatTime(doctor.scheduleStart) }} - {{ formatTime(doctor.scheduleEnd) }}
+              </dd>
+            </div>
+          </dl>
+        }
+      </section>
+    } @else {
+      <!-- Permisos (administrador) -->
+      <section class="rounded-lg border border-slate-200 p-4">
+        <h3 class="mb-3 flex items-center justify-between text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+          Permisos
+          <span class="font-medium normal-case tracking-normal text-slate-400">{{ user.permissions.length }}</span>
+        </h3>
+
+        <div class="flex max-h-40 flex-col gap-2 overflow-y-auto">
+          @for (group of permissionGroups(); track group.module) {
+            <div class="flex flex-wrap items-center gap-1.5">
+              <span class="w-28 shrink-0 text-xs font-medium capitalize text-slate-700">{{ group.module }}</span>
+              @for (action of group.actions; track action) {
+                <span class="rounded-md bg-slate-100 px-1.5 py-0.5 text-[11px] text-slate-600">{{ action }}</span>
+              }
+            </div>
+          } @empty {
+            <p class="text-xs text-slate-400">Sin permisos asignados</p>
+          }
+        </div>
+      </section>
+    }
+
+    <!-- Seguridad -->
+    <section class="rounded-lg border border-slate-200 p-4">
+      <div class="flex items-center justify-between gap-3">
+        <div>
+          <h3 class="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Seguridad</h3>
+          @if (!showPasswordForm()) {
+            <p class="mt-1 text-sm text-slate-600">Cambia la contraseña con la que inicias sesión.</p>
+          }
+        </div>
+
+        @if (!showPasswordForm()) {
+          <button tuiButton type="button" size="s" appearance="secondary" iconStart="@tui.key-round" (click)="showPasswordForm.set(true)">
+            Cambiar contraseña
+          </button>
+        }
+      </div>
+
+      @if (showPasswordForm()) {
+        <div class="mt-4">
+          <app-change-password-form (cancel)="showPasswordForm.set(false)" (changed)="onPasswordChanged()" />
+        </div>
+      }
+    </section>
+  } @else {
+    <p class="text-sm text-slate-500">No hay una sesión activa.</p>
+  }
+
+  <div class="flex justify-end">
+    <button tuiButton type="button" size="s" appearance="outline" (click)="close()">Cerrar</button>
+  </div>
+</div>

@@ -4,6 +4,7 @@ import { TuiActiveZone, TuiObscured } from '@taiga-ui/cdk';
 import {
     TuiButton,
     TuiDataList,
+    TuiDialogService,
     TuiDropdown,
     TuiIcon,
     TuiInput,
@@ -15,6 +16,7 @@ import { TuiNavigation} from '@taiga-ui/layout';
 import { SidebarGroup } from '../types';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
+import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
  
 	interface ExampleAction {
     readonly description: string;
@@ -50,6 +52,12 @@ export class Navbar {
 
       private readonly authService = inject(AuthService);
       private readonly router = inject(Router);
+      private readonly dialogs = inject(TuiDialogService);
+
+    // Iniciales del correo del usuario autenticado para el avatar
+    protected readonly initials = computed(
+        () => (this.authService.currentUser()?.email.slice(0, 2) ?? '').toUpperCase(),
+    );
 
     readonly groupsOptions = input<SidebarGroup[]>([]);
 
@@ -120,7 +128,15 @@ protected onAvatarObscured(
 protected onProfile(): void {
   this.avatarOpen.set(false);
 
-  // this.router.navigate(['/profile']);
+  // Carga diferida: el perfil no pesa en el bundle inicial
+  import('../../features/profile/components/profile-dialog/profile-dialog').then(({ ProfileDialog }) =>
+    this.dialogs
+      .open(new PolymorpheusComponent(ProfileDialog), {
+        label: 'Mi perfil',
+        size: 'm',
+      })
+      .subscribe(),
+  );
 }
 
 protected onLogout(): void {

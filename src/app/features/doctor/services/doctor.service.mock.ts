@@ -156,6 +156,17 @@ export class DoctorMockService extends DoctorService {
   }
 
   // =====================================================
+  // FIND ME
+  // =====================================================
+
+  // Los mocks no tienen userId: se simula con el primer médico
+  findMe(): Observable<DoctorResponse> {
+    return of(this._doctors().content[0]).pipe(
+      delay(this.MOCK_DELAY),
+    );
+  }
+
+  // =====================================================
   // FIND BY SPECIALTY
   // =====================================================
 

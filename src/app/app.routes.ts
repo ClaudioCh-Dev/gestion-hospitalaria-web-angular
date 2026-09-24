@@ -54,6 +54,12 @@ export const routes: Routes = [
             .then((m) => m.MedicalRecords),
       },
       {
+        path: 'users',
+        loadComponent: () =>
+          import('./features/user/pages/user-page/user-page')
+            .then((m) => m.UserPage),
+      },
+      {
         path: 'billing',
         loadComponent: () =>
           import('./features/billing/pages/billing-page/billing-page')

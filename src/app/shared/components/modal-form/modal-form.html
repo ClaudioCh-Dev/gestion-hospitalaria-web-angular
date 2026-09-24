@@ -21,7 +21,7 @@
         <!-- =========================================== -->
 
         @if (field.type === 'text' || field.type === 'email') {
-          <tui-textfield tuiTextfieldSize="s" [invalid]="isInvalid(field.name)">
+          <tui-textfield tuiTextfieldSize="s" [tuiTextfieldCleaner]="false" [invalid]="isInvalid(field.name)">
             <input
               tuiInput
               [type]="field.type"
@@ -54,7 +54,7 @@
         <!-- =========================================== -->
 
         @if (field.type === 'date') {
-          <tui-textfield tuiTextfieldSize="s" [invalid]="isInvalid(field.name)">
+          <tui-textfield tuiTextfieldSize="s" [tuiTextfieldCleaner]="false" [invalid]="isInvalid(field.name)">
             <input
               tuiInputDate
               [placeholder]="field.placeholder"
@@ -132,6 +132,7 @@
           <tui-textfield
             tuiChevron
             tuiTextfieldSize="s"
+            [tuiTextfieldCleaner]="false"
             [invalid]="isInvalid(field.name)"
             [stringify]="stringify(field)"
           >

@@ -32,12 +32,16 @@
 
     <!-- Today -->
 
+    <!-- Viendo hoy: color del tema y sin interacción (sin disabled para que no se atenúe) -->
     <button
       tuiButton
       type="button"
-      appearance="outline"
       size="s"
       class="ml-2"
+      [appearance]="isToday() ? 'primary' : 'outline'"
+      [class.pointer-events-none]="isToday()"
+      [attr.tabindex]="isToday() ? -1 : null"
+      [attr.aria-current]="isToday() ? 'date' : null"
       (click)="goToday()"
     >
       Hoy
