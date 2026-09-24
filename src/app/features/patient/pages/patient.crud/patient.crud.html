@@ -72,8 +72,8 @@
   @if (!patientsResource.error()) {
 
     <app-patient-table
-      [patients]="filteredPatients()"
-      [loading]="tableLoading()"
+      [patients]="patients()"
+      [loading]="patientsResource.isLoading()"
       [(selected)]="selected"
       [loadingPatientId]="loadingPatientId()"
       [selectedPatient]="selectedPatient()"

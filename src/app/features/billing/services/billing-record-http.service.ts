@@ -3,7 +3,9 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import {
+  BillingFilters,
   BillingRecordResponse,
+  BillingSummaryResponse,
   CreateBillingRequest,
 } from '../interfaces';
 
@@ -21,14 +23,38 @@ export class BillingRecordHttpService implements BillingRecordService {
   findAll(
     page: number = 0,
     size: number = 10,
+    filters: BillingFilters = {},
   ): Observable<PageResponse<BillingRecordResponse>> {
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('page', page)
       .set('size', size);
+
+    if (filters.status) {
+      params = params.set('status', filters.status);
+    }
+
+    if (filters.search?.trim()) {
+      params = params.set('search', filters.search.trim());
+    }
+
+    // Spring convierte "1,2,3" en List<Long>
+    if (filters.patientIds?.length) {
+      params = params.set('patientIds', filters.patientIds.join(','));
+    }
+
+    if (filters.sort) {
+      params = params.set('sort', filters.sort);
+    }
 
     return this.http.get<PageResponse<BillingRecordResponse>>(
       this.apiUrl,
       { params },
+    );
+  }
+
+  summary(): Observable<BillingSummaryResponse> {
+    return this.http.get<BillingSummaryResponse>(
+      `${this.apiUrl}/summary`,
     );
   }
 

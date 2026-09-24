@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   inject,
+  linkedSignal,
   signal,
 } from '@angular/core';
 
@@ -18,7 +19,7 @@ import {
   toSignal,
 } from '@angular/core/rxjs-interop';
 
-import { map, startWith } from 'rxjs';
+import { debounceTime, distinctUntilChanged, map, startWith } from 'rxjs';
 import { tuiCountFilledControls } from '@taiga-ui/cdk';
 
 import {
@@ -52,9 +53,6 @@ import { downloadCsv } from '@shared/utils/csv';
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 import { MedicalRecordDetailDialog } from '../../components/medical-record-detail-dialog/medical-record-detail-dialog';
 import { StateMessage } from '@shared/components/state-message/state-message';
-
-// Registros usados para calcular el resumen y las categorías
-const SUMMARY_SIZE = 1000;
 
 // Colores de la etiqueta de estado
 const STATUS_BADGE_CLASSES: Record<string, string> = {
@@ -114,7 +112,6 @@ export class MedicalRecords {
     filter: new FormControl([]),
   });
 
-  protected readonly page = signal(0);
   protected readonly size = signal(4);
 
   protected readonly count = toSignal(
@@ -131,30 +128,44 @@ export class MedicalRecords {
     { initialValue: this.form.value },
   );
 
-  protected readonly summaryResource = rxResource({
-    stream: () => this.service.findAll(0, SUMMARY_SIZE),
+  // Espera a que el usuario deje de escribir antes de consultar al backend
+  private readonly debouncedSearch = toSignal(
+    this.form.controls.search.valueChanges.pipe(
+      debounceTime(300),
+      map(search => (search ?? '').trim()),
+      distinctUntilChanged(),
+    ),
+    { initialValue: '' },
+  );
+
+  protected readonly activeFilters = computed(() => ({
+    search: this.debouncedSearch(),
+    specialty: this.formValue().category || null,
+  }));
+
+  // Vuelve a la primera página al cambiar los filtros
+  protected readonly page = linkedSignal({
+    source: this.activeFilters,
+    computation: () => 0,
   });
 
-  protected readonly categories = computed(() =>
-    [...new Set(
-      (this.summaryResource.value()?.content ?? []).map(record => record.specialty),
-    )].sort(),
+  // GET /medical-records/crud/summary
+  protected readonly summaryResource = rxResource({
+    stream: () => this.service.summary(),
+  });
+
+  protected readonly categories = computed(
+    () => this.summaryResource.value()?.specialties ?? [],
   );
 
   protected readonly stats = computed<Stat[]>(() => {
-    const records = this.summaryResource.value()?.content ?? [];
-
-    const patients = new Set(records.map(record => record.patientId)).size;
-
-    const completed = records.filter(record => record.status === 'COMPLETED').length;
-
-    const income = records.reduce((sum, record) => sum + (record.amount ?? 0), 0);
+    const summary = this.summaryResource.value();
 
     return [
-      { title: 'Total consultas', value: String(records.length), icon: '@tui.file-text' },
-      { title: 'Pacientes atendidos', value: String(patients), icon: '@tui.users' },
-      { title: 'Consultas completadas', value: String(completed), icon: '@tui.circle-check' },
-      { title: 'Ingresos', value: `S/ ${income.toFixed(2)}`, icon: '@tui.wallet' },
+      { title: 'Total consultas', value: String(summary?.totalRecords ?? 0), icon: '@tui.file-text' },
+      { title: 'Pacientes atendidos', value: String(summary?.uniquePatients ?? 0), icon: '@tui.users' },
+      { title: 'Consultas completadas', value: String(summary?.completedRecords ?? 0), icon: '@tui.circle-check' },
+      { title: 'Ingresos', value: `S/ ${(summary?.totalAmount ?? 0).toFixed(2)}`, icon: '@tui.wallet' },
     ];
   });
 
@@ -162,14 +173,20 @@ export class MedicalRecords {
     params: () => ({
       page: this.page(),
       size: this.size(),
+      ...this.activeFilters(),
     }),
 
-    stream: ({ params }) => 
+    stream: ({ params }) =>
       this.service.findAll(
         params.page,
         params.size,
+        { search: params.search, specialty: params.specialty },
       ),
   });
+
+  protected readonly records = computed(
+    () => this.medicalRecordsResource.value()?.content ?? [],
+  );
 
   protected nextPage(): void {
     const response = this.medicalRecordsResource.value();
@@ -190,24 +207,6 @@ export class MedicalRecords {
 
     this.page.update(page => page - 1);
   }
-
-  // Filtros aplicados sobre la página cargada
-  protected readonly filteredRecords = computed(() => {
-    const records = this.medicalRecordsResource.value()?.content ?? [];
-
-    const { search, category } = this.formValue();
-
-    const term = (search ?? '').trim().toLowerCase();
-
-    return records.filter(record =>
-      (!category || record.specialty === category) &&
-      (!term ||
-        [record.patientName, record.doctorName, record.reason]
-          .join(' ')
-          .toLowerCase()
-          .includes(term)),
-    );
-  });
 
   protected viewDetail(record: MedicalRecordResponse): void {
     this.dialogs
@@ -236,7 +235,7 @@ export class MedicalRecords {
     downloadCsv(
       `historial-pagina-${this.page() + 1}.csv`,
       ['Cita', 'Fecha', 'Paciente', 'Médico', 'Especialidad', 'Motivo', 'Estado', 'Monto'],
-      this.filteredRecords().map((record: MedicalRecordResponse) => [
+      this.records().map((record: MedicalRecordResponse) => [
         record.appointmentId,
         record.scheduledAt,
         record.patientName,

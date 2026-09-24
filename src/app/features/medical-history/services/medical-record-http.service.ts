@@ -3,6 +3,8 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 import { MedicalRecordResponse } from '../interfaces/medical-record-response';
+import { MedicalRecordFilters } from '../interfaces/medical-record-filters';
+import { MedicalRecordSummaryResponse } from '../interfaces/medical-record-summary-response';
 import { PageResponse } from '@shared/models/page.type';
 
 import { MedicalRecordService } from './medical-record.service';
@@ -20,15 +22,30 @@ export class MedicalRecordHttpService
   findAll(
     page: number = 0,
     size: number = 10,
+    filters: MedicalRecordFilters = {},
   ): Observable<PageResponse<MedicalRecordResponse>> {
 
-    const params = new HttpParams()
+    let params = new HttpParams()
       .set('page', page)
       .set('size', size);
+
+    if (filters.search?.trim()) {
+      params = params.set('search', filters.search.trim());
+    }
+
+    if (filters.specialty) {
+      params = params.set('specialty', filters.specialty);
+    }
 
     return this.http.get<PageResponse<MedicalRecordResponse>>(
       this.apiUrl,
       { params },
+    );
+  }
+
+  summary(): Observable<MedicalRecordSummaryResponse> {
+    return this.http.get<MedicalRecordSummaryResponse>(
+      `${this.apiUrl}/summary`,
     );
   }
 

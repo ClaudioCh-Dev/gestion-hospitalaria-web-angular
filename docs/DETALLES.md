@@ -198,7 +198,7 @@ El **auth-server** no pasa por el gateway: el frontend lo llama directamente en 
 
 | Método | Endpoint                                   |
 | ------ | ------------------------------------------ |
-| GET    | `{api}/patients/crud?page&size&gender`     |
+| GET    | `{api}/patients/crud?page&size&gender&search` |
 | GET    | `{api}/patients/crud/{id}`                 |
 | GET    | `{api}/patients/crud/document/{document}`  |
 | POST   | `{api}/patients/crud`                      |
@@ -209,9 +209,9 @@ El **auth-server** no pasa por el gateway: el frontend lo llama directamente en 
 
 | Método | Endpoint                                          |
 | ------ | ------------------------------------------------- |
-| GET    | `{api}/doctors/crud?page&size`                    |
+| GET    | `{api}/doctors/crud?page&size&search`             |
 | GET    | `{api}/doctors/crud/{id}`                         |
-| GET    | `{api}/doctors/crud/specialty/{id}?page&size`     |
+| GET    | `{api}/doctors/crud/specialty/{id}?page&size&search` |
 | POST   | `{api}/doctors/crud`                              |
 | PUT    | `{api}/doctors/crud/{id}`                         |
 | GET    | `{api}/doctors/specialties`                       |
@@ -264,7 +264,8 @@ Al crear un tipo de cita, appointment-ms publica `appointment-created-type` y bi
 
 | Método | Endpoint                                        |
 | ------ | ----------------------------------------------- |
-| GET    | `{api}/billings/crud?page&size`                 |
+| GET    | `{api}/billings/crud?page&size&status&search&patientIds&sort` |
+| GET    | `{api}/billings/crud/summary`                   |
 | GET    | `{api}/billings/crud/patient/{id}?page&size`    |
 | POST   | `{api}/billings/crud`                           |
 | PATCH  | `{api}/billings/crud/{id}/pay`                  |
@@ -273,10 +274,21 @@ Al crear un tipo de cita, appointment-ms publica `appointment-created-type` y bi
 
 | Método | Endpoint                                              |
 | ------ | ----------------------------------------------------- |
-| GET    | `{api}/medical-records/crud?page&size`                |
+| GET    | `{api}/medical-records/crud?page&size&search&specialty` |
+| GET    | `{api}/medical-records/crud/summary`                  |
 | GET    | `{api}/medical-records/crud/patient/{id}?page&size`   |
 
 Las respuestas paginadas usan `PageResponse<T>` (`shared/models/page.type.ts`), compatible con `Page` de Spring.
+
+### Búsqueda y resúmenes
+
+- **`search`**: búsqueda parcial sin distinguir mayúsculas, resuelta en cada microservicio. Las páginas esperan 300 ms sin teclear (debounce) antes de consultar.
+  - Pacientes: nombres, apellidos, DNI o correo.
+  - Médicos: nombre, colegiatura, correo o especialidad.
+  - Historial: paciente, médico, especialidad o motivo.
+  - Facturación: billing-ms no guarda nombres, así que `search` solo acepta un número de factura, cita o paciente. Para buscar por nombre, el frontend consulta primero patient-ms y envía los IDs en `patientIds`.
+- **`sort`** (facturación): formato de Spring, por ejemplo `issuedAt,desc` o `amount,asc`.
+- **`/summary`**: totales calculados en el backend para las tarjetas de estadísticas y el dashboard (facturación: cantidad y monto por estado y cobrado en el mes; historial: consultas, pacientes únicos, completadas, ingresos y especialidades).
 
 ---
 

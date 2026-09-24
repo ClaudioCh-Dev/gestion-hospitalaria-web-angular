@@ -20,6 +20,7 @@ import { PATIENT_DETAILS_MOCK } from '../mocks/patient.detail.mocks';
 import { ErrorHandlerService } from '@core/services/error-handler.service';
 import { GENDERS } from '@patients/constants/patient-options';
 import { ProblemDetailMicroservice } from '@shared/models/problem.type';
+import { matchesSearch } from '@shared/utils/search';
 
 @Injectable()
 export class PatientMockService extends PatientService {
@@ -88,6 +89,7 @@ export class PatientMockService extends PatientService {
     page: number = 0,
     size: number = 10,
     gender?: Gender,
+    search?: string,
   ): Observable<PageResponse<PatientResponse>> {
 
     let patients = this._patients().content;
@@ -101,6 +103,21 @@ export class PatientMockService extends PatientService {
         (patient) => patient.gender === gender.toString(),
       );
     }
+
+    // -----------------------------------------
+    // SEARCH (misma semántica que patient-ms)
+    // -----------------------------------------
+
+    patients = patients.filter((patient) =>
+      matchesSearch(
+        search,
+        patient.firstName,
+        patient.lastName,
+        `${patient.firstName} ${patient.lastName}`,
+        patient.documentNumber,
+        patient.email,
+      ),
+    );
 
     // -----------------------------------------
     // PAGINATION

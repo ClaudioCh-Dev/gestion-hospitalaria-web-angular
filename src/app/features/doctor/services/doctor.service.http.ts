@@ -24,8 +24,12 @@ export class DoctorHttpService implements DoctorService {
 
   readonly doctors = this._doctors.asReadonly();
 
-  findAll(page: number = 0, size: number = 10): Observable<PageResponse<DoctorResponse>> {
-    const params = new HttpParams().set('page', page).set('size', size);
+  findAll(
+    page: number = 0,
+    size: number = 10,
+    search?: string,
+  ): Observable<PageResponse<DoctorResponse>> {
+    const params = this.buildParams(page, size, search);
 
     return this.http.get<PageResponse<DoctorResponse>>(`${this.apiUrl}/crud`, { params }).pipe(
       tap((response) => this._doctors.set(response)),
@@ -40,8 +44,9 @@ export class DoctorHttpService implements DoctorService {
     specialtyId: number,
     page: number = 0,
     size: number = 10,
+    search?: string,
   ): Observable<PageResponse<DoctorResponse>> {
-    const params = new HttpParams().set('page', page).set('size', size);
+    const params = this.buildParams(page, size, search);
 
     return this.http.get<PageResponse<DoctorResponse>>(
       `${this.apiUrl}/crud/specialty/${specialtyId}`,
@@ -95,5 +100,11 @@ export class DoctorHttpService implements DoctorService {
 
   createSpecialty(specialty: CreateSpecialtyRequest): Observable<SpecialtyResponse> {
     return this.http.post<SpecialtyResponse>(`${this.apiUrl}/specialties`, specialty);
+  }
+
+  private buildParams(page: number, size: number, search?: string): HttpParams {
+    const params = new HttpParams().set('page', page).set('size', size);
+
+    return search?.trim() ? params.set('search', search.trim()) : params;
   }
 }

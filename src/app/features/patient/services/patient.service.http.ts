@@ -24,6 +24,7 @@ findAll(
   page: number = 0,
   size: number = 10,
   gender?: Gender,
+  search?: string,
 ): Observable<PageResponse<PatientResponse>> {
 
   let params = new HttpParams()
@@ -32,6 +33,10 @@ findAll(
 
   if (gender) {
     params = params.set('gender', gender);
+  }
+
+  if (search?.trim()) {
+    params = params.set('search', search.trim());
   }
 
   return this.http.get<PageResponse<PatientResponse>>(

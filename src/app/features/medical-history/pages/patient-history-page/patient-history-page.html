@@ -78,7 +78,7 @@
           tuiLink
           type="button"
           [style.margin-inline-start]="'auto'"
-          [disabled]="!filteredRecords().length"
+          [disabled]="!records().length"
           (click)="download()"
         >
           Descargar
@@ -146,7 +146,7 @@
         (action)="medicalRecordsResource.reload()"
       />
     } @else if (medicalRecordsResource.value(); as page) {
-      @for (record of filteredRecords(); track record.id) {
+      @for (record of records(); track record.id) {
 <div
           tuiCardLarge
           class="border! border-slate-200! bg-white! shadow-sm! transition-shadow hover:shadow-md!"

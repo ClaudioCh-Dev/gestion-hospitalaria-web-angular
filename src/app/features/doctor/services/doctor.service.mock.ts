@@ -16,6 +16,7 @@ import {
 import { DoctorService } from './doctor.service';
 
 import { DOCTORS_MOCK } from '../mocks/doctor.mocks';
+import { matchesSearch } from '@shared/utils/search';
 
 
 @Injectable()
@@ -101,9 +102,12 @@ export class DoctorMockService extends DoctorService {
   findAll(
     page: number = 0,
     size: number = 10,
+    search?: string,
   ): Observable<PageResponse<DoctorResponse>> {
 
-    const doctors = this._doctors().content;
+    const doctors = this._doctors().content.filter(
+      (doctor) => this.matches(doctor, search),
+    );
     const totalElements = doctors.length;
     const totalPages = Math.ceil(totalElements / size);
 
@@ -159,10 +163,13 @@ export class DoctorMockService extends DoctorService {
     specialtyId: number,
     page: number = 0,
     size: number = 10,
+    search?: string,
   ): Observable<PageResponse<DoctorResponse>> {
 
     const doctors = this._doctors().content.filter(
-      (doctor) => doctor.specialtyId === specialtyId,
+      (doctor) =>
+        doctor.specialtyId === specialtyId &&
+        this.matches(doctor, search),
     );
 
     const totalElements = doctors.length;
@@ -321,6 +328,19 @@ export class DoctorMockService extends DoctorService {
 
     return of(specialty).pipe(
       delay(this.MOCK_DELAY),
+    );
+  }
+
+  // Misma semántica que doctor-ms
+  private matches(doctor: DoctorResponse, search?: string): boolean {
+    return matchesSearch(
+      search,
+      doctor.firstName,
+      doctor.lastName,
+      `${doctor.firstName} ${doctor.lastName}`,
+      doctor.licenseNumber,
+      doctor.email,
+      doctor.specialtyName,
     );
   }
 }

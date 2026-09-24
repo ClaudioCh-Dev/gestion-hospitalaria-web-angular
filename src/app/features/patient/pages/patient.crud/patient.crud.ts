@@ -8,7 +8,7 @@ import {
 
 import { FormsModule } from '@angular/forms';
 
-import { rxResource } from '@angular/core/rxjs-interop';
+import { rxResource, toObservable, toSignal } from '@angular/core/rxjs-interop';
 
 import {
   TuiTable,
@@ -32,7 +32,16 @@ import {
   type TuiConfirmData,
 } from '@taiga-ui/kit';
 
-import { catchError, filter, forkJoin, map, of, switchMap } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  forkJoin,
+  map,
+  of,
+  switchMap,
+} from 'rxjs';
 
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 
@@ -114,11 +123,22 @@ export class PatientCrud {
   // Pacientes
   // ============================
 
+  // Espera a que el usuario deje de escribir antes de consultar al backend
+  private readonly debouncedSearch = toSignal(
+    toObservable(this.search).pipe(
+      debounceTime(300),
+      map((search) => search.trim()),
+      distinctUntilChanged(),
+    ),
+    { initialValue: '' },
+  );
+
   protected readonly patientsResource = rxResource({
     params: () => ({
       page: this.page(),
       size: this.size(),
       gender: this.gender() ?? undefined,
+      search: this.debouncedSearch(),
     }),
 
     stream: (resource) =>
@@ -126,47 +146,13 @@ export class PatientCrud {
         resource.params.page,
         resource.params.size,
         resource.params.gender,
+        resource.params.search,
       ),
   });
 
-  // Un DNI completo (8 dígitos) se busca en el backend, fuera de la página cargada
-  protected readonly isDniSearch = computed(() => /^\d{8}$/.test(this.search()));
-
-  protected readonly dniResource = rxResource({
-    params: () => (this.isDniSearch() ? { dni: this.search() } : undefined),
-
-    stream: ({ params }) =>
-      this.patientService
-        .findByDocumentNumber(params.dni)
-        .pipe(catchError(() => of(null))),
-  });
-
-  protected readonly tableLoading = computed(
-    () => this.patientsResource.isLoading() || this.dniResource.isLoading(),
+  protected readonly patients = computed(
+    () => this.patientsResource.value()?.content ?? [],
   );
-
-  // El backend solo filtra por género: el resto de la búsqueda se aplica sobre la página cargada
-  protected readonly filteredPatients = computed(() => {
-    if (this.isDniSearch()) {
-      const patient = this.dniResource.value();
-
-      return patient ? [patient] : [];
-    }
-
-    const patients = this.patientsResource.value()?.content ?? [];
-    const term = this.search().toLowerCase();
-
-    if (!term) {
-      return patients;
-    }
-
-    return patients.filter((patient) =>
-      [patient.firstName, patient.lastName, patient.documentNumber, patient.email ?? '']
-        .join(' ')
-        .toLowerCase()
-        .includes(term),
-    );
-  });
 
   // ============================
   // Crear paciente
@@ -256,12 +242,13 @@ export class PatientCrud {
 
   protected onFiltersChange(filters: PatientFilters): void {
     this.selected.set([]);
-    this.search.set(filters.search);
 
-    if (filters.gender !== this.gender()) {
-      this.gender.set(filters.gender);
+    if (filters.search !== this.search() || filters.gender !== this.gender()) {
       this.page.set(0);
     }
+
+    this.search.set(filters.search);
+    this.gender.set(filters.gender);
   }
 
   // ============================

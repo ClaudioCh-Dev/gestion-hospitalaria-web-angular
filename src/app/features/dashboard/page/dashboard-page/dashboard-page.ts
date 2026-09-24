@@ -34,8 +34,6 @@ interface UpcomingAppointment {
 // Días mostrados en el gráfico de citas
 const CHART_DAYS = 7;
 
-// Registros usados para calcular los ingresos del mes
-const BILLING_SUMMARY_SIZE = 1000;
 
 // Citas mostradas en "Próximas citas"
 const UPCOMING_LIMIT = 5;
@@ -97,7 +95,7 @@ export class DashboardPage {
   });
 
   protected readonly billingResource = rxResource({
-    stream: () => this.billingService.findAll(0, BILLING_SUMMARY_SIZE),
+    stream: () => this.billingService.summary(),
   });
 
   protected readonly chartDays = Array.from({ length: CHART_DAYS }, (_, index) => {
@@ -154,29 +152,13 @@ export class DashboardPage {
   // STATS
   // =====================================================
 
+  // Montos calculados por billing-ms (GET /billings/crud/summary)
   protected readonly monthIncome = computed(() => {
-    const records = this.billingResource.value()?.content ?? [];
-
-    const isThisMonth = (date: string | null) => {
-      if (!date) {
-        return false;
-      }
-
-      const value = new Date(date);
-
-      return (
-        value.getFullYear() === this.today.getFullYear() &&
-        value.getMonth() === this.today.getMonth()
-      );
-    };
+    const summary = this.billingResource.value();
 
     return {
-      paid: records
-        .filter((record) => record.status === 'PAID' && isThisMonth(record.paidAt))
-        .reduce((sum, record) => sum + record.amount, 0),
-      pending: records
-        .filter((record) => record.status === 'PENDING')
-        .reduce((sum, record) => sum + record.amount, 0),
+      paid: summary?.paidThisMonthAmount ?? 0,
+      pending: summary?.pendingAmount ?? 0,
     };
   });
 

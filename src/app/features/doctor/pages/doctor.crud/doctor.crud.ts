@@ -6,9 +6,18 @@ import {
   signal,
 } from '@angular/core';
 
-import { rxResource } from '@angular/core/rxjs-interop';
+import { rxResource, toObservable, toSignal } from '@angular/core/rxjs-interop';
 
-import { catchError, filter, forkJoin, map, of, switchMap } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  filter,
+  forkJoin,
+  map,
+  of,
+  switchMap,
+} from 'rxjs';
 
 import {
   TuiButton,
@@ -127,11 +136,22 @@ export class DoctorCrud {
   // RESOURCE
   // =====================================================
 
+  // Espera a que el usuario deje de escribir antes de consultar al backend
+  private readonly debouncedSearch = toSignal(
+    toObservable(this.search).pipe(
+      debounceTime(300),
+      map((search) => search.trim()),
+      distinctUntilChanged(),
+    ),
+    { initialValue: '' },
+  );
+
   protected readonly doctorsResource = rxResource({
     params: () => ({
       page: this.page(),
       size: this.size(),
       specialtyId: this.specialtyId(),
+      search: this.debouncedSearch(),
     }),
 
     stream: ({ params }) =>
@@ -139,39 +159,19 @@ export class DoctorCrud {
         ? this.doctorService.findAll(
             params.page,
             params.size,
+            params.search,
           )
         : this.doctorService.findBySpecialty(
             params.specialtyId,
             params.page,
             params.size,
+            params.search,
           ),
   });
 
-  // El backend no tiene búsqueda por texto: se filtra la página cargada
-  protected readonly filteredDoctors = computed(() => {
-    const doctors =
-      this.doctorsResource.value()?.content ?? [];
-
-    const term =
-      this.search().toLowerCase();
-
-    if (!term) {
-      return doctors;
-    }
-
-    return doctors.filter((doctor) =>
-      [
-        doctor.firstName,
-        doctor.lastName,
-        doctor.licenseNumber,
-        doctor.specialtyName,
-        doctor.email ?? '',
-      ]
-        .join(' ')
-        .toLowerCase()
-        .includes(term),
-    );
-  });
+  protected readonly doctors = computed(
+    () => this.doctorsResource.value()?.content ?? [],
+  );
 
   // =====================================================
   // CREAR DOCTOR
@@ -300,12 +300,16 @@ export class DoctorCrud {
     filters: DoctorFilters,
   ): void {
     this.selected.set([]);
-    this.search.set(filters.search);
 
-    if (filters.specialtyId !== this.specialtyId()) {
-      this.specialtyId.set(filters.specialtyId);
+    if (
+      filters.search !== this.search() ||
+      filters.specialtyId !== this.specialtyId()
+    ) {
       this.page.set(0);
     }
+
+    this.search.set(filters.search);
+    this.specialtyId.set(filters.specialtyId);
   }
 
   // =====================================================

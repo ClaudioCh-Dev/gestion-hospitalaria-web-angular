@@ -15,6 +15,7 @@ export abstract class DoctorService {
   abstract findAll(
     page?: number,
     size?: number,
+    search?: string,
   ): Observable<PageResponse<DoctorResponse>>;
 
   abstract findById(
@@ -25,6 +26,7 @@ export abstract class DoctorService {
     specialtyId: number,
     page?: number,
     size?: number,
+    search?: string,
   ): Observable<PageResponse<DoctorResponse>>;
 
   abstract create(

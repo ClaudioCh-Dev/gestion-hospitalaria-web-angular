@@ -4,8 +4,10 @@ import { delay } from 'rxjs/operators';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import {
+  BillingFilters,
   BillingRecordResponse,
   BillingStatus,
+  BillingSummaryResponse,
   CreateBillingRequest,
 } from '../interfaces';
 
@@ -32,12 +34,93 @@ export class BillingRecordMockService extends BillingRecordService {
   findAll(
     page: number = 0,
     size: number = 10,
+    filters: BillingFilters = {},
   ): Observable<PageResponse<BillingRecordResponse>> {
-    const records = this._billingRecords();
+    const term = (filters.search ?? '').trim().replace('#', '');
+
+    let records = this._billingRecords().filter(record =>
+      (!filters.status || record.status === filters.status) &&
+      (!filters.patientIds?.length || filters.patientIds.includes(record.patientId)) &&
+      // Igual que billing-ms: el texto solo puede ser un número de factura, cita o paciente
+      (!term ||
+        (/^\d+$/.test(term) &&
+          [record.id, record.appointmentId, record.patientId].includes(Number(term)))),
+    );
+
+    if (filters.sort) {
+      records = this.sortRecords(records, filters.sort);
+    }
 
     return of(this.paginate(records, page, size)).pipe(
       delay(this.MOCK_DELAY),
     );
+  }
+
+  summary(): Observable<BillingSummaryResponse> {
+    const records = this._billingRecords();
+
+    const totals = (status?: BillingStatus) => {
+      const filtered = status
+        ? records.filter(record => record.status === status)
+        : records;
+
+      return {
+        count: filtered.length,
+        amount: filtered.reduce((sum, record) => sum + record.amount, 0),
+      };
+    };
+
+    const now = new Date();
+
+    const paidThisMonthAmount = records
+      .filter(record => {
+        if (record.status !== 'PAID' || !record.paidAt) {
+          return false;
+        }
+
+        const paidAt = new Date(record.paidAt);
+
+        return (
+          paidAt.getFullYear() === now.getFullYear() &&
+          paidAt.getMonth() === now.getMonth()
+        );
+      })
+      .reduce((sum, record) => sum + record.amount, 0);
+
+    const total = totals();
+    const pending = totals('PENDING');
+    const paid = totals('PAID');
+    const cancelled = totals('CANCELLED');
+
+    return of<BillingSummaryResponse>({
+      totalCount: total.count,
+      totalAmount: total.amount,
+      pendingCount: pending.count,
+      pendingAmount: pending.amount,
+      paidCount: paid.count,
+      paidAmount: paid.amount,
+      cancelledCount: cancelled.count,
+      cancelledAmount: cancelled.amount,
+      paidThisMonthAmount,
+    }).pipe(
+      delay(this.MOCK_DELAY),
+    );
+  }
+
+  // Formato de Spring: "campo,asc|desc"
+  private sortRecords(
+    records: BillingRecordResponse[],
+    sort: string,
+  ): BillingRecordResponse[] {
+    const [field, direction] = sort.split(',');
+    const factor = direction === 'desc' ? -1 : 1;
+
+    const value = (record: BillingRecordResponse): number =>
+      field === 'amount'
+        ? record.amount
+        : new Date(record.issuedAt).getTime();
+
+    return [...records].sort((a, b) => (value(a) - value(b)) * factor);
   }
 
   findByPatientId(

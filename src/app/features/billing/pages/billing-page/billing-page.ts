@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   inject,
+  linkedSignal,
   signal,
 } from '@angular/core';
 
@@ -19,7 +20,17 @@ import {
   toSignal,
 } from '@angular/core/rxjs-interop';
 
-import { catchError, EMPTY, forkJoin, map, of, startWith, switchMap } from 'rxjs';
+import {
+  catchError,
+  debounceTime,
+  distinctUntilChanged,
+  EMPTY,
+  forkJoin,
+  map,
+  of,
+  startWith,
+  switchMap,
+} from 'rxjs';
 
 import { tuiCountFilledControls } from '@taiga-ui/cdk';
 
@@ -49,6 +60,7 @@ import {
   BillingRecordResponse,
   BillingStatus,
 } from '../../interfaces';
+import { PageResponse } from '@shared/models/page.type';
 
 import { BillingRecordService } from '../../services/billing-record.service';
 import { BILLING_STATUS_LABELS } from '../../constants/billing-status';
@@ -66,8 +78,16 @@ import { StateMessage } from '@shared/components/state-message/state-message';
 
 const ALL_STATUSES = 'Todos los estados';
 
-// Registros usados para calcular los totales del resumen
-const SUMMARY_SIZE = 1000;
+// Pacientes consultados en patient-ms al buscar facturas por nombre
+const PATIENT_LOOKUP_SIZE = 100;
+
+// Opciones de "Ordenar por" → parámetro sort de Spring
+const SORT_BY_LABEL: Record<string, string> = {
+  'Fecha reciente': 'issuedAt,desc',
+  'Fecha antigua': 'issuedAt,asc',
+  'Mayor monto': 'amount,desc',
+  'Menor monto': 'amount,asc',
+};
 
 const STATUS_BY_LABEL: Record<string, BillingStatus> = {
   Pendiente: 'PENDING',
@@ -137,12 +157,6 @@ export class BillingPage {
       filter: new FormControl(''),
     });
 
-  // --------------------------------------------------
-  // PAGINACIÓN
-  // --------------------------------------------------
-
-  protected readonly page = signal(0);
-
   protected readonly size = signal(4);
 
   // --------------------------------------------------
@@ -183,44 +197,82 @@ export class BillingPage {
     },
   );
 
+  // Espera a que el usuario deje de escribir antes de consultar al backend
+  private readonly debouncedSearch = toSignal(
+    this.form.controls.search.valueChanges.pipe(
+      debounceTime(300),
+      map(search => (search ?? '').trim()),
+      distinctUntilChanged(),
+    ),
+    {
+      initialValue: '',
+    },
+  );
+
+  protected readonly activeFilters = computed(() => {
+    const { status, filter } = this.formValue();
+
+    return {
+      status: STATUS_BY_LABEL[status ?? ''] ?? null,
+      sort: SORT_BY_LABEL[filter ?? ''] ?? null,
+      search: this.debouncedSearch(),
+    };
+  });
+
   // --------------------------------------------------
-  // ESTADÍSTICAS
+  // PAGINACIÓN: vuelve a la primera página al cambiar los filtros
+  // --------------------------------------------------
+
+  protected readonly page = linkedSignal({
+    source: this.activeFilters,
+    computation: () => 0,
+  });
+
+  // --------------------------------------------------
+  // ESTADÍSTICAS (GET /billings/crud/summary)
   // --------------------------------------------------
 
   protected readonly summaryResource =
     rxResource({
-      stream: () =>
-        this.billingService.findAll(
-          0,
-          SUMMARY_SIZE,
-        ),
+      stream: () => this.billingService.summary(),
     });
 
   protected readonly stats = computed<Stat[]>(() => {
-    const records =
-      this.summaryResource.value()?.content ?? [];
-
-    const total = (status?: BillingStatus) => {
-      const filtered = status
-        ? records.filter(record => record.status === status)
-        : records;
-
-      return {
-        value: filtered.reduce((sum, record) => sum + record.amount, 0),
-        count: filtered.length,
-      };
-    };
+    const summary = this.summaryResource.value();
 
     return [
-      { title: 'Total facturado', icon: '@tui.wallet', ...total() },
-      { title: 'Pendiente de pago', icon: '@tui.clock', ...total('PENDING') },
-      { title: 'Pagado', icon: '@tui.circle-check', ...total('PAID') },
-      { title: 'Cancelado', icon: '@tui.circle-x', ...total('CANCELLED') },
+      {
+        title: 'Total facturado',
+        icon: '@tui.wallet',
+        value: summary?.totalAmount ?? 0,
+        count: summary?.totalCount ?? 0,
+      },
+      {
+        title: 'Pendiente de pago',
+        icon: '@tui.clock',
+        value: summary?.pendingAmount ?? 0,
+        count: summary?.pendingCount ?? 0,
+      },
+      {
+        title: 'Pagado',
+        icon: '@tui.circle-check',
+        value: summary?.paidAmount ?? 0,
+        count: summary?.paidCount ?? 0,
+      },
+      {
+        title: 'Cancelado',
+        icon: '@tui.circle-x',
+        value: summary?.cancelledAmount ?? 0,
+        count: summary?.cancelledCount ?? 0,
+      },
     ];
   });
 
   // --------------------------------------------------
   // RESOURCE
+  //
+  // Un número se busca en billing-ms (factura, cita o paciente).
+  // Un texto se busca primero en patient-ms y se filtra por esos IDs.
   // --------------------------------------------------
 
   protected readonly billingResource =
@@ -228,14 +280,44 @@ export class BillingPage {
       params: () => ({
         page: this.page(),
         size: this.size(),
+        ...this.activeFilters(),
       }),
 
-      stream: ({ params }) =>
-        this.billingService.findAll(
-          params.page,
-          params.size,
-        ),
+      stream: ({ params }) => {
+        const term = params.search.replace('#', '');
+
+        const base = {
+          status: params.status,
+          sort: params.sort,
+        };
+
+        if (!term || /^\d+$/.test(term)) {
+          return this.billingService.findAll(
+            params.page,
+            params.size,
+            { ...base, search: term },
+          );
+        }
+
+        return this.patientService
+          .findAll(0, PATIENT_LOOKUP_SIZE, undefined, term)
+          .pipe(
+            switchMap(patients =>
+              patients.content.length
+                ? this.billingService.findAll(
+                    params.page,
+                    params.size,
+                    { ...base, patientIds: patients.content.map(patient => patient.id) },
+                  )
+                : of(this.emptyPage(params.page, params.size)),
+            ),
+          );
+      },
     });
+
+  protected readonly records = computed(
+    () => this.billingResource.value()?.content ?? [],
+  );
 
   // --------------------------------------------------
   // NOMBRES DE PACIENTES
@@ -295,49 +377,6 @@ export class BillingPage {
       `Paciente #${patientId}`
     );
   }
-
-  // --------------------------------------------------
-  // FILTROS (sobre la página cargada)
-  // --------------------------------------------------
-
-  protected readonly filteredRecords = computed(() => {
-    const records =
-      this.billingResource.value()?.content ?? [];
-
-    const { search, status, filter } =
-      this.formValue();
-
-    const term = (search ?? '').trim().replace('#', '');
-
-    const statusFilter =
-      STATUS_BY_LABEL[status ?? ''];
-
-    const result = records.filter(record =>
-      (!statusFilter || record.status === statusFilter) &&
-      (!term ||
-        [record.id, record.patientId, record.appointmentId]
-          .some(value => String(value).includes(term)) ||
-        this.patientName(record.patientId)
-          .toLowerCase()
-          .includes(term.toLowerCase())),
-    );
-
-    const byDate = (record: BillingRecordResponse) =>
-      new Date(record.issuedAt).getTime();
-
-    switch (filter) {
-      case 'Fecha reciente':
-        return [...result].sort((a, b) => byDate(b) - byDate(a));
-      case 'Fecha antigua':
-        return [...result].sort((a, b) => byDate(a) - byDate(b));
-      case 'Mayor monto':
-        return [...result].sort((a, b) => b.amount - a.amount);
-      case 'Menor monto':
-        return [...result].sort((a, b) => a.amount - b.amount);
-      default:
-        return result;
-    }
-  });
 
   // --------------------------------------------------
   // HELPERS
@@ -416,7 +455,7 @@ export class BillingPage {
     downloadCsv(
       `facturacion-pagina-${this.page() + 1}.csv`,
       ['Factura', 'Cita', 'Paciente', 'Monto', 'Moneda', 'Estado', 'Emitida', 'Pagada'],
-      this.filteredRecords().map(record => [
+      this.records().map(record => [
         record.id,
         record.appointmentId,
         this.patientName(record.patientId),
@@ -497,5 +536,21 @@ export class BillingPage {
         },
       )
       .subscribe();
+  }
+
+  private emptyPage(
+    page: number,
+    size: number,
+  ): PageResponse<BillingRecordResponse> {
+    return {
+      content: [],
+      totalElements: 0,
+      totalPages: 0,
+      size,
+      number: page,
+      first: true,
+      last: true,
+      numberOfElements: 0,
+    };
   }
 }

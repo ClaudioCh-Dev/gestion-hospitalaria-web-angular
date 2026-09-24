@@ -7,6 +7,7 @@ export abstract class PatientService {
     page?: number,
     size?: number,
     gender?: Gender,
+    search?: string,
   ): Observable<PageResponse<PatientResponse>>;
 
   abstract findById(id: number): Observable<PatientDetailResponse>;
