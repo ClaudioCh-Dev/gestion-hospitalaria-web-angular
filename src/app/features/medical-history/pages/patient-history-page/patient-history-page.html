@@ -10,7 +10,7 @@
 
   <!-- Estadísticas -->
   <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-    @for (stat of stats; track stat.title) {
+    @for (stat of stats(); track stat.title) {
       <div class="rounded-lg! border! border-slate-200! bg-white! px-4! py-4! shadow-sm!">
         <header class="flex items-center justify-between">
           <div>
@@ -19,7 +19,11 @@
             </p>
 
             <h2 class="mt-1 text-xl font-semibold text-slate-900">
-              {{ stat.value }}
+              @if (summaryResource.isLoading()) {
+                <span class="inline-block h-5 w-20 animate-pulse rounded bg-slate-200"></span>
+              } @else {
+                {{ stat.value }}
+              }
             </h2>
           </div>
 
@@ -47,7 +51,7 @@
         <tui-textfield tuiChevron>
           <input formControlName="category" placeholder="Categoría" tuiSelect />
 
-          <tui-data-list-wrapper *tuiDropdown [items]="categories" />
+          <tui-data-list-wrapper *tuiDropdown [items]="categories()" />
         </tui-textfield>
 
         <!-- Buscar -->
@@ -74,6 +78,8 @@
           tuiLink
           type="button"
           [style.margin-inline-start]="'auto'"
+          [disabled]="!filteredRecords().length"
+          (click)="download()"
         >
           Descargar
         </button>
@@ -156,7 +162,7 @@
         </section>
       </div>
     } @else if (medicalRecordsResource.value(); as page) {
-      @for (record of page.content; track record.id) {
+      @for (record of filteredRecords(); track record.id) {
         <div tuiAppearance="secondary" tuiCardLarge>
           <!-- Header -->
           <header tuiHeader>
@@ -182,7 +188,7 @@
               <span
                 class="rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700"
               >
-                {{ record.status === 'COMPLETED' ? 'Completada' : record.status }}
+                {{ statusLabel(record.status) }}
               </span>
             </aside>
           </header>

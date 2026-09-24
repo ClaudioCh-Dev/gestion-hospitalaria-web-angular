@@ -13,6 +13,7 @@ import { AppointmentTypeService } from '../appointment-type.service';
 import { APPOINTMENT_TYPES_MOCK } from '../../mocks';
 
 import { ErrorHandlerService } from '@core/services/error-handler.service';
+import { BillingTariffService } from '../../../billing/services/billing-tariff.service';
 import { ProblemDetailMicroservice } from '@shared/models/problem.type';
 
 @Injectable()
@@ -20,6 +21,9 @@ export class AppointmentTypeMockService
   extends AppointmentTypeService {
 
   private readonly errorHandler = inject(ErrorHandlerService);
+
+  // Simula el evento appointment-created-type que billing-ms consume para crear la tarifa
+  private readonly tariffService = inject(BillingTariffService);
 
   private readonly MOCK_DELAY = 1500;
 
@@ -134,6 +138,14 @@ export class AppointmentTypeMockService
       ...current,
       newAppointmentType,
     ]);
+
+    this.tariffService
+      .create({
+        appointmentTypeId: id,
+        price: request.price,
+        currency: 'PEN',
+      })
+      .subscribe();
 
     return of(newAppointmentType).pipe(
       delay(this.MOCK_DELAY),

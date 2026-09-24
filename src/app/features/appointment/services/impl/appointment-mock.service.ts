@@ -237,6 +237,19 @@ export class AppointmentMockService extends AppointmentService {
       );
     }
 
+    // Igual que el backend: completada y cancelada son estados finales
+    if (
+      existing.status === AppointmentStatus.COMPLETED ||
+      existing.status === AppointmentStatus.CANCELLED
+    ) {
+      return this.handleError(
+        409,
+        'Estado no modificable',
+        'No se puede cambiar el estado de una cita completada o cancelada.',
+        'APPOINTMENT_STATUS_CANNOT_CHANGE',
+      );
+    }
+
     const updatedAppointment: AppointmentResponse = {
       ...existing,
       status: request.status,

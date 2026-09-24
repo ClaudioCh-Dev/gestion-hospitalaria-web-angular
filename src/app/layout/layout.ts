@@ -73,6 +73,13 @@ export class Layout {
     },
     {
       item: {
+        label: 'Tipos de cita',
+        icon: '@tui.tag',
+        route: '/appointment-types',
+      },
+    },
+    {
+      item: {
         label: 'Historias clínicas',
         icon: '@tui.file-text',
         route: '/medical-records',

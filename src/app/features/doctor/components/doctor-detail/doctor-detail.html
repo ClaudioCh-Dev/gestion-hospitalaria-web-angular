@@ -74,7 +74,7 @@
             </span>
 
             <p class="ml-6">
-              {{ currentDoctor.specialty.name }}
+              {{ currentDoctor.specialtyName }}
             </p>
           </div>
 
@@ -96,13 +96,15 @@
 
           <div>
             <span class="flex items-center gap-1 text-sm text-gray-500">
-              <tui-icon icon="@tui.calendar" />
+              <tui-icon icon="@tui.clock" />
 
-              Fecha de registro
+              Horario
             </span>
 
             <p class="ml-6">
-              {{ currentDoctor.createdAt }}
+              {{ currentDoctor.scheduleStart?.slice(0, 5) ?? '--:--' }}
+              -
+              {{ currentDoctor.scheduleEnd?.slice(0, 5) ?? '--:--' }}
             </p>
           </div>
 
@@ -116,7 +118,7 @@
             </span>
 
             <p class="ml-6">
-              {{ currentDoctor.specialty.description }}
+              {{ specialtyDescription() || 'Sin descripción' }}
             </p>
           </div>
         </div>

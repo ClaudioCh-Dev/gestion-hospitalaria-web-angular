@@ -1,0 +1,148 @@
+<div class="flex w-full flex-col gap-5">
+  <!-- Header -->
+  <div class="flex flex-wrap items-center justify-between gap-4">
+    <div>
+      <h1 class="text-lg font-semibold text-slate-900">Tipos de cita y tarifas</h1>
+      <p class="text-sm text-slate-500">
+        Define los servicios que se pueden agendar y su precio de facturación.
+      </p>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <button
+        tuiButton
+        type="button"
+        size="s"
+        appearance="flat"
+        [iconStart]="showInactive() ? '@tui.eye-off' : '@tui.eye'"
+        (click)="toggleInactive()"
+      >
+        {{ showInactive() ? 'Ocultar inactivos' : 'Mostrar inactivos' }}
+      </button>
+
+      <button
+        tuiButton
+        type="button"
+        size="s"
+        appearance="primary"
+        iconStart="@tui.plus"
+        [disabled]="resource.isLoading()"
+        (click)="create()"
+      >
+        Nuevo tipo
+      </button>
+    </div>
+  </div>
+
+  @if (tariffsUnavailable()) {
+    <div class="rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+      No se pudieron cargar las tarifas. Los precios no están disponibles por el momento.
+    </div>
+  }
+
+  <!-- Error -->
+  @if (resource.error()) {
+    <div
+      class="flex w-full items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700"
+    >
+      <div class="flex flex-col">
+        <span class="font-medium">Error al cargar los tipos de cita</span>
+        <span class="text-sm">Ocurrió un problema al obtener la información.</span>
+      </div>
+
+      <button tuiButton size="s" appearance="secondary" type="button" (click)="resource.reload()">
+        Reintentar
+      </button>
+    </div>
+  } @else {
+    <tui-loader [overlay]="true" [loading]="resource.isLoading()">
+      <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+        <table tuiTable size="m" class="w-full">
+          <thead>
+            <tr>
+              <th tuiTh>Tipo de cita</th>
+              <th tuiTh>Precio</th>
+              <th tuiTh>Estado</th>
+              <th tuiTh>Acciones</th>
+            </tr>
+          </thead>
+
+          <tbody tuiTbody>
+            @for (row of rows(); track row.appointmentType.id) {
+              <tr>
+                <td tuiTd>
+                  <span tuiTitle>
+                    {{ row.appointmentType.title }}
+                    <span tuiSubtitle>{{ row.appointmentType.description }}</span>
+                  </span>
+                </td>
+
+                <td tuiTd>
+                  @if (row.tariff) {
+                    <span class="font-medium text-slate-900">
+                      {{ row.tariff.price | currency: row.tariff.currency : 'symbol-narrow' : '1.2-2' }}
+                    </span>
+                  } @else {
+                    <span tuiBadge appearance="warning" size="s">Sin tarifa</span>
+                  }
+                </td>
+
+                <td tuiTd>
+                  <span
+                    tuiBadge
+                    tuiStatus
+                    size="s"
+                    [appearance]="row.appointmentType.active ? 'positive' : 'negative'"
+                  >
+                    {{ row.appointmentType.active ? 'Activo' : 'Inactivo' }}
+                  </span>
+                </td>
+
+                <td tuiTd>
+                  <div class="flex items-center gap-1">
+                    <button
+                      tuiIconButton
+                      type="button"
+                      size="xs"
+                      appearance="action"
+                      iconStart="@tui.pencil"
+                      (click)="edit(row)"
+                    >
+                      Editar
+                    </button>
+
+                    @if (row.appointmentType.active) {
+                      <button
+                        tuiIconButton
+                        type="button"
+                        size="xs"
+                        appearance="action-destructive"
+                        iconStart="@tui.ban"
+                        [loading]="deactivatingId() === row.appointmentType.id"
+                        (click)="deactivate(row)"
+                      >
+                        Desactivar
+                      </button>
+                    }
+                  </div>
+                </td>
+              </tr>
+            } @empty {
+              @if (!resource.isLoading()) {
+                <tr>
+                  <td class="py-10 text-center text-sm text-slate-400" colspan="4">
+                    No hay tipos de cita registrados.
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+        </table>
+      </div>
+    </tui-loader>
+
+    <p class="text-xs text-slate-400">
+      {{ activeCount() }} tipos activos · los tipos inactivos no se ofrecen al crear una cita.
+    </p>
+  }
+</div>

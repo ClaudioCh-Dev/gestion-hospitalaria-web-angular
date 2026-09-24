@@ -95,6 +95,8 @@ export class PatientTableComponent {
 
   readonly more = output<PatientResponse>();
 
+  readonly remove = output<PatientResponse>();
+
   readonly closeDetail = output<void>();
 
   // ============================

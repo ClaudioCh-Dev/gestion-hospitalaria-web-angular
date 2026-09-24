@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -23,15 +24,22 @@ import {
 } from '@taiga-ui/core';
 
 import {
+  TUI_CONFIRM,
   TuiComboBox,
   TuiDataListWrapper,
   TuiItemsWithMore,
   TuiSelect,
+  type TuiConfirmData,
 } from '@taiga-ui/kit';
+
+import { filter, switchMap } from 'rxjs';
 
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 
-import { PatientDetailResponse, PatientRequest, PatientResponse } from '../../interfaces';
+import { Gender, PatientDetailResponse, PatientRequest, PatientResponse } from '../../interfaces';
+
+import { NotificationService } from '@core/services/alert-notification.service';
+import { withNotification } from '@shared/operators/with-notification';
 
 import { PatientService } from '@patients/services/patient.service';
 
@@ -69,6 +77,7 @@ export class PatientCrud {
 
   private readonly patientService = inject(PatientService);
   private readonly dialogs = inject(TuiDialogService);
+  private readonly notificationService = inject(NotificationService);
 
   protected readonly loadingPatientId = signal<number | null>(null);
 
@@ -87,6 +96,14 @@ export class PatientCrud {
   protected readonly sizeOptions = [10, 50, 100];
 
   // ============================
+  // Filtros
+  // ============================
+
+  protected readonly search = signal('');
+
+  protected readonly gender = signal<Gender | null>(null);
+
+  // ============================
   // Pacientes
   // ============================
 
@@ -94,13 +111,32 @@ export class PatientCrud {
     params: () => ({
       page: this.page(),
       size: this.size(),
+      gender: this.gender() ?? undefined,
     }),
 
     stream: (resource) =>
       this.patientService.findAll(
         resource.params.page,
         resource.params.size,
+        resource.params.gender,
       ),
+  });
+
+  // El backend solo filtra por género: la búsqueda por texto se aplica sobre la página cargada
+  protected readonly filteredPatients = computed(() => {
+    const patients = this.patientsResource.value()?.content ?? [];
+    const term = this.search().toLowerCase();
+
+    if (!term) {
+      return patients;
+    }
+
+    return patients.filter((patient) =>
+      [patient.firstName, patient.lastName, patient.documentNumber, patient.email ?? '']
+        .join(' ')
+        .toLowerCase()
+        .includes(term),
+    );
   });
 
   // ============================
@@ -201,9 +237,56 @@ export class PatientCrud {
   // ============================
 
   protected onFiltersChange(filters: PatientFilters): void {
-    console.log('Filtros cambiados:', filters);
+    this.search.set(filters.search);
 
-    this.page.set(0);
+    if (filters.gender !== this.gender()) {
+      this.gender.set(filters.gender);
+      this.page.set(0);
+    }
+  }
+
+  // ============================
+  // Eliminar paciente
+  // ============================
+
+  protected deletePatient(patient: PatientResponse): void {
+    const data: TuiConfirmData = {
+      content: `Se eliminará a <strong>${patient.firstName} ${patient.lastName}</strong> (DNI ${patient.documentNumber}). Esta acción no se puede deshacer.`,
+      yes: 'Eliminar',
+      no: 'Cancelar',
+      appearance: 'primary-destructive',
+    };
+
+    this.dialogs
+      .open<boolean>(TUI_CONFIRM, {
+        label: '¿Eliminar paciente?',
+        size: 's',
+        data,
+      })
+      .pipe(
+        filter(Boolean),
+        switchMap(() => {
+          this.loadingPatientId.set(patient.id);
+
+          return this.patientService.delete(patient.id).pipe(
+            withNotification(this.notificationService, {
+              success: 'Paciente eliminado correctamente',
+            }),
+          );
+        }),
+      )
+      .subscribe({
+        next: () => {
+          this.loadingPatientId.set(null);
+
+          if (this.selectedPatient()?.id === patient.id) {
+            this.selectedPatient.set(null);
+          }
+
+          this.patientsResource.reload();
+        },
+        error: () => this.loadingPatientId.set(null),
+      });
   }
 
   // ============================

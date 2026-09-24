@@ -18,11 +18,7 @@
     <tui-textfield tuiChevron tuiTextfieldSize="s" [tuiTextfieldCleaner]="false">
       <input tuiSelect [(ngModel)]="specialty" (ngModelChange)="applyFilters()" />
 
-      <tui-data-list-wrapper
-        *tuiDropdown
-        [items]="specialties"
-        //[itemContent]="itemContent"
-      />
+      <tui-data-list-wrapper *tuiDropdown [items]="specialties()" />
     </tui-textfield>
   </label>
 </div>

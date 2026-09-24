@@ -28,4 +28,8 @@ export class SpecialtyStore {
     this._specialties.set(specialties);
     this.loaded = true;
   }
+
+  add(specialty: SpecialtyResponse): void {
+    this._specialties.update((specialties) => [...specialties, specialty]);
+  }
 }

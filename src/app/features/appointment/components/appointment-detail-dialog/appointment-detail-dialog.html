@@ -1,0 +1,147 @@
+<div class="flex flex-col gap-5">
+  <!-- Estado -->
+  <div class="flex items-center justify-between">
+    <span class="text-xs text-slate-400">Cita #{{ appointment().id }}</span>
+
+    <span tuiBadge tuiStatus size="m" [appearance]="statusAppearances[appointment().status]">
+      {{ statusLabels[appointment().status] }}
+    </span>
+  </div>
+
+  <!-- Información -->
+  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div>
+      <span class="flex items-center gap-1 text-xs text-slate-500">
+        <tui-icon icon="@tui.user" />
+        Paciente
+      </span>
+
+      <p class="mt-1 text-sm font-medium text-slate-900">
+        @if (patientResource.isLoading()) {
+          <span class="inline-block h-3 w-32 animate-pulse rounded bg-slate-200"></span>
+        } @else if (patientResource.value(); as patient) {
+          {{ patient.firstName }} {{ patient.lastName }}
+          <span class="block text-xs font-normal text-slate-400">DNI {{ patient.documentNumber }}</span>
+        } @else {
+          Paciente #{{ appointment().patientId }}
+        }
+      </p>
+    </div>
+
+    <div>
+      <span class="flex items-center gap-1 text-xs text-slate-500">
+        <tui-icon icon="@tui.stethoscope" />
+        Médico
+      </span>
+
+      <p class="mt-1 text-sm font-medium text-slate-900">
+        @if (doctor) {
+          {{ doctor.firstName }} {{ doctor.lastName }}
+          <span class="block text-xs font-normal text-slate-400">{{ doctor.specialtyName }}</span>
+        } @else {
+          Médico #{{ appointment().doctorId }}
+        }
+      </p>
+    </div>
+
+    <div>
+      <span class="flex items-center gap-1 text-xs text-slate-500">
+        <tui-icon icon="@tui.calendar" />
+        Fecha
+      </span>
+
+      <p class="mt-1 text-sm font-medium capitalize text-slate-900">
+        {{ appointment().scheduledAt | date: 'EEEE d MMMM y' : undefined : 'es-PE' }}
+      </p>
+    </div>
+
+    <div>
+      <span class="flex items-center gap-1 text-xs text-slate-500">
+        <tui-icon icon="@tui.clock" />
+        Horario
+      </span>
+
+      <p class="mt-1 text-sm font-medium text-slate-900">
+        {{ appointment().scheduledAt | date: 'HH:mm' }} - {{ endTime() | date: 'HH:mm' }}
+        <span class="text-xs font-normal text-slate-400">({{ appointment().durationMinutes }} min)</span>
+      </p>
+    </div>
+
+    <div class="sm:col-span-2">
+      <span class="flex items-center gap-1 text-xs text-slate-500">
+        <tui-icon icon="@tui.file-text" />
+        Motivo
+      </span>
+
+      <p class="mt-1 text-sm text-slate-900">{{ appointment().reason || 'Consulta médica' }}</p>
+    </div>
+
+    @if (appointment().notes) {
+      <div class="sm:col-span-2">
+        <span class="flex items-center gap-1 text-xs text-slate-500">
+          <tui-icon icon="@tui.notebook-pen" />
+          Notas
+        </span>
+
+        <p class="mt-1 text-sm text-slate-900">{{ appointment().notes }}</p>
+      </div>
+    }
+  </div>
+
+  <!-- Confirmación de acción -->
+  @if (pendingAction(); as action) {
+    <div class="rounded-lg border border-slate-200 bg-slate-50 p-4">
+      <p class="text-sm font-medium text-slate-800">{{ actionConfig[action].confirmLabel }}</p>
+
+      <div class="mt-3 flex justify-end gap-2">
+        <button
+          tuiButton
+          type="button"
+          size="s"
+          appearance="flat"
+          [disabled]="saving()"
+          (click)="dismissAction()"
+        >
+          No
+        </button>
+
+        <button
+          tuiButton
+          type="button"
+          size="s"
+          [appearance]="actionConfig[action].confirmAppearance"
+          [loading]="saving()"
+          (click)="executeAction()"
+        >
+          Sí, {{ actionConfig[action].label | lowercase }}
+        </button>
+      </div>
+    </div>
+  } @else {
+    <!-- Acciones -->
+    <div class="flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-4">
+      @if (!availableActions().length) {
+        <span class="mr-auto text-xs text-slate-400">
+          Esta cita está en un estado final y no admite cambios.
+        </span>
+      }
+
+      @for (action of availableActions(); track action) {
+        <button
+          tuiButton
+          type="button"
+          size="s"
+          [appearance]="actionConfig[action].appearance"
+          [iconStart]="actionConfig[action].icon"
+          (click)="requestAction(action)"
+        >
+          {{ actionConfig[action].label }}
+        </button>
+      }
+
+      <button tuiButton type="button" size="s" appearance="outline" (click)="close()">
+        Cerrar
+      </button>
+    </div>
+  }
+</div>

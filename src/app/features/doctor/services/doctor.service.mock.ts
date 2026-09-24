@@ -162,7 +162,7 @@ export class DoctorMockService extends DoctorService {
   ): Observable<PageResponse<DoctorResponse>> {
 
     const doctors = this._doctors().content.filter(
-      (doctor) => doctor.specialty.id === specialtyId,
+      (doctor) => doctor.specialtyId === specialtyId,
     );
 
     const totalElements = doctors.length;
@@ -198,8 +198,6 @@ export class DoctorMockService extends DoctorService {
   ): Observable<DoctorResponse> {
 
     const current = this._doctors();
-    const now = new Date().toISOString();
-
     const doctor: DoctorResponse = {
       id: Date.now(),
       licenseNumber: request.licenseNumber,
@@ -208,19 +206,15 @@ export class DoctorMockService extends DoctorService {
       email: request.email,
       phone: request.phone,
 
-      specialty: {
-        id: request.specialtyId,
-        name:
-          this.specialties.find(
-            (s) => s.id === request.specialtyId,
-          )?.name || 'Especialidad',
-        description: '',
-      },
+      specialtyId: request.specialtyId,
+      specialtyName:
+        this.specialties.find(
+          (s) => s.id === request.specialtyId,
+        )?.name || 'Especialidad',
 
       scheduleStart: request.scheduleStart,
       scheduleEnd: request.scheduleEnd,
       active: true,
-      createdAt: now,
     };
 
     this._doctors.set({
@@ -269,16 +263,11 @@ export class DoctorMockService extends DoctorService {
       email: request.email,
       phone: request.phone,
 
-      specialty: {
-        ...existing.specialty,
-
-        id: request.specialtyId,
-
-        name:
-          this.specialties.find(
-            (s) => s.id === request.specialtyId,
-          )?.name || 'Especialidad',
-      },
+      specialtyId: request.specialtyId,
+      specialtyName:
+        this.specialties.find(
+          (s) => s.id === request.specialtyId,
+        )?.name || 'Especialidad',
 
       scheduleStart: request.scheduleStart,
       scheduleEnd: request.scheduleEnd,
@@ -327,6 +316,8 @@ export class DoctorMockService extends DoctorService {
       name: request.name,
       description: request.description,
     };
+
+    this.specialties.push(specialty);
 
     return of(specialty).pipe(
       delay(this.MOCK_DELAY),

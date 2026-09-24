@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -18,7 +19,7 @@ import {
   toSignal,
 } from '@angular/core/rxjs-interop';
 
-import { map } from 'rxjs';
+import { map, startWith } from 'rxjs';
 
 import { tuiCountFilledControls } from '@taiga-ui/cdk';
 
@@ -53,13 +54,25 @@ import {
 import { BillingRecordService } from '../../services/billing-record.service';
 import { withNotification } from '@shared/operators/with-notification';
 import { NotificationService } from '@core/services/alert-notification.service';
+import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
+import { BillingDetailDialog } from '../../components/billing-detail-dialog/billing-detail-dialog';
+
+const ALL_STATUSES = 'Todos los estados';
+
+// Registros usados para calcular los totales del resumen
+const SUMMARY_SIZE = 1000;
+
+const STATUS_BY_LABEL: Record<string, BillingStatus> = {
+  Pendiente: 'PENDING',
+  Pagado: 'PAID',
+  Cancelado: 'CANCELLED',
+};
 
 interface Stat {
   title: string;
-  value: string;
+  value: number;
+  count: number;
   icon: string;
-  change: string;
-  description: string;
 }
 
 @Component({
@@ -131,7 +144,7 @@ export class BillingPage {
   // --------------------------------------------------
 
   protected readonly statuses = [
-    'Todos los estados',
+    ALL_STATUSES,
     'Pendiente',
     'Pagado',
     'Cancelado',
@@ -155,40 +168,50 @@ export class BillingPage {
     },
   );
 
+  private readonly formValue = toSignal(
+    this.form.valueChanges.pipe(
+      startWith(this.form.value),
+    ),
+    {
+      initialValue: this.form.value,
+    },
+  );
+
   // --------------------------------------------------
   // ESTADÍSTICAS
   // --------------------------------------------------
 
-  protected readonly stats: Stat[] = [
-    {
-      title: 'Total facturado',
-      value: 'S/ 18,450',
-      icon: '@tui.wallet',
-      change: '+15%',
-      description: 'este mes',
-    },
-    {
-      title: 'Pendiente de pago',
-      value: 'S/ 2,350',
-      icon: '@tui.clock',
-      change: '+8%',
-      description: 'por cobrar',
-    },
-    {
-      title: 'Pagado',
-      value: 'S/ 15,200',
-      icon: '@tui.circle-check',
-      change: '+12%',
-      description: 'este mes',
-    },
-    {
-      title: 'Cancelado',
-      value: 'S/ 900',
-      icon: '@tui.circle-x',
-      change: '-5%',
-      description: 'este mes',
-    },
-  ];
+  protected readonly summaryResource =
+    rxResource({
+      stream: () =>
+        this.billingService.findAll(
+          0,
+          SUMMARY_SIZE,
+        ),
+    });
+
+  protected readonly stats = computed<Stat[]>(() => {
+    const records =
+      this.summaryResource.value()?.content ?? [];
+
+    const total = (status?: BillingStatus) => {
+      const filtered = status
+        ? records.filter(record => record.status === status)
+        : records;
+
+      return {
+        value: filtered.reduce((sum, record) => sum + record.amount, 0),
+        count: filtered.length,
+      };
+    };
+
+    return [
+      { title: 'Total facturado', icon: '@tui.wallet', ...total() },
+      { title: 'Pendiente de pago', icon: '@tui.clock', ...total('PENDING') },
+      { title: 'Pagado', icon: '@tui.circle-check', ...total('PAID') },
+      { title: 'Cancelado', icon: '@tui.circle-x', ...total('CANCELLED') },
+    ];
+  });
 
   // --------------------------------------------------
   // RESOURCE
@@ -207,6 +230,46 @@ export class BillingPage {
           params.size,
         ),
     });
+
+  // --------------------------------------------------
+  // FILTROS (sobre la página cargada)
+  // --------------------------------------------------
+
+  protected readonly filteredRecords = computed(() => {
+    const records =
+      this.billingResource.value()?.content ?? [];
+
+    const { search, status, filter } =
+      this.formValue();
+
+    const term = (search ?? '').trim().replace('#', '');
+
+    const statusFilter =
+      STATUS_BY_LABEL[status ?? ''];
+
+    const result = records.filter(record =>
+      (!statusFilter || record.status === statusFilter) &&
+      (!term ||
+        [record.id, record.patientId, record.appointmentId]
+          .some(value => String(value).includes(term))),
+    );
+
+    const byDate = (record: BillingRecordResponse) =>
+      new Date(record.issuedAt).getTime();
+
+    switch (filter) {
+      case 'Fecha reciente':
+        return [...result].sort((a, b) => byDate(b) - byDate(a));
+      case 'Fecha antigua':
+        return [...result].sort((a, b) => byDate(a) - byDate(b));
+      case 'Mayor monto':
+        return [...result].sort((a, b) => b.amount - a.amount);
+      case 'Menor monto':
+        return [...result].sort((a, b) => a.amount - b.amount);
+      default:
+        return result;
+    }
+  });
 
   // --------------------------------------------------
   // HELPERS
@@ -282,14 +345,52 @@ export class BillingPage {
   // --------------------------------------------------
 
   protected searchBillings(): void {
-    console.log(
-      'Filtros:',
-      this.form.value,
+    this.billingResource.reload();
+    this.summaryResource.reload();
+  }
+
+  // --------------------------------------------------
+  // DESCARGAR CSV
+  // --------------------------------------------------
+
+  protected download(): void {
+    const header = [
+      'Factura',
+      'Cita',
+      'Paciente',
+      'Monto',
+      'Moneda',
+      'Estado',
+      'Emitida',
+      'Pagada',
+    ];
+
+    const rows = this.filteredRecords().map(record => [
+      record.id,
+      record.appointmentId,
+      record.patientId,
+      record.amount.toFixed(2),
+      record.currency,
+      this.getStatusLabel(record.status),
+      record.issuedAt,
+      record.paidAt ?? '',
+    ]);
+
+    const csv = [header, ...rows]
+      .map(row => row.join(','))
+      .join('\n');
+
+    const url = URL.createObjectURL(
+      new Blob([csv], { type: 'text/csv;charset=utf-8' }),
     );
 
-    this.page.set(0);
+    const link = document.createElement('a');
 
-    this.billingResource.reload();
+    link.href = url;
+    link.download = `facturacion-pagina-${this.page() + 1}.csv`;
+    link.click();
+
+    URL.revokeObjectURL(url);
   }
 
   // --------------------------------------------------
@@ -338,6 +439,7 @@ export class BillingPage {
           .subscribe({
             next: () => {
               this.billingResource.reload();
+              this.summaryResource.reload();
             },
           });
       },
@@ -351,9 +453,17 @@ export class BillingPage {
   protected viewDetail(
     record: BillingRecordResponse,
   ): void {
-    console.log(
-      'Ver detalle:',
-      record,
-    );
+    this.dialogs
+      .open(
+        new PolymorpheusComponent(
+          BillingDetailDialog,
+        ),
+        {
+          label: `Factura #${record.id}`,
+          size: 's',
+          data: record,
+        },
+      )
+      .subscribe();
   }
 }

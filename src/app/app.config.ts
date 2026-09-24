@@ -20,6 +20,9 @@ import { AppointmentTypeHttpService } from './features/appointment/services/impl
 import { BillingRecordService } from './features/billing/services/billing-record.service';
 import { BillingRecordMockService } from './features/billing/services/billing-record-mock.service';
 import { BillingRecordHttpService } from './features/billing/services/billing-record-http.service';
+import { BillingTariffService } from './features/billing/services/billing-tariff.service';
+import { BillingTariffMockService } from './features/billing/services/billing-tariff-mock.service';
+import { BillingTariffHttpService } from './features/billing/services/billing-tariff-http.service';
 import { MedicalRecordHttpService } from './features/medical-history/services/medical-record-http.service';
 import { MedicalRecordService } from './features/medical-history/services/medical-record.service';
 import { MedicalRecordMockService } from './features/medical-history/services/medical-record-mock.service';
@@ -74,6 +77,13 @@ export const appConfig: ApplicationConfig = {
       useClass: environment.useMocks
         ? BillingRecordMockService
         : BillingRecordHttpService,
+    },
+
+    {
+      provide: BillingTariffService,
+      useClass: environment.useMocks
+        ? BillingTariffMockService
+        : BillingTariffHttpService,
     },
 
     {

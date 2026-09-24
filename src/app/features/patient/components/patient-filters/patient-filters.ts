@@ -6,10 +6,11 @@ import { TuiButton, TuiInput, TuiTextfield, TuiLabel } from '@taiga-ui/core';
 
 import { TuiChevron, TuiDataListWrapper, TuiSelect } from '@taiga-ui/kit';
 import { GENDERS } from '../../constans/patient-options';
+import { Gender } from '../../interfaces';
 
 export interface PatientFilters {
   search: string;
-  gender: string | null;
+  gender: Gender | null;
 }
 
 @Component({
@@ -41,9 +42,11 @@ export class PatientFiltersComponent {
   readonly create = output<void>();
 
   protected applyFilters(): void {
+    const gender = GENDERS.find((option) => option.value === this.gender)?.id ?? null;
+
     this.filtersChange.emit({
-      search: this.search,
-      gender: this.gender,
+      search: this.search.trim(),
+      gender: gender as Gender | null,
     });
   }
 }

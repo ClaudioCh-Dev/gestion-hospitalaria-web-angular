@@ -83,3 +83,5 @@ connect.lock
 
 
 src/environments/*
+# Pendientes locales
+docs/PENDIENTES.md

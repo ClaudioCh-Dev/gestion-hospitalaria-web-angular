@@ -42,6 +42,12 @@ export const routes: Routes = [
             .then((m) => m.AppointmentCreatePage),
       },
       {
+        path: 'appointment-types',
+        loadComponent: () =>
+          import('./features/appointment/pages/appointment-types-page/appointment-types-page')
+            .then((m) => m.AppointmentTypesPage),
+      },
+      {
         path: 'medical-records',
         loadComponent: () =>
           import('./features/medical-history/pages/patient-history-page/patient-history-page')

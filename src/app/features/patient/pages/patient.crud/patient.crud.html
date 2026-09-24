@@ -56,13 +56,14 @@
   @if (!patientsResource.error()) {
 
     <app-patient-table
-      [patients]="patientsResource.value()?.content ?? []"
+      [patients]="filteredPatients()"
       [loading]="patientsResource.isLoading()"
       [(selected)]="selected"
       [loadingPatientId]="loadingPatientId()"
       [selectedPatient]="selectedPatient()"
       (edit)="editPatientModal($event)"
       (more)="morePatient($event)"
+      (remove)="deletePatient($event)"
       (closeDetail)="selectedPatient.set(null)"
     />
 

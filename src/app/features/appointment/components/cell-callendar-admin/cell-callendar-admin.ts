@@ -13,9 +13,11 @@ import { TuiDay } from '@taiga-ui/cdk';
 import {
   TuiButton,
   TuiCalendar,
+  TuiDialogService,
   TuiHint,
   TuiTextfield,
 } from '@taiga-ui/core';
+import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 import { TuiInputDate } from '@taiga-ui/kit';
 
 import { AppointmentService } from '../../services/appointment.service';
@@ -23,7 +25,12 @@ import { DoctorService } from '../../../doctor/services/doctor.service';
 
 import {
   AppointmentResponse,
+  AppointmentStatus,
 } from '../../interfaces';
+import {
+  AppointmentDetailData,
+  AppointmentDetailDialog,
+} from '../appointment-detail-dialog/appointment-detail-dialog';
 
 import {
   DoctorResponse,
@@ -52,6 +59,9 @@ export class CellCallendarAdmin {
 
   private readonly doctorService =
     inject(DoctorService);
+
+  private readonly dialogs =
+    inject(TuiDialogService);
 
   // =========================
   // DATE
@@ -322,6 +332,54 @@ export class CellCallendarAdmin {
     return this.appointmentColors[
       index % this.appointmentColors.length
     ];
+  }
+
+  // =========================
+  // FINAL STATUS
+  // =========================
+
+  protected isFinished(
+    appointment: AppointmentResponse,
+  ): boolean {
+
+    return (
+      appointment.status === AppointmentStatus.CANCELLED ||
+      appointment.status === AppointmentStatus.COMPLETED
+    );
+  }
+
+  // =========================
+  // APPOINTMENT DETAIL
+  // =========================
+
+  protected openAppointment(
+    appointment: AppointmentResponse,
+  ): void {
+
+    const data: AppointmentDetailData = {
+      appointment,
+      doctor: this.doctors.find(
+        doctor => doctor.id === appointment.doctorId,
+      ),
+    };
+
+    this.dialogs
+      .open<AppointmentResponse | null>(
+        new PolymorpheusComponent(
+          AppointmentDetailDialog,
+        ),
+        {
+          label: 'Detalle de la cita',
+          size: 'm',
+          data,
+        },
+      )
+      .subscribe(updated => {
+
+        if (updated) {
+          this.calendarResource.reload();
+        }
+      });
   }
 
   // =========================

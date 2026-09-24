@@ -1,0 +1,63 @@
+<div class="flex flex-col gap-5">
+  <div class="flex items-center justify-between">
+    <div>
+      <p class="text-xs text-slate-400">Monto</p>
+      <p class="text-2xl font-semibold text-slate-900">
+        {{ record.currency }} {{ record.amount | number: '1.2-2' }}
+      </p>
+    </div>
+
+    <span tuiBadge tuiStatus size="m" [appearance]="statusAppearances[record.status]">
+      {{ statusLabels[record.status] }}
+    </span>
+  </div>
+
+  <dl class="grid grid-cols-2 gap-4 border-t border-slate-100 pt-4 text-sm">
+    <div class="col-span-2">
+      <dt class="flex items-center gap-1 text-xs text-slate-500">
+        <tui-icon icon="@tui.user" />
+        Paciente
+      </dt>
+      <dd class="mt-1 font-medium text-slate-900">
+        @if (patientResource.isLoading()) {
+          <span class="inline-block h-3 w-32 animate-pulse rounded bg-slate-200"></span>
+        } @else if (patientResource.value(); as patient) {
+          {{ patient.firstName }} {{ patient.lastName }}
+          <span class="text-xs font-normal text-slate-400">· DNI {{ patient.documentNumber }}</span>
+        } @else {
+          Paciente #{{ record.patientId }}
+        }
+      </dd>
+    </div>
+
+    <div>
+      <dt class="flex items-center gap-1 text-xs text-slate-500">
+        <tui-icon icon="@tui.calendar" />
+        Cita
+      </dt>
+      <dd class="mt-1 font-medium text-slate-900">#{{ record.appointmentId }}</dd>
+    </div>
+
+    <div>
+      <dt class="flex items-center gap-1 text-xs text-slate-500">
+        <tui-icon icon="@tui.file-text" />
+        Emitida
+      </dt>
+      <dd class="mt-1 text-slate-900">{{ record.issuedAt | date: 'dd/MM/yyyy HH:mm' }}</dd>
+    </div>
+
+    <div>
+      <dt class="flex items-center gap-1 text-xs text-slate-500">
+        <tui-icon icon="@tui.credit-card" />
+        Pagada
+      </dt>
+      <dd class="mt-1 text-slate-900">
+        {{ record.paidAt ? (record.paidAt | date: 'dd/MM/yyyy HH:mm') : 'Sin pago registrado' }}
+      </dd>
+    </div>
+  </dl>
+
+  <div class="flex justify-end">
+    <button tuiButton type="button" size="s" appearance="outline" (click)="close()">Cerrar</button>
+  </div>
+</div>

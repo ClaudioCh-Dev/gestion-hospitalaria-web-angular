@@ -10,7 +10,7 @@
 
   <!-- Estadísticas -->
   <div class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-    @for (stat of stats; track stat.title) {
+    @for (stat of stats(); track stat.title) {
       <div class="rounded-lg! border! border-slate-200! bg-white! px-4! py-4! shadow-sm!">
         <header class="flex items-center justify-between">
           <div>
@@ -19,8 +19,14 @@
             </p>
 
             <h2 class="mt-1 text-xl font-semibold text-slate-900">
-              {{ stat.value }}
+              @if (summaryResource.isLoading()) {
+                <span class="inline-block h-5 w-24 animate-pulse rounded bg-slate-200"></span>
+              } @else {
+                S/ {{ stat.value | number: '1.2-2' }}
+              }
             </h2>
+
+            <p class="mt-0.5 text-xs text-slate-400">{{ stat.count }} facturas</p>
           </div>
 
           <div
@@ -40,7 +46,7 @@
       <fieldset tuiTextfieldSize="s">
         <!-- Buscar -->
         <tui-textfield iconStart="@tui.search">
-          <input formControlName="search" placeholder="Paciente o número de cita..." tuiInput />
+          <input formControlName="search" placeholder="N° de factura, cita o paciente..." tuiInput />
         </tui-textfield>
 
         <!-- Estado -->
@@ -81,6 +87,8 @@
           tuiLink
           type="button"
           [style.margin-inline-start]="'auto'"
+          [disabled]="!filteredRecords().length"
+          (click)="download()"
         >
           Descargar
         </button>
@@ -144,8 +152,8 @@
     }
 
     <!-- Data -->
-    @else if (billingResource.value(); as page) {
-      @for (record of page.content; track record.id) {
+    @else if (billingResource.value()) {
+      @for (record of filteredRecords(); track record.id) {
         <div tuiAppearance="secondary" tuiCardLarge>
           <!-- Header -->
           <header tuiHeader>
@@ -308,7 +316,9 @@
 
             <h3 class="text-sm font-semibold text-slate-800">No hay registros de facturación</h3>
 
-            <p class="mt-1 text-sm text-slate-500">No se encontraron facturas para mostrar.</p>
+            <p class="mt-1 text-sm text-slate-500">
+              No se encontraron facturas con los filtros aplicados.
+            </p>
           </section>
         </div>
       }

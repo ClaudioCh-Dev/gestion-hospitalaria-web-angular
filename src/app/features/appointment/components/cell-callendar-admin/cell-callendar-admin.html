@@ -210,7 +210,7 @@
             <p
               class="mt-0.5 text-[10px] font-medium text-slate-400"
             >
-              {{ doctor.specialty?.name }}
+              {{ doctor.specialtyName }}
             </p>
 
           </div>
@@ -231,14 +231,18 @@
 
                 <!-- Appointment -->
 
-                <div
-                  class="absolute inset-y-0 left-0 z-10 overflow-hidden rounded-lg p-2 shadow-sm transition-all hover:z-20 hover:shadow-md"
+                <button
+                  type="button"
+                  class="absolute inset-y-0 left-0 z-10 cursor-pointer overflow-hidden rounded-lg p-2 text-left shadow-sm transition-all hover:z-20 hover:shadow-md"
                   [ngClass]="getAppointmentColor(appointment)"
+                  [class.opacity-50]="isFinished(appointment)"
+                  [class.line-through]="appointment.status === 'CANCELLED'"
                   [style.width]="
                     'calc(100% * ' +
                     getAppointmentCells(appointment) +
                     ')'
                   "
+                  (click)="openAppointment(appointment)"
                 >
 
                   <p
@@ -253,7 +257,7 @@
                     {{ appointment.reason || 'Consulta médica' }}
                   </p>
 
-                </div>
+                </button>
 
               }
 
@@ -282,8 +286,8 @@
     <div class="flex items-center gap-3">
 
       <img
-        [src]="doctor.avatar | avatarDefaultDoctor"
-        [alt]="doctor.name"
+        [src]="doctor.photoUrl | avatarDefaultDoctor"
+        [alt]="doctor.firstName"
         class="h-12 w-12 shrink-0 rounded-full object-cover ring-2 ring-slate-100"
       />
 
@@ -292,13 +296,13 @@
         <p
           class="truncate text-sm font-semibold text-slate-900"
         >
-          {{ doctor.name }}
+          {{ doctor.firstName }} {{ doctor.lastName }}
         </p>
 
         <p
           class="mt-0.5 text-xs text-slate-500"
         >
-          {{ doctor.specialty?.description }}
+          {{ doctor.specialtyName }}
         </p>
 
       </div>

@@ -1,10 +1,14 @@
-import { ChangeDetectionStrategy, Component, output } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, output } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
 
 import { TuiInput, TuiTextfield, TuiLabel, TuiButton } from '@taiga-ui/core';
 
 import { TuiChevron, TuiDataListWrapper, TuiSelect } from '@taiga-ui/kit';
+
+import { SpecialtyStore } from '../../store/specialty.store';
+
+const ALL_SPECIALTIES = 'Todas las especialidades';
 
 export interface DoctorFilters {
   search: string;
@@ -30,30 +34,32 @@ export interface DoctorFilters {
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class DoctorFiltersComponent {
+  private readonly specialtyStore = inject(SpecialtyStore);
+
   protected search = '';
 
-  protected readonly specialties = [
-    'Todas las especialidades',
-    'Cardiología',
-    'Pediatría',
-    'Dermatología',
-    'Neurología',
-    'Traumatología',
-    'Medicina Interna',
-    'Cirugía General',
-    'Ginecología',
-    'Oftalmología',
-  ];
+  protected readonly specialties = computed(() => [
+    ALL_SPECIALTIES,
+    ...this.specialtyStore.specialties().map((specialty) => specialty.name),
+  ]);
 
-  protected specialty: string | null = this.specialties[0];
+  protected specialty: string | null = ALL_SPECIALTIES;
 
   readonly filtersChange = output<DoctorFilters>();
 
-  protected applyFilters(): void {
-    this.filtersChange.emit({
-      search: this.search,
+  constructor() {
+    this.specialtyStore.load().catch(() => undefined);
+  }
 
-      specialtyId: 1,
+  protected applyFilters(): void {
+    const specialtyId =
+      this.specialtyStore
+        .specialties()
+        .find((specialty) => specialty.name === this.specialty)?.id ?? null;
+
+    this.filtersChange.emit({
+      search: this.search.trim(),
+      specialtyId,
     });
   }
 }

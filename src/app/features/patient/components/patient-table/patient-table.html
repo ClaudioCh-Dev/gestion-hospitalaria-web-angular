@@ -178,6 +178,19 @@
                     Más
                   </button>
                 }
+
+                <!-- Eliminar -->
+                <button
+                  appearance="action-destructive"
+                  iconStart="@tui.trash-2"
+                  size="xs"
+                  tuiIconButton
+                  type="button"
+                  [disabled]="loadingPatientId() === patient.id"
+                  (click)="remove.emit(patient)"
+                >
+                  Eliminar
+                </button>
               </span>
             </td>
           </tr>

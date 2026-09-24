@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -37,6 +38,8 @@ import {
 } from '../../components/doctor-filters/doctor-filters';
 
 import { DoctorTableComponent } from '../../components/doctor-table/doctor-table';
+
+import { SpecialtyModal } from '../../components/specialty-modal/specialty-modal';
 
 @Component({
   selector: 'app-doctor-crud',
@@ -90,6 +93,16 @@ export class DoctorCrud {
     signal<DoctorResponse | null>(null);
 
   // =====================================================
+  // FILTROS
+  // =====================================================
+
+  protected readonly search =
+    signal('');
+
+  protected readonly specialtyId =
+    signal<number | null>(null);
+
+  // =====================================================
   // RESOURCE
   // =====================================================
 
@@ -97,13 +110,46 @@ export class DoctorCrud {
     params: () => ({
       page: this.page(),
       size: this.size(),
+      specialtyId: this.specialtyId(),
     }),
 
-    stream: (resource) =>
-      this.doctorService.findAll(
-        resource.params.page,
-        resource.params.size,
-      ),
+    stream: ({ params }) =>
+      params.specialtyId === null
+        ? this.doctorService.findAll(
+            params.page,
+            params.size,
+          )
+        : this.doctorService.findBySpecialty(
+            params.specialtyId,
+            params.page,
+            params.size,
+          ),
+  });
+
+  // El backend no tiene búsqueda por texto: se filtra la página cargada
+  protected readonly filteredDoctors = computed(() => {
+    const doctors =
+      this.doctorsResource.value()?.content ?? [];
+
+    const term =
+      this.search().toLowerCase();
+
+    if (!term) {
+      return doctors;
+    }
+
+    return doctors.filter((doctor) =>
+      [
+        doctor.firstName,
+        doctor.lastName,
+        doctor.licenseNumber,
+        doctor.specialtyName,
+        doctor.email ?? '',
+      ]
+        .join(' ')
+        .toLowerCase()
+        .includes(term),
+    );
   });
 
   // =====================================================
@@ -245,14 +291,30 @@ export class DoctorCrud {
   protected onFiltersChange(
     filters: DoctorFilters,
   ): void {
-    console.log(
-      'Filtros cambiados:',
-      filters,
-    );
+    this.search.set(filters.search);
 
-    this.page.set(0);
+    if (filters.specialtyId !== this.specialtyId()) {
+      this.specialtyId.set(filters.specialtyId);
+      this.page.set(0);
+    }
+  }
 
-    this.doctorsResource.reload();
+  // =====================================================
+  // CREAR ESPECIALIDAD
+  // =====================================================
+
+  protected createSpecialtyModal(): void {
+    this.dialogs
+      .open(
+        new PolymorpheusComponent(
+          SpecialtyModal,
+        ),
+        {
+          label: 'Nueva especialidad',
+          size: 'm',
+        },
+      )
+      .subscribe();
   }
 
   // =====================================================

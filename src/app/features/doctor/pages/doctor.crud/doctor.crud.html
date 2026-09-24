@@ -10,6 +10,18 @@
       />
     </div>
 
+    <!-- Crear especialidad -->
+    <button
+      tuiButton
+      type="button"
+      iconStart="@tui.plus"
+      size="s"
+      appearance="secondary"
+      (click)="createSpecialtyModal()"
+    >
+      Nueva especialidad
+    </button>
+
     <!-- Crear doctor -->
     <button
       tuiButton
@@ -26,7 +38,7 @@
 
   <!-- Tabla -->
   <app-doctor-table
-    [doctors]="doctorsResource.value()?.content ?? []"
+    [doctors]="filteredDoctors()"
     [loading]="doctorsResource.isLoading()"
     [loadingDoctorId]="loadingDoctorId()"
     [loadingAction]="loadingAction()"

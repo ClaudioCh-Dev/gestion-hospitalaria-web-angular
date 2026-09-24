@@ -187,7 +187,7 @@ export class ModalCreateEdit {
         doctor.phone ?? '',
 
       specialtyId:
-        doctor.specialty?.id ?? null,
+        doctor.specialtyId ?? null,
 
       scheduleStart:
         doctor.scheduleStart ?? '',

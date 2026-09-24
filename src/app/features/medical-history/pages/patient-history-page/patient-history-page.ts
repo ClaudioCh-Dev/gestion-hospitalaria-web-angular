@@ -1,6 +1,7 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -17,7 +18,7 @@ import {
   toSignal,
 } from '@angular/core/rxjs-interop';
 
-import { map } from 'rxjs';
+import { map, startWith } from 'rxjs';
 import { tuiCountFilledControls } from '@taiga-ui/cdk';
 
 import {
@@ -45,13 +46,22 @@ import {
 import {
   MedicalRecordService,
 } from '../../services/medical-record.service';
+import { MedicalRecordResponse } from '../../interfaces/medical-record-response';
+
+// Registros usados para calcular el resumen y las categorías
+const SUMMARY_SIZE = 1000;
+
+const STATUS_LABELS: Record<string, string> = {
+  SCHEDULED: 'Programada',
+  CONFIRMED: 'Confirmada',
+  COMPLETED: 'Completada',
+  CANCELLED: 'Cancelada',
+};
 
 interface Stat {
   title: string;
   value: string;
   icon: string;
-  change: string;
-  description: string;
 }
 
 @Component({
@@ -90,20 +100,6 @@ export class MedicalRecords {
   protected readonly page = signal(0);
   protected readonly size = signal(4);
 
-  protected readonly categories = [
-    'Cardiología',
-    'Dermatología',
-    'Medicina General',
-    'Pediatría',
-    'Neurología',
-    'Traumatología',
-    'Ginecología',
-    'Oftalmología',
-    'Endocrinología',
-    'Urología',
-    'Nutrición',
-  ];
-
   protected readonly count = toSignal(
     this.form.valueChanges.pipe(
       map(() => tuiCountFilledControls(this.form)),
@@ -113,36 +109,37 @@ export class MedicalRecords {
     },
   );
 
-  protected readonly stats: Stat[] = [
-    {
-      title: 'Total consultas',
-      value: '128',
-      icon: '@tui.file-text',
-      change: '+12%',
-      description: 'este mes',
-    },
-    {
-      title: 'Pacientes atendidos',
-      value: '86',
-      icon: '@tui.users',
-      change: '+8%',
-      description: 'este mes',
-    },
-    {
-      title: 'Consultas completadas',
-      value: '114',
-      icon: '@tui.circle-check',
-      change: '+10%',
-      description: 'este mes',
-    },
-    {
-      title: 'Ingresos',
-      value: 'S/ 18,450',
-      icon: '@tui.wallet',
-      change: '+15%',
-      description: 'este mes',
-    },
-  ];
+  private readonly formValue = toSignal(
+    this.form.valueChanges.pipe(startWith(this.form.value)),
+    { initialValue: this.form.value },
+  );
+
+  protected readonly summaryResource = rxResource({
+    stream: () => this.service.findAll(0, SUMMARY_SIZE),
+  });
+
+  protected readonly categories = computed(() =>
+    [...new Set(
+      (this.summaryResource.value()?.content ?? []).map(record => record.specialty),
+    )].sort(),
+  );
+
+  protected readonly stats = computed<Stat[]>(() => {
+    const records = this.summaryResource.value()?.content ?? [];
+
+    const patients = new Set(records.map(record => record.patientId)).size;
+
+    const completed = records.filter(record => record.status === 'COMPLETED').length;
+
+    const income = records.reduce((sum, record) => sum + (record.amount ?? 0), 0);
+
+    return [
+      { title: 'Total consultas', value: String(records.length), icon: '@tui.file-text' },
+      { title: 'Pacientes atendidos', value: String(patients), icon: '@tui.users' },
+      { title: 'Consultas completadas', value: String(completed), icon: '@tui.circle-check' },
+      { title: 'Ingresos', value: `S/ ${income.toFixed(2)}`, icon: '@tui.wallet' },
+    ];
+  });
 
   protected readonly medicalRecordsResource = rxResource({
     params: () => ({
@@ -177,11 +174,61 @@ export class MedicalRecords {
     this.page.update(page => page - 1);
   }
 
+  // Filtros aplicados sobre la página cargada
+  protected readonly filteredRecords = computed(() => {
+    const records = this.medicalRecordsResource.value()?.content ?? [];
+
+    const { search, category } = this.formValue();
+
+    const term = (search ?? '').trim().toLowerCase();
+
+    return records.filter(record =>
+      (!category || record.specialty === category) &&
+      (!term ||
+        [record.patientName, record.doctorName, record.reason]
+          .join(' ')
+          .toLowerCase()
+          .includes(term)),
+    );
+  });
+
+  protected statusLabel(status: string): string {
+    return STATUS_LABELS[status] ?? status;
+  }
+
   protected searchRecords(): void {
-    console.log('Filtros:', this.form.value);
-
-    this.page.set(0);
-
     this.medicalRecordsResource.reload();
+    this.summaryResource.reload();
+  }
+
+  protected download(): void {
+    const header = ['Cita', 'Fecha', 'Paciente', 'Médico', 'Especialidad', 'Motivo', 'Estado', 'Monto'];
+
+    const escape = (value: string | number) => `"${String(value ?? '').replace(/"/g, '""')}"`;
+
+    const rows = this.filteredRecords().map((record: MedicalRecordResponse) => [
+      record.appointmentId,
+      record.scheduledAt,
+      record.patientName,
+      record.doctorName,
+      record.specialty,
+      record.reason,
+      this.statusLabel(record.status),
+      record.amount,
+    ]);
+
+    const csv = [header, ...rows]
+      .map(row => row.map(escape).join(','))
+      .join('\n');
+
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+
+    const link = document.createElement('a');
+
+    link.href = url;
+    link.download = `historial-pagina-${this.page() + 1}.csv`;
+    link.click();
+
+    URL.revokeObjectURL(url);
   }
 }
