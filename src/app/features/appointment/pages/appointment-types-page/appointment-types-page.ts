@@ -28,6 +28,7 @@ import { withNotification } from '@shared/operators/with-notification';
 
 import { BillingTariffResponse } from '../../../billing/interfaces';
 import { BillingTariffService } from '../../../billing/services/billing-tariff.service';
+import { getAppointmentTypeColor } from '../../constants/appointment-type-colors';
 import { AppointmentTypeResponse } from '../../interfaces';
 import { AppointmentTypeService } from '../../services/appointment-type.service';
 import {
@@ -60,6 +61,8 @@ export class AppointmentTypesPage {
   private readonly tariffService = inject(BillingTariffService);
   private readonly dialogs = inject(TuiDialogService);
   private readonly notificationService = inject(NotificationService);
+
+  protected readonly getColor = getAppointmentTypeColor;
 
   protected readonly showInactive = signal(true);
 

@@ -3,4 +3,5 @@ export interface AppointmentTypeResponse {
   title: string;
   description: string;
   active: boolean;
+  color: string;
 }

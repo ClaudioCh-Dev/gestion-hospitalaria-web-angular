@@ -11,7 +11,11 @@ import { withNotification } from '@shared/operators/with-notification';
 
 import { BillingTariffResponse } from '../../../billing/interfaces';
 import { BillingTariffService } from '../../../billing/services/billing-tariff.service';
-import { AppointmentTypeResponse } from '../../interfaces';
+import {
+  APPOINTMENT_TYPE_COLORS,
+  DEFAULT_APPOINTMENT_TYPE_COLOR,
+} from '../../constants/appointment-type-colors';
+import { AppointmentTypeResponse, UpdateAppointmentTypeRequest } from '../../interfaces';
 import { AppointmentTypeService } from '../../services/appointment-type.service';
 
 export interface AppointmentTypeModalData {
@@ -55,6 +59,11 @@ export class AppointmentTypeModal {
       validators: [Validators.required, Validators.pattern(/^\d+(\.\d{1,2})?$/)],
     }),
 
+    color: new FormControl(DEFAULT_APPOINTMENT_TYPE_COLOR, {
+      nonNullable: true,
+      validators: [Validators.required],
+    }),
+
     active: new FormControl(true, { nonNullable: true }),
   });
 
@@ -83,6 +92,14 @@ export class AppointmentTypeModal {
       type: 'text',
       errorMessages: { required: 'La descripción es requerida' },
     },
+    {
+      name: 'color',
+      label: 'Color en la agenda',
+      placeholder: '',
+      type: 'color',
+      colors: APPOINTMENT_TYPE_COLORS,
+      errorMessages: { required: 'Seleccione un color' },
+    },
     ...(this.isEdit
       ? [
           {
@@ -103,6 +120,7 @@ export class AppointmentTypeModal {
         title: data.appointmentType.title,
         description: data.appointmentType.description,
         active: data.appointmentType.active,
+        color: data.appointmentType.color ?? DEFAULT_APPOINTMENT_TYPE_COLOR,
         price: data.tariff ? String(data.tariff.price) : '',
       });
     }
@@ -116,11 +134,11 @@ export class AppointmentTypeModal {
       return;
     }
 
-    const { title, description, price, active } = this.form.getRawValue();
+    const { title, description, price, active, color } = this.form.getRawValue();
 
     const request$ = this.context.data
-      ? this.update(this.context.data, { title, description, active }, Number(price))
-      : this.appointmentTypeService.create({ title, description, price: Number(price) });
+      ? this.update(this.context.data, { title, description, active, color }, Number(price))
+      : this.appointmentTypeService.create({ title, description, price: Number(price), color });
 
     request$
       .pipe(
@@ -143,7 +161,7 @@ export class AppointmentTypeModal {
   // Al editar, la tarifa se actualiza aparte (o se crea si aún no existe).
   private update(
     data: AppointmentTypeModalData,
-    request: { title: string; description: string; active: boolean },
+    request: UpdateAppointmentTypeRequest,
     price: number,
   ): Observable<unknown> {
     const id = data.appointmentType.id;

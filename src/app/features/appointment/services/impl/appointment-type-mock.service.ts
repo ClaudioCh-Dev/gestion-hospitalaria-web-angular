@@ -131,6 +131,7 @@ export class AppointmentTypeMockService
       title: request.title,
       description: request.description,
       active: true,
+      color: request.color,
     };
 
     this._appointmentTypes.update(current => [
@@ -194,6 +195,7 @@ export class AppointmentTypeMockService
       title: request.title,
       description: request.description,
       active: request.active,
+      color: request.color,
     };
 
     this._appointmentTypes.update(current =>

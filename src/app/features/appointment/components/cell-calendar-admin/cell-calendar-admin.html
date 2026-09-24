@@ -86,7 +86,7 @@
 @if (calendarResource.isLoading()) {
 
   <div
-    class="flex min-h-80 items-center justify-center rounded-xl border border-slate-300 bg-white shadow-sm"
+    class="flex min-h-80 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-md"
   >
     <div class="flex flex-col items-center gap-3">
 
@@ -107,7 +107,7 @@
 
 @else if (calendarResource.error()) {
 
-  <div class="flex min-h-80 items-center rounded-xl border border-slate-300 bg-white shadow-sm">
+  <div class="flex min-h-80 items-center rounded-xl border border-slate-200 bg-white shadow-md">
     <app-state-message
       variant="error"
       title="No se pudo cargar la agenda"
@@ -122,16 +122,28 @@
 
 @else {
 
+<div class="rounded-xl border border-slate-200 bg-white p-4 shadow-md">
  <div
-  class="h-[calc(100vh-250px)] min-h-0 overflow-auto rounded-xl border border-slate-300 bg-white shadow-sm"
+  class="h-[calc(100vh-282px)] min-h-0 overflow-auto rounded-lg border border-slate-300 bg-white"
 >
     <div class="w-max min-w-full">
 
       <!-- Header -->
 
       <div
-        class="grid grid-cols-[180px_repeat(29,minmax(48px,1fr))] border-b border-slate-300"
+        class="sticky top-0 z-[25] grid grid-cols-[180px_repeat(29,minmax(48px,1fr))] border-b border-slate-300"
       >
+
+        <!-- Current time badge -->
+
+        @if (showNowLine()) {
+          <div
+            class="pointer-events-none absolute bottom-0 z-[16] -translate-x-1/2 translate-y-1/2 rounded-full bg-(--tui-background-accent-1) px-1.5 py-0.5 text-[9px] font-semibold leading-none text-white shadow-sm"
+            [style.left]="'calc(180px + (100% - 180px) * ' + nowPercent()! / 100 + ')'"
+          >
+            {{ nowLabel() }}
+          </div>
+        }
 
         <!-- Doctor -->
 
@@ -165,6 +177,24 @@
 
 
       <!-- Doctors -->
+
+      <div class="relative">
+
+      <!-- Elapsed time overlay + current time line -->
+
+      @if (nowPercent() !== null) {
+        <div
+          class="pointer-events-none absolute inset-y-0 left-[180px] z-[15] bg-[repeating-linear-gradient(135deg,rgb(148_163_184/0.14)_0px,rgb(148_163_184/0.14)_1px,transparent_1px,transparent_8px)] bg-slate-50/50"
+          [style.width]="'calc((100% - 180px) * ' + nowPercent()! / 100 + ')'"
+        ></div>
+      }
+
+      @if (showNowLine()) {
+        <div
+          class="pointer-events-none absolute inset-y-0 z-[16] w-0.5 -translate-x-1/2 bg-(--tui-background-accent-1) shadow-[0_0_6px_rgba(37,99,235,0.45)]"
+          [style.left]="'calc(180px + (100% - 180px) * ' + nowPercent()! / 100 + ')'"
+        ></div>
+      }
 
       @for (doctor of doctors; track doctor.id) {
 
@@ -251,8 +281,11 @@
 
       }
 
+      </div>
+
     </div>
   </div>
+</div>
 
 }
 

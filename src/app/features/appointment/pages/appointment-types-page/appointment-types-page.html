@@ -91,10 +91,18 @@
             @for (row of rows(); track row.appointmentType.id) {
               <tr>
                 <td tuiTd>
-                  <span tuiTitle>
-                    {{ row.appointmentType.title }}
-                    <span tuiSubtitle>{{ row.appointmentType.description }}</span>
-                  </span>
+                  <div class="flex items-center gap-3">
+                    <span
+                      class="h-3 w-3 shrink-0 rounded-full"
+                      [class]="getColor(row.appointmentType.color).classes"
+                      [title]="'Color: ' + getColor(row.appointmentType.color).label"
+                    ></span>
+
+                    <span tuiTitle>
+                      {{ row.appointmentType.title }}
+                      <span tuiSubtitle>{{ row.appointmentType.description }}</span>
+                    </span>
+                  </div>
                 </td>
 
                 <td tuiTd>

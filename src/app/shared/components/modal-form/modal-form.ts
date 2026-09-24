@@ -34,7 +34,8 @@ export type FormFieldType =
   | 'email'
   | 'date'
   | 'select'
-  | 'checkbox';
+  | 'checkbox'
+  | 'color';
 
 export interface FormOption {
   value: string;
@@ -42,6 +43,13 @@ export interface FormOption {
 }
 
 export type SimpleOption = string;
+
+// Opción de un campo 'color': classes son las clases Tailwind del círculo de muestra
+export interface ColorOption {
+  value: string;
+  label: string;
+  classes: string;
+}
 
 export type SelectOption =
   | FormOption
@@ -54,6 +62,8 @@ export interface FormField {
   type: FormFieldType;
 
   options?: readonly SelectOption[];
+
+  colors?: readonly ColorOption[];
 
   errorMessages?: {
     required?: string;
@@ -165,6 +175,28 @@ export class ModalForm {
     }
 
     return option.id;
+  }
+
+  // =====================================================
+  // COLOR
+  // =====================================================
+
+  protected selectColor(
+    name: string,
+    value: string,
+  ): void {
+    const control = this.getControl(name);
+
+    control.setValue(value);
+    control.markAsDirty();
+  }
+
+  protected getColorLabel(
+    field: FormField,
+  ): string {
+    const value = this.getControl(field.name)?.value;
+
+    return field.colors?.find((color) => color.value === value)?.label ?? '';
   }
 
   // =====================================================

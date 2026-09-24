@@ -2,6 +2,8 @@ import { NgClass } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
+  DestroyRef,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -21,6 +23,8 @@ import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 import { TuiInputDate } from '@taiga-ui/kit';
 
 import { AppointmentService } from '../../services/appointment.service';
+import { AppointmentTypeService } from '../../services/appointment-type.service';
+import { getAppointmentTypeColor } from '../../constants/appointment-type-colors';
 import { DoctorService } from '../../../doctor/services/doctor.service';
 
 import {
@@ -62,8 +66,14 @@ export class CellCalendarAdmin {
   private readonly doctorService =
     inject(DoctorService);
 
+  private readonly appointmentTypeService =
+    inject(AppointmentTypeService);
+
   private readonly dialogs =
     inject(TuiDialogService);
+
+  private readonly destroyRef =
+    inject(DestroyRef);
 
   // =========================
   // DATE
@@ -96,6 +106,84 @@ export class CellCalendarAdmin {
     signal(TuiDay.currentLocal());
 
   // =========================
+  // CURRENT TIME
+  // =========================
+
+  private static readonly DAY_START_MINUTES = 8 * 60;
+
+  private static readonly DAY_END_MINUTES = 22 * 60 + 30;
+
+  private readonly now =
+    signal(new Date());
+
+  protected readonly isToday =
+    computed(() => {
+      const now = this.now();
+      const date = this.selectedDate();
+
+      return (
+        date.year === now.getFullYear() &&
+        date.month === now.getMonth() &&
+        date.day === now.getDate()
+      );
+    });
+
+  protected readonly nowLabel =
+    computed(() =>
+      [
+        this.now().getHours(),
+        this.now().getMinutes(),
+      ]
+        .map(value => value.toString().padStart(2, '0'))
+        .join(':'),
+    );
+
+  /** Porcentaje (0-100) del ancho de horas transcurrido; null si hoy no está visible o fuera del horario. */
+  protected readonly nowPercent =
+    computed(() => {
+      if (!this.isToday()) {
+        return null;
+      }
+
+      const now = this.now();
+      const minutes = now.getHours() * 60 + now.getMinutes();
+      const start = CellCalendarAdmin.DAY_START_MINUTES;
+      const end = CellCalendarAdmin.DAY_END_MINUTES;
+
+      if (minutes <= start) {
+        return null;
+      }
+
+      return Math.min(minutes - start, end - start) / (end - start) * 100;
+    });
+
+  protected readonly showNowLine =
+    computed(() => {
+      const percent = this.nowPercent();
+
+      return percent !== null && percent < 100;
+    });
+
+  constructor() {
+    this.startClock();
+  }
+
+  private startClock(): void {
+    let intervalId: ReturnType<typeof setInterval> | undefined;
+
+    // Sincroniza con el inicio del siguiente minuto y luego actualiza cada 60 s.
+    const timeoutId = setTimeout(() => {
+      this.now.set(new Date());
+      intervalId = setInterval(() => this.now.set(new Date()), 60_000);
+    }, 60_000 - (Date.now() % 60_000));
+
+    this.destroyRef.onDestroy(() => {
+      clearTimeout(timeoutId);
+      clearInterval(intervalId);
+    });
+  }
+
+  // =========================
   // CALENDAR RESOURCE
   // =========================
 
@@ -110,6 +198,8 @@ export class CellCalendarAdmin {
       stream: ({ params }) =>
         forkJoin({
           doctors: this.doctorService.findAll(0, 100),
+          appointmentTypes:
+            this.appointmentTypeService.findAll(),
           appointments:
             this.appointmentService.findByDate(
               params.date,
@@ -118,21 +208,16 @@ export class CellCalendarAdmin {
     });
 
   // =========================
-  // APPOINTMENT COLORS
+  // APPOINTMENT TYPE COLORS
   // =========================
 
-  protected readonly appointmentColors = [
-    'bg-blue-600 text-white',
-    'bg-emerald-600 text-white',
-    'bg-violet-600 text-white',
-    'bg-amber-500 text-white',
-    'bg-rose-600 text-white',
-    'bg-cyan-600 text-white',
-    'bg-indigo-600 text-white',
-    'bg-orange-600 text-white',
-    'bg-teal-600 text-white',
-    'bg-pink-600 text-white',
-  ];
+  private readonly typeColors =
+    computed(() =>
+      new Map(
+        (this.calendarResource.value()?.appointmentTypes ?? [])
+          .map(type => [type.id, type.color]),
+      ),
+    );
 
   // =========================
   // HOURS
@@ -326,14 +411,11 @@ export class CellCalendarAdmin {
     appointment: AppointmentResponse,
   ): string {
 
-    const index =
-      this.appointments.indexOf(
-        appointment,
-      );
-
-    return this.appointmentColors[
-      index % this.appointmentColors.length
-    ];
+    return getAppointmentTypeColor(
+      this.typeColors().get(
+        appointment.appointmentTypeId,
+      ),
+    ).classes;
   }
 
   // =========================

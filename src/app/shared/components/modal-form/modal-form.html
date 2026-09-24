@@ -5,7 +5,7 @@
 
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
     @for (field of fields(); track field.name) {
-      <div class="flex flex-col gap-1">
+      <div class="flex flex-col gap-1" [class.sm:col-span-2]="field.type === 'color'">
         <!-- =========================================== -->
         <!-- LABEL -->
         <!-- =========================================== -->
@@ -83,6 +83,45 @@
               {{ field.label }}
             </span>
           </label>
+        }
+
+        <!-- =========================================== -->
+        <!-- COLOR -->
+        <!-- =========================================== -->
+
+        @if (field.type === 'color') {
+          <div class="flex flex-wrap items-center gap-2" role="radiogroup" [attr.aria-label]="field.label">
+            @for (color of field.colors; track color.value) {
+              <button
+                type="button"
+                role="radio"
+                class="flex h-7 w-7 cursor-pointer items-center justify-center rounded-full ring-offset-2 transition-transform hover:scale-110"
+                [class]="color.classes"
+                [class.ring-2]="getControl(field.name).value === color.value"
+                [class.ring-slate-400]="getControl(field.name).value === color.value"
+                [attr.aria-checked]="getControl(field.name).value === color.value"
+                [attr.aria-label]="color.label"
+                [title]="color.label"
+                (click)="selectColor(field.name, color.value)"
+              >
+                @if (getControl(field.name).value === color.value) {
+                  <svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M20 6 9 17l-5-5" />
+                  </svg>
+                }
+              </button>
+            }
+
+            <span class="ml-1 text-xs text-slate-500">
+              {{ getColorLabel(field) }}
+            </span>
+          </div>
+
+          @if (hasError(field.name, 'required')) {
+            <div tuiBadge appearance="negative">
+              {{ getRequiredMessage(field) }}
+            </div>
+          }
         }
 
         <!-- =========================================== -->

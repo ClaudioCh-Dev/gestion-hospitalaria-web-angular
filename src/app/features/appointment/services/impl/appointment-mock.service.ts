@@ -15,7 +15,7 @@ import {
 
 import { AppointmentService } from '../appointment.service';
 
-import { APPOINTMENTS_MOCK } from '../../mocks/appointment.mocks';
+import { APPOINTMENTS_TODAY_MOCK } from '../../mocks/appointment.mocks';
 
 import { PageResponse } from '@shared/models/page.type';
 
@@ -32,7 +32,7 @@ export class AppointmentMockService extends AppointmentService {
 
   private readonly _appointments =
     signal<AppointmentResponse[]>(
-      structuredClone(APPOINTMENTS_MOCK),
+      structuredClone(APPOINTMENTS_TODAY_MOCK),
     );
 
   // =====================================================
@@ -193,6 +193,7 @@ export class AppointmentMockService extends AppointmentService {
       id,
       patientId: request.patientId,
       doctorId: request.doctorId,
+      appointmentTypeId: request.appointmentTypeId,
       scheduledAt: request.scheduledAt,
       durationMinutes: request.durationMinutes,
       reason: request.reason,
