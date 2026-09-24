@@ -125,6 +125,20 @@ Abre **http://localhost:4200**
 
 ---
 
+# 🧩 Módulos
+
+| Módulo             | Ruta                 | Qué permite                                                             |
+| ------------------ | -------------------- | ----------------------------------------------------------------------- |
+| Dashboard          | `/dashboard`         | Totales, citas de los últimos 7 días, pacientes por género y próximas citas |
+| Pacientes          | `/patients`          | Listar, filtrar, crear, editar, ver detalle y eliminar                  |
+| Médicos            | `/doctors`           | Listar, filtrar por especialidad, crear, editar y crear especialidades  |
+| Citas              | `/appointments`      | Agenda diaria por médico; confirmar, completar y cancelar citas         |
+| Tipos de cita      | `/appointment-types` | Crear, editar y desactivar tipos de cita con su tarifa                  |
+| Historias clínicas | `/medical-records`   | Historial de atenciones con filtros y exportación CSV                   |
+| Facturación        | `/billing`           | Facturas, cobro, resumen de montos y exportación CSV                    |
+
+---
+
 # 📸 Vistas de la aplicación
 
 ## Dashboard

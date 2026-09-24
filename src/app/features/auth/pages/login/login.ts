@@ -35,8 +35,8 @@ export class Login {
       next: () => {
         this.router.navigate(['/']);
       },
-      error: error => {
-        console.error('Error al iniciar sesión', error);
+      error: () => {
+        this.password = '';
       },
     });
   }

@@ -56,7 +56,7 @@
     </div>
   } @else {
     <tui-loader [overlay]="true" [loading]="resource.isLoading()">
-      <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white">
+      <div class="overflow-x-auto rounded-xl border border-slate-200 bg-white p-4 shadow-md">
         <table tuiTable size="m" class="w-full">
           <thead>
             <tr>
@@ -80,19 +80,19 @@
                 <td tuiTd>
                   @if (row.tariff) {
                     <span class="font-medium text-slate-900">
-                      {{ row.tariff.price | currency: row.tariff.currency : 'symbol-narrow' : '1.2-2' }}
+                      {{ row.tariff.price | currency: row.tariff.currency : 'symbol' : '1.2-2' : 'es-PE' }}
                     </span>
                   } @else {
-                    <span tuiBadge appearance="warning" size="s">Sin tarifa</span>
+                    <span tuiBadge appearance="warning" size="m" iconStart="@tui.triangle-alert">Sin tarifa</span>
                   }
                 </td>
 
                 <td tuiTd>
                   <span
                     tuiBadge
-                    tuiStatus
-                    size="s"
-                    [appearance]="row.appointmentType.active ? 'positive' : 'negative'"
+                    size="m"
+                    [appearance]="row.appointmentType.active ? 'positive' : 'neutral'"
+                    [iconStart]="row.appointmentType.active ? '@tui.circle-check' : '@tui.circle-minus'"
                   >
                     {{ row.appointmentType.active ? 'Activo' : 'Inactivo' }}
                   </span>

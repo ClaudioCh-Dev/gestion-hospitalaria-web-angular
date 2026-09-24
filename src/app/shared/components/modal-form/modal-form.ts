@@ -232,10 +232,6 @@ export class ModalForm {
   // =====================================================
 
   protected submitForm(): void {
-    console.log(
-      '📤 FORMULARIO FINAL:',
-      this.form().getRawValue(),
-    );
 
     this.submit.emit();
   }

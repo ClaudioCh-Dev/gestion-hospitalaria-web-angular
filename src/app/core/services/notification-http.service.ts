@@ -65,7 +65,6 @@ export class NotificationHttpService {
   // =====================================================
 
   httpError(problem: ProblemDetailMicroservice): void {
-    console.log('🚨 NotificationHttpService recibió:', problem);
 
     this.notifications
       .open(new PolymorpheusComponent(HttpNotificationContent), {

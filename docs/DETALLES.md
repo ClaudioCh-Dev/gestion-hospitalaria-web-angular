@@ -88,6 +88,7 @@ features/patient/
 | `/doctors`             | CRUD de doctores             | Lazy         |
 | `/appointments`        | Listado de citas             | Lazy         |
 | `/appointments/create` | Creación de cita             | Lazy         |
+| `/appointment-types`   | Tipos de cita y tarifas      | Lazy         |
 | `/medical-records`     | Historial médico             | Lazy         |
 | `/billing`             | Facturación                  | Lazy         |
 | `''` / `**`            | Redirige a `/dashboard`      | —            |
@@ -153,7 +154,7 @@ PatientService ───┤
                   └── PatientMockService ──→ Datos simulados
 ```
 
-Servicios con doble implementación: `PatientService`, `DoctorService`, `AppointmentService`, `AppointmentTypeService`, `BillingRecordService`, `MedicalRecordService`.
+Servicios con doble implementación: `PatientService`, `DoctorService`, `AppointmentService`, `AppointmentTypeService`, `BillingRecordService`, `BillingTariffService`, `MedicalRecordService`.
 
 Los componentes solo dependen del contrato, por lo que no cambian entre modos.
 
@@ -229,6 +230,15 @@ El **auth-server** no pasa por el gateway: el frontend lo llama directamente en 
 | PATCH  | `{api}/appointments/crud/{id}/status`      |
 | DELETE | `{api}/appointments/crud/{id}` (cancelar)  |
 
+Transiciones de estado (mismas reglas que appointment-ms):
+
+| Estado actual | Acciones disponibles              |
+| ------------- | --------------------------------- |
+| `SCHEDULED`   | Confirmar, completar, cancelar    |
+| `CONFIRMED`   | Completar, cancelar               |
+| `COMPLETED`   | Ninguna (estado final)            |
+| `CANCELLED`   | Ninguna (estado final)            |
+
 ### Tipos de cita — `AppointmentTypeHttpService`
 
 | Método | Endpoint                                          |
@@ -238,6 +248,17 @@ El **auth-server** no pasa por el gateway: el frontend lo llama directamente en 
 | POST   | `{api}/appointments/appointment-types`            |
 | PUT    | `{api}/appointments/appointment-types/{id}`       |
 | DELETE | `{api}/appointments/appointment-types/{id}` (desactivar) |
+
+### Tarifas — `BillingTariffHttpService`
+
+| Método | Endpoint                                 |
+| ------ | ---------------------------------------- |
+| GET    | `{api}/billings/tariffs`                 |
+| GET    | `{api}/billings/tariffs/{appointmentTypeId}` |
+| POST   | `{api}/billings/tariffs`                 |
+| PUT    | `{api}/billings/tariffs/{appointmentTypeId}` |
+
+Al crear un tipo de cita, appointment-ms publica `appointment-created-type` y billing-ms crea la tarifa. Al editar, el frontend actualiza la tarifa (o la crea si todavía no existe).
 
 ### Facturación — `BillingRecordHttpService`
 
@@ -317,10 +338,13 @@ npm run build
 | Validaciones          | ✅      |
 | Paginación            | ✅      |
 | Mock API              | ✅      |
-| Historial médico      | 🚧     |
-| Facturación           | 🚧     |
-| Integración REST      | 🚧     |
+| Estados de citas      | ✅      |
+| Tipos de cita/tarifas | ✅      |
+| Historial médico      | ✅      |
+| Facturación           | ✅      |
+| Integración REST      | ✅      |
 | Autenticación         | 🚧     |
+| Notificaciones        | 🚧     |
 
 ---
 

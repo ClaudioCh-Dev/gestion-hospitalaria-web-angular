@@ -1,4 +1,4 @@
-<div class="min-h-full bg-slate-50 p-3">
+<div class="p-3">
   <!-- Header -->
   <div class="mb-3 flex items-center justify-between">
     <div>
@@ -7,12 +7,25 @@
       <p class="mt-1 text-xs text-slate-500">Resumen general de la clínica</p>
     </div>
 
-    <div class="text-xs text-slate-500">Hoy, 18 de agosto</div>
+    <div class="flex items-center gap-2">
+      <span class="text-xs capitalize text-slate-500">Hoy, {{ todayLabel }}</span>
+
+      <button
+        tuiIconButton
+        type="button"
+        size="xs"
+        appearance="flat"
+        iconStart="@tui.refresh-cw"
+        (click)="reloadAll()"
+      >
+        Actualizar
+      </button>
+    </div>
   </div>
 
   <!-- Estadísticas -->
   <div class="mb-3 grid grid-cols-1 gap-2 md:grid-cols-2 xl:grid-cols-4">
-    @for (stat of stats; track stat.title) {
+    @for (stat of stats(); track stat.title) {
       <div class="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
         <div class="flex items-start justify-between">
           <div>
@@ -20,9 +33,13 @@
               {{ stat.title }}
             </p>
 
-            <p class="mt-1 text-lg font-semibold text-slate-900">
-              {{ stat.value }}
-            </p>
+            @if (statsLoading() && stat.value === '—') {
+              <div class="mt-2 h-5 w-20 animate-pulse rounded bg-slate-200"></div>
+            } @else {
+              <p class="mt-1 text-lg font-semibold text-slate-900">
+                {{ stat.value }}
+              </p>
+            }
           </div>
 
           <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
@@ -30,15 +47,9 @@
           </div>
         </div>
 
-        <div class="mt-2 flex items-center gap-1">
-          <span class="text-xs font-medium text-emerald-600">
-            {{ stat.change }}
-          </span>
-
-          <span class="text-xs text-slate-400">
-            {{ stat.description }}
-          </span>
-        </div>
+        <p class="mt-2 text-xs text-slate-400">
+          {{ stat.description }}
+        </p>
       </div>
     }
   </div>
@@ -46,98 +57,148 @@
   <!-- Charts -->
   <div class="mb-3 grid grid-cols-1 gap-3 xl:grid-cols-3">
     <!-- Citas -->
-    <div class="relative rounded-lg border border-slate-200 bg-white p-3 shadow-sm xl:col-span-2 min-h-55">
-      <!-- Texto arriba izquierda -->
-      <div class="absolute left-5 top-5 z-10">
+    <div class="rounded-lg border border-slate-200 bg-white p-3 shadow-sm xl:col-span-2">
+      <div class="mb-4">
         <h2 class="text-sm font-semibold text-slate-900">Citas médicas</h2>
 
-        <p class="text-xs text-slate-500">Citas registradas durante los últimos meses</p>
+        <p class="text-xs text-slate-500">Citas registradas en los últimos 7 días</p>
       </div>
 
-      <!-- Chart -->
-      <tui-axes
-        class="axes"
-        [horizontalLines]="3"
-        [tuiLineChartHint]="hintContent"
-        [verticalLines]="5"
-      >
-        <tui-line-chart
-          [dots]="true"
-          [height]="300"
-          [value]="appointmentsChart"
-          [width]="400"
-          [x]="0"
-          [xStringify]="stringify"
-          [y]="0"
-          [yStringify]="stringify"
-        />
-      </tui-axes>
+      @if (weekResource.isLoading()) {
+        <div class="h-50 animate-pulse rounded bg-slate-100"></div>
+      } @else if (weekResource.error()) {
+        <div class="flex h-50 flex-col items-center justify-center gap-2 text-center">
+          <p class="text-sm text-slate-500">No se pudieron cargar las citas.</p>
+
+          <button tuiButton type="button" size="s" appearance="secondary" (click)="weekResource.reload()">
+            Reintentar
+          </button>
+        </div>
+      } @else {
+        <tui-axes
+          class="h-50 w-full"
+          [axisXLabels]="chartLabels"
+          [horizontalLines]="4"
+          [tuiLineChartHint]="hintContent"
+          [verticalLines]="chartLabels.length - 1"
+        >
+          <tui-line-chart
+            [dots]="true"
+            [filled]="true"
+            [height]="chartHeight()"
+            [value]="appointmentsChart()"
+            [width]="chartLabels.length - 1"
+            [x]="0"
+            [xStringify]="xStringify"
+            [y]="0"
+            [yStringify]="yStringify"
+          />
+        </tui-axes>
+      }
     </div>
 
     <!-- Pacientes -->
-    <div class="rounded-lg border border-slate-200 bg-white p-3 shadow-sm items-center">
+    <div class="rounded-lg border border-slate-200 bg-white p-3 shadow-sm">
       <div class="mb-3">
         <h2 class="text-sm font-semibold text-slate-900">Pacientes</h2>
 
         <p class="text-xs text-slate-500">Distribución por género</p>
       </div>
-      <div class="flex justify-center">
-        <tui-pie-chart [value]="genderChart.map((item) => item.patients)" />
-      </div>
+
+      @if (patientsResource.isLoading()) {
+        <div class="mx-auto h-32 w-32 animate-pulse rounded-full bg-slate-100"></div>
+      } @else if (patientsResource.error()) {
+        <p class="py-10 text-center text-sm text-slate-500">No se pudieron cargar los pacientes.</p>
+      } @else {
+        <div class="flex justify-center">
+          <tui-pie-chart size="l" [value]="genderValues()" />
+        </div>
+
+        <ul class="mt-4 space-y-2">
+          @for (item of genderChart(); track item.label) {
+            <li class="flex items-center justify-between text-xs">
+              <span class="flex items-center gap-2 text-slate-600">
+                <span class="h-2.5 w-2.5 rounded-full" [style.background]="item.color"></span>
+                {{ item.label }}
+              </span>
+
+              <span class="font-medium text-slate-900">{{ item.value | number }}</span>
+            </li>
+          }
+        </ul>
+      }
     </div>
   </div>
 
-  <!-- Últimas citas -->
+  <!-- Próximas citas -->
   <div class="rounded-lg border border-slate-200 bg-white shadow-sm">
     <div class="flex items-center justify-between border-b border-slate-200 p-3">
       <div>
         <h2 class="text-sm font-semibold text-slate-900">Próximas citas</h2>
 
-        <p class="text-xs text-slate-500">Citas programadas para hoy</p>
+        <p class="text-xs text-slate-500">Citas pendientes de atender hoy</p>
       </div>
 
-      <button tuiButton appearance="secondary" size="s">Ver todas</button>
+      <a tuiButton appearance="secondary" size="s" routerLink="/appointments">Ver todas</a>
     </div>
 
     <div class="divide-y divide-slate-100">
-      @for (appointment of appointments; track appointment.patient) {
-        <div class="flex items-center justify-between px-3 py-2">
-          <div class="flex items-center gap-2">
-            <div
-              class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-xs font-medium text-blue-600"
-            >
-              {{ appointment.patient.charAt(0) }}
-            </div>
+      @if (weekResource.isLoading() || upcomingResource.isLoading()) {
+        @for (item of [1, 2, 3]; track item) {
+          <div class="flex animate-pulse items-center gap-2 px-3 py-3">
+            <div class="h-8 w-8 rounded-full bg-slate-200"></div>
 
-            <div>
-              <p class="text-sm font-medium text-slate-900">
-                {{ appointment.patient }}
-              </p>
-
-              <p class="text-xs text-slate-500">
-                {{ appointment.doctor }} · {{ appointment.specialty }}
-              </p>
+            <div class="space-y-2">
+              <div class="h-3 w-32 rounded bg-slate-200"></div>
+              <div class="h-2 w-48 rounded bg-slate-200"></div>
             </div>
           </div>
-
-          <div class="flex items-center gap-3">
-            <span class="text-xs font-medium text-slate-700">
-              {{ appointment.time }}
-            </span>
-
-            @if (appointment.status === 'Confirmada') {
-              <span
-                class="rounded-full bg-emerald-50 px-2 py-1 text-xs font-medium text-emerald-600"
+        }
+      } @else {
+        @for (item of upcoming(); track item.appointment.id) {
+          <div class="flex items-center justify-between px-3 py-2">
+            <div class="flex items-center gap-2">
+              <div
+                class="flex h-8 w-8 items-center justify-center rounded-full bg-blue-50 text-xs font-medium text-blue-600"
               >
-                Confirmada
+                {{ item.patient.charAt(0) }}
+              </div>
+
+              <div>
+                <p class="text-sm font-medium text-slate-900">
+                  {{ item.patient }}
+                </p>
+
+                <p class="text-xs text-slate-500">
+                  {{ item.doctor }}
+                  @if (item.specialty) {
+                    · {{ item.specialty }}
+                  }
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <span class="text-xs font-medium text-slate-700">
+                {{ item.appointment.scheduledAt | date: 'HH:mm' }}
               </span>
-            } @else {
-              <span class="rounded-full bg-amber-50 px-2 py-1 text-xs font-medium text-amber-600">
-                Pendiente
-              </span>
-            }
+
+              @if (item.appointment.status === 'CONFIRMED') {
+                <span tuiBadge size="m" appearance="positive" iconStart="@tui.circle-check">
+                  Confirmada
+                </span>
+              } @else {
+                <span tuiBadge size="m" appearance="info" iconStart="@tui.clock">Programada</span>
+              }
+            </div>
           </div>
-        </div>
+        } @empty {
+          <div class="flex flex-col items-center justify-center gap-1 py-8 text-center">
+            <tui-icon icon="@tui.calendar-check" class="text-slate-400" />
+
+            <p class="text-sm text-slate-500">No hay citas pendientes para hoy.</p>
+          </div>
+        }
       }
     </div>
   </div>

@@ -1,5 +1,7 @@
 import { provideTaiga } from '@taiga-ui/core';
 import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEsPe from '@angular/common/locales/es-PE';
 import { provideRouter, withViewTransitions } from '@angular/router';
 import { TUI_LANGUAGE, TUI_SPANISH_LANGUAGE } from '@taiga-ui/i18n';
 import { routes } from './app.routes';
@@ -29,6 +31,9 @@ import { MedicalRecordMockService } from './features/medical-history/services/me
 import { AppointmentService } from './features/appointment/services/appointment.service';
 import { AppointmentMockService } from './features/appointment/services/impl/appointment-mock.service';
 import { AppointmentHttpService } from './features/appointment/services/impl/appointment-http.service';
+
+// Formato de moneda (S/) y fechas en español de Perú para los pipes con locale 'es-PE'
+registerLocaleData(localeEsPe);
 
 export const appConfig: ApplicationConfig = {
   providers: [

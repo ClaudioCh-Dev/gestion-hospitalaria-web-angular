@@ -26,10 +26,6 @@ export class ErrorHandlerService {
       const problem =
         this.toProblemDetail(error);
 
-      console.log(
-        '🔥 PROBLEM NORMALIZADO:',
-        problem,
-      );
 
       this.notification.httpError(problem);
 

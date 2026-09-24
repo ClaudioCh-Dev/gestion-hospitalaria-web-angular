@@ -177,11 +177,8 @@ export class DoctorCrud {
 
           this.doctorsResource.reload();
         });
-    } catch (error) {
-      console.error(
-        'Error al cargar las especialidades',
-        error,
-      );
+    } catch {
+      // El error HTTP ya se notifica al usuario desde el interceptor
     }
   }
 
@@ -224,14 +221,9 @@ export class DoctorCrud {
 
           this.doctorsResource.reload();
         });
-    } catch (error) {
+    } catch {
       this.loadingDoctorId.set(null);
       this.loadingAction.set(null);
-
-      console.error(
-        'Error al preparar la edición del doctor',
-        error,
-      );
     }
   }
 
@@ -272,14 +264,9 @@ export class DoctorCrud {
           this.selectedDoctor.set(detail);
         },
 
-        error: (error) => {
+        error: () => {
           this.loadingDoctorId.set(null);
           this.loadingAction.set(null);
-
-          console.error(
-            'Error al obtener detalle del doctor',
-            error,
-          );
         },
       });
   }

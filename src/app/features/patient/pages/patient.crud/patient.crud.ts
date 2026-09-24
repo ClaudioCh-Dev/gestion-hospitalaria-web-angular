@@ -193,13 +193,8 @@ export class PatientCrud {
           });
       },
 
-      error: (error) => {
+      error: () => {
         this.loadingPatientId.set(null);
-
-        console.error(
-          'Error al obtener detalle del paciente',
-          error,
-        );
       },
     });
   }
@@ -220,14 +215,8 @@ export class PatientCrud {
         this.selectedPatient.set(detail);
       },
 
-      error: (error) => {
-
+      error: () => {
         this.loadingPatientId.set(null);
-
-        console.error(
-          'Error al obtener detalle del paciente',
-          error,
-        );
       },
     });
   }

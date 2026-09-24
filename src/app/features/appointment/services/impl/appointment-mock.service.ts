@@ -4,7 +4,7 @@ import { Injectable, inject, signal } from '@angular/core';
 
 import { Observable, of, throwError } from 'rxjs';
 
-import { delay } from 'rxjs/operators';
+import { delay, map } from 'rxjs/operators';
 
 import {
   AppointmentResponse,
@@ -55,7 +55,6 @@ export class AppointmentMockService extends AppointmentService {
       code,
     };
 
-    console.log('🧪 MOCK PROBLEM:', problem);
 
     const error = new HttpErrorResponse({
       status,
@@ -202,14 +201,12 @@ export class AppointmentMockService extends AppointmentService {
       createdAt: new Date().toISOString(),
     };
     
-    console.log("Before ",this._appointments());
 
     this._appointments.update(current => [
       ...current,
       newAppointment,
     ]);
 
-    console.log("After ",this._appointments());
 
     return of(newAppointment).pipe(
       delay(this.MOCK_DELAY),
@@ -234,6 +231,15 @@ export class AppointmentMockService extends AppointmentService {
         'Cita no encontrada',
         `Cita ${id} no encontrada`,
         'APPOINTMENT_NOT_FOUND',
+      );
+    }
+
+    if (existing.status === request.status) {
+      return this.handleError(
+        409,
+        'Estado sin cambios',
+        'No se puede cambiar el estado de la cita a el mismo estado',
+        'APPOINTMENT_STATUS_ALREADY_SET',
       );
     }
 
@@ -276,31 +282,11 @@ export class AppointmentMockService extends AppointmentService {
     id: number,
   ): Observable<void> {
 
-    const exists = this._appointments()
-      .some(item => item.id === id);
-
-    if (!exists) {
-      return this.handleError(
-        404,
-        'Cita no encontrada',
-        `Cita ${id} no encontrada`,
-        'APPOINTMENT_NOT_FOUND',
-      );
-    }
-
-    this._appointments.update(current =>
-      current.map(item =>
-        item.id === id
-          ? {
-              ...item,
-              status: AppointmentStatus.CANCELLED,
-            }
-          : item,
-      ),
-    );
-
-    return of(void 0).pipe(
-      delay(this.MOCK_DELAY),
+    // Igual que el backend: cancelar es un cambio de estado con las mismas validaciones
+    return this.updateStatus(id, {
+      status: AppointmentStatus.CANCELLED,
+    }).pipe(
+      map(() => undefined),
     );
   }
 }

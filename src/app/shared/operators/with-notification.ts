@@ -68,12 +68,7 @@ export function withNotification<T>(
       // ===================================================
 
       finalize(() => {
-
-        // Si tu NotificationService tiene
-        // hideLoading(), úsalo aquí.
-        //
-        // notificationService.hideLoading();
-
+        notificationService.hideLoading();
       }),
     );
   };

@@ -130,8 +130,9 @@ protected onLogout(): void {
     next: () => {
       this.router.navigate(['/login']);
     },
-    error: (error) => {
-      console.error('Error logging out:', error);
+    error: () => {
+      this.authService.clearAccessToken();
+      this.router.navigate(['/login']);
     }
   });
 }

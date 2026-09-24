@@ -68,7 +68,6 @@ export class PatientMockService extends PatientService {
       code,
     };
 
-    console.log('🧪 MOCK PROBLEM:', problem);
 
     const error = new HttpErrorResponse({
       status,

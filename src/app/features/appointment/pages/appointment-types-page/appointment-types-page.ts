@@ -20,7 +20,6 @@ import {
   TUI_CONFIRM,
   TuiBadge,
   TuiButtonLoading,
-  TuiStatus,
   type TuiConfirmData,
 } from '@taiga-ui/kit';
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
@@ -50,7 +49,6 @@ interface AppointmentTypeRow {
     TuiButton,
     TuiButtonLoading,
     TuiLoader,
-    TuiStatus,
     TuiTable,
     TuiTitle,
   ],

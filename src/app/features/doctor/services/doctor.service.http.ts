@@ -1,6 +1,6 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { catchError, Observable, tap, throwError } from 'rxjs';
+import { Observable, tap } from 'rxjs';
 
 import { PageResponse } from '../../../shared/models/page.type';
 import {
@@ -27,23 +27,8 @@ export class DoctorHttpService implements DoctorService {
   findAll(page: number = 0, size: number = 10): Observable<PageResponse<DoctorResponse>> {
     const params = new HttpParams().set('page', page).set('size', size);
 
-    console.log('📤 GET doctores:', `${this.apiUrl}/crud`);
-    console.log('📤 Params:', params.toString());
-
     return this.http.get<PageResponse<DoctorResponse>>(`${this.apiUrl}/crud`, { params }).pipe(
-      tap((response) => {
-        console.log('📥 DoctorHttpService recibió:', response);
-
-        this._doctors.set(response);
-      }),
-
-      catchError((error) => {
-        console.error('❌ Error GET doctores:', error);
-        console.error('📄 Status:', error.status);
-        console.error('📄 Body:', error.error);
-
-        return throwError(() => error);
-      }),
+      tap((response) => this._doctors.set(response)),
     );
   }
 
@@ -65,11 +50,9 @@ export class DoctorHttpService implements DoctorService {
   }
 
   create(doctor: CreateDoctorRequest): Observable<DoctorResponse> {
-    console.log('📤 Enviando doctor:', doctor);
 
     return this.http.post<DoctorResponse>(`${this.apiUrl}/crud`, doctor).pipe(
       tap((created) => {
-        console.log('✅ Doctor creado:', created);
 
         const current = this._doctors();
 
@@ -84,14 +67,6 @@ export class DoctorHttpService implements DoctorService {
 
           totalElements: current.totalElements + 1,
         });
-      }),
-
-      catchError((error) => {
-        console.error('❌ Error al crear doctor:', error);
-        console.error('📄 Status:', error.status);
-        console.error('📄 Error body:', error.error);
-
-        return throwError(() => error);
       }),
     );
   }

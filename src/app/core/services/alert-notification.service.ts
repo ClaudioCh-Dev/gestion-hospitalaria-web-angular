@@ -31,11 +31,17 @@ export class NotificationService {
   }
 
   showError(problem: ProblemDetailMicroservice): void {
-    console.log('Error:', problem);
     this.status.set('error');
     this.problem.set(problem);
     this.message.set('');
     this.open.set(true);
+  }
+
+  // Cierra el aviso solo si sigue en "cargando" (no oculta éxitos ni errores)
+  hideLoading(): void {
+    if (this.status() === 'loading') {
+      this.close();
+    }
   }
 
   close(): void {
