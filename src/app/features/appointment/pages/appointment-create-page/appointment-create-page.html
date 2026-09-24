@@ -146,95 +146,173 @@
       </tui-textfield>
 
       <!-- ====================================== -->
-      <!-- DURACIÓN -->
+      <!-- FECHA Y HORA -->
       <!-- ====================================== -->
 
-      <tui-textfield tuiTextfieldSize="m" [tuiTextfieldCleaner]="false">
-        <label tuiLabel>Duración (minutos)</label>
-
-        <input
-          postfix=" min"
-          tuiInputNumber
-          [max]="120"
-          [min]="30"
-          [step]="30"
-          formControlName="durationMinutes"
-          placeholder="Minutos"
-        />
-        <span><tui-error formControlName="durationMinutes" /></span>
-      </tui-textfield>
-
-      <!-- ====================================== -->
-      <!-- FECHA -->
-      <!-- ====================================== -->
-
-      <tui-textfield tuiTextfieldSize="m">
-        <label tuiLabel> Fecha </label>
-
-        <input
-          tuiInputDate
-          type="date"
-          formControlName="scheduledDate"
-          [min]="today"
-          [max]="maxDay"
-        />
-
-        <tui-calendar *tuiDropdown />
-        <span><tui-error formControlName="scheduledDate" /></span>
-      </tui-textfield>
-
-      <!-- ====================================== -->
-      <!-- HORA -->
-      <!-- ====================================== -->
-
-      <!-- 
-      <tui-textfield tuiTextfieldSize="m" [disabledItemHandler]="disabledItemHandler">
-        <input
-          placeholder="Click me to open dropdown"
-          tuiInputTime
-          formControlName="scheduledTime"
-        />
-
-        <tui-data-list-wrapper *tuiDropdown [items]="items | tuiFilterByInput: filter" />
-        <span><tui-error formControlName="scheduledTime" /></span>
-      </tui-textfield> -->
-      <div class="md:col-span-2 my-3">
-        <label class="pl-2 pb-1" tuiLabel> Selecciona una hora </label>
-
-        @if (appointmentDataByDate.isLoading()) {
-          <div class="flex items-center gap-2 py-4 pl-2">
-            <tui-loader [inheritColor]="true" size="s" />
-
-            <span class="text-sm text-gray-500"> Consultando disponibilidad... </span>
+      <section class="md:col-span-2 rounded-xl border border-slate-200">
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
+          <div>
+            <h2 class="text-sm font-semibold text-slate-900">Fecha y hora</h2>
+            <p class="text-xs text-slate-500">
+              @if (selectedDoctor(); as doctor) {
+                Horario de {{ doctor.value }}: {{ scheduleLabel() }}
+              } @else {
+                Elige el médico para ver su disponibilidad
+              }
+            </p>
           </div>
-        } @else {
-          <div class="flex flex-wrap gap-6" tuiPlatform="ios">
-            <div tuiItemGroup [autoscroll]="false" [horizontal]="false">
-              @for (chip of chips; track chip) {
-                <label
-                  tuiChip
-                  [appearance]="getTimeAppearance(chip)"
-                  [iconEnd]="disabledTime(chip) ? '' : '@tui.clock'"
-                >
-                  {{ chip }}
 
-                  <input
-                    appearance=""
-                    name="scheduledTime"
-                    tuiChip
-                    type="radio"
-                    [value]="chip"
-                    [disabled]="disabledTime(chip)"
-                    (click)="onTimeClicked(chip.toString('HH:MM'))"
-                  />
-                </label>
+          <!-- Duración -->
+          <div class="flex items-center gap-2">
+            <span class="text-xs text-slate-500">Duración</span>
+
+            <div class="flex rounded-lg border border-slate-200 bg-slate-50 p-0.5" role="radiogroup" aria-label="Duración">
+              @for (minutes of durationOptions; track minutes) {
+                <button
+                  type="button"
+                  role="radio"
+                  class="cursor-pointer rounded-md px-2.5 py-1 text-xs font-medium transition-colors"
+                  [class.bg-white]="durationMinutes() === minutes"
+                  [class.text-slate-900]="durationMinutes() === minutes"
+                  [class.shadow-sm]="durationMinutes() === minutes"
+                  [class.text-slate-500]="durationMinutes() !== minutes"
+                  [attr.aria-checked]="durationMinutes() === minutes"
+                  (click)="selectDuration(minutes)"
+                >
+                  {{ minutes }} min
+                </button>
               }
             </div>
           </div>
-        }
+        </div>
 
-        <tui-error class="pl-2" formControlName="scheduledTime" />
-      </div>
+        <div class="grid grid-cols-1 lg:grid-cols-[auto_minmax(0,1fr)]">
+          <!-- Calendario -->
+          <div class="border-b border-slate-200 p-3 lg:border-r lg:border-b-0">
+            <tui-calendar
+              [value]="scheduledDate()"
+              [min]="today"
+              [max]="maxDay"
+              [disabledItemHandler]="disabledDay"
+              (dayClick)="selectDay($event)"
+            />
+
+            @if (form.controls.scheduledDate.touched && form.controls.scheduledDate.invalid) {
+              <p class="px-2 text-xs text-red-500">Selecciona una fecha</p>
+            }
+          </div>
+
+          <!-- Horarios -->
+          <div class="flex min-h-72 flex-col p-4">
+            @if (missingForSlots().length) {
+              <div class="m-auto flex max-w-xs flex-col items-center gap-2 text-center">
+                <tui-icon icon="@tui.calendar-clock" class="text-2xl text-slate-300" />
+                <p class="text-sm text-slate-500">
+                  Selecciona {{ missingForSlots().join(' y ') }} para ver los horarios disponibles.
+                </p>
+              </div>
+            } @else if (dayAppointments.isLoading() || doctorData.isLoading()) {
+              <div class="m-auto flex items-center gap-2">
+                <tui-loader [inheritColor]="true" size="s" />
+                <span class="text-sm text-slate-500">Consultando disponibilidad...</span>
+              </div>
+            } @else {
+              <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+                <p class="text-sm font-medium capitalize text-slate-900">{{ dateTitle() }}</p>
+                <p class="text-xs text-slate-500">
+                  {{ availableCount() }} {{ availableCount() === 1 ? 'horario libre' : 'horarios libres' }}
+                </p>
+              </div>
+
+              @if (!availableCount()) {
+                <div class="m-auto flex max-w-xs flex-col items-center gap-3 text-center">
+                  <tui-icon icon="@tui.calendar-x" class="text-2xl text-slate-300" />
+                  <p class="text-sm text-slate-500">
+                    No quedan horarios libres para este día con {{ durationMinutes() }} min de duración.
+                  </p>
+                  @if (canGoNextDay()) {
+                    <button
+                      tuiButton
+                      type="button"
+                      size="s"
+                      appearance="secondary"
+                      iconEnd="@tui.chevron-right"
+                      (click)="nextDay()"
+                    >
+                      Ver día siguiente
+                    </button>
+                  }
+                </div>
+              } @else {
+                <div class="flex flex-col gap-4">
+                  @for (group of slotGroups(); track group.label) {
+                    <div>
+                      <p class="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wide text-slate-500">
+                        <tui-icon [icon]="group.icon" class="text-sm" />
+                        {{ group.label }}
+                      </p>
+
+                      <div class="grid grid-cols-3 gap-2 sm:grid-cols-5 xl:grid-cols-7">
+                        @for (slot of group.slots; track slot.time) {
+                          <button
+                            type="button"
+                            class="rounded-lg border px-2 py-2 text-center text-xs font-semibold transition-colors"
+                            [class]="slotClasses[slot.state]"
+                            [title]="slot.hint"
+                            [attr.aria-label]="slot.hint"
+                            [attr.aria-pressed]="slot.state === 'selected'"
+                            [attr.aria-disabled]="slot.state === 'busy' || slot.state === 'patient-busy' || slot.state === 'past'"
+                            (click)="selectSlot(slot)"
+                          >
+                            {{ slot.time }}
+                          </button>
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Leyenda -->
+                <div class="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-slate-500">
+                  <span class="flex items-center gap-1.5">
+                    <span class="h-2.5 w-2.5 rounded-sm border border-slate-300 bg-white"></span>
+                    Disponible
+                  </span>
+                  <span class="flex items-center gap-1.5">
+                    <span class="h-2.5 w-2.5 rounded-sm bg-(--tui-background-accent-1)"></span>
+                    Seleccionado
+                  </span>
+                  <span class="flex items-center gap-1.5">
+                    <span class="h-2.5 w-2.5 rounded-sm border border-slate-200 bg-slate-200"></span>
+                    Médico ocupado
+                  </span>
+                  <span class="flex items-center gap-1.5">
+                    <span class="h-2.5 w-2.5 rounded-sm border border-amber-200 bg-amber-100"></span>
+                    Paciente ocupado
+                  </span>
+                </div>
+              }
+
+              <!-- Resumen -->
+              <div class="mt-auto pt-4">
+                @if (selectionSummary(); as summary) {
+                  <div class="flex items-center gap-3 rounded-lg border border-blue-100 bg-blue-50 px-3 py-2">
+                    <tui-icon icon="@tui.calendar-check" class="text-(--tui-background-accent-1)" />
+                    <p class="text-sm text-slate-700">
+                      <span class="capitalize">{{ summary.date }}</span>,
+                      <strong class="text-slate-900">{{ summary.range }}</strong>
+                      <span class="text-slate-500">({{ durationMinutes() }} min)</span>
+                    </p>
+                  </div>
+                } @else if (form.controls.scheduledTime.touched) {
+                  <p class="text-xs text-red-500">Selecciona una hora</p>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </section>
+
       <!-- MOTIVO -->
       <tui-textfield iconStart="@tui.pencil" tuiTextfieldSize="m" [tuiTextfieldCleaner]="false">
         <label tuiLabel>Escribe tu motivo</label>
