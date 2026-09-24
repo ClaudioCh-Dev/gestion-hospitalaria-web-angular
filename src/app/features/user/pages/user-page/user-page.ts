@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, TemplateRef, computed, inject, signal, viewChild } from '@angular/core';
+import { HasPermission } from '@shared/directives/has-permission.directive';
 import { FormsModule } from '@angular/forms';
 import { rxResource } from '@angular/core/rxjs-interop';
 import { filter, forkJoin, switchMap } from 'rxjs';
@@ -41,7 +42,7 @@ const STATUS_CONFIG: Record<UserStatus, { label: string; appearance: string; ico
 
 @Component({
   selector: 'app-user-page',
-  imports: [
+  imports: [HasPermission, 
     FormsModule,
     MobileDetail,
     TuiAppBar,

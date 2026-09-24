@@ -1,0 +1,227 @@
+<!-- Toolbar -->
+
+<div
+  class="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm md:grid md:grid-cols-3"
+>
+  <!-- Navegación -->
+  <div class="flex items-center gap-1">
+    <button
+      tuiButton
+      type="button"
+      appearance="flat"
+      size="s"
+      iconStart="@tui.chevron-left"
+      aria-label="Día anterior"
+      (click)="previousDay()"
+    ></button>
+
+    <button
+      tuiButton
+      type="button"
+      appearance="flat"
+      size="s"
+      iconStart="@tui.chevron-right"
+      aria-label="Día siguiente"
+      (click)="nextDay()"
+    ></button>
+
+    <!-- Viendo hoy: color del tema y sin interacción -->
+    <button
+      tuiButton
+      type="button"
+      size="s"
+      class="ml-2"
+      [appearance]="isToday() ? 'primary' : 'outline'"
+      [class.pointer-events-none]="isToday()"
+      [attr.tabindex]="isToday() ? -1 : null"
+      [attr.aria-current]="isToday() ? 'date' : null"
+      (click)="goToday()"
+    >
+      Hoy
+    </button>
+  </div>
+
+  <!-- Día -->
+  <div class="order-first w-full text-center md:order-none md:w-auto">
+    <h2 class="text-base font-semibold capitalize tracking-tight text-slate-900">{{ dayTitle() }}</h2>
+
+    <p class="mt-0.5 text-xs text-slate-400">
+      Mi agenda
+      @if (doctor(); as doctor) {
+        · {{ doctor.firstName }} {{ doctor.lastName }}
+      }
+    </p>
+  </div>
+
+  <!-- Fecha -->
+  <div class="ml-auto w-40 sm:w-52">
+    <tui-textfield tuiTextfieldSize="s" [tuiTextfieldCleaner]="false">
+      <input tuiInputDate type="date" [ngModel]="selectedDate()" (ngModelChange)="onDateChange($event)" />
+
+      <tui-calendar *tuiDropdown />
+    </tui-textfield>
+  </div>
+</div>
+
+<!-- Resumen del día -->
+<div class="mb-4 grid grid-cols-2 gap-3 xl:grid-cols-4">
+  @for (stat of stats(); track stat.title) {
+    <app-stat-card
+      [title]="stat.title"
+      [value]="stat.value"
+      [caption]="stat.caption"
+      [icon]="stat.icon"
+      [loading]="!agendaResource.hasValue()"
+    />
+  }
+</div>
+
+<!-- Agenda | ficha del paciente | en curso y próximas (en lg el panel pasa abajo) -->
+<div
+  class="grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_280px]"
+  style="--agenda-height: calc(100vh - 348px)"
+>
+  <div class="min-w-0">
+    @if (agendaResource.isLoading() && !agendaResource.hasValue()) {
+      <div class="flex min-h-80 items-center justify-center rounded-xl border border-slate-200 bg-white shadow-md">
+        <div class="flex flex-col items-center gap-3">
+          <div class="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-(--tui-background-accent-1)"></div>
+          <p class="text-xs text-slate-400">Cargando tu agenda...</p>
+        </div>
+      </div>
+    } @else if (agendaResource.error()) {
+      <div class="flex min-h-80 items-center rounded-xl border border-slate-200 bg-white shadow-md">
+        <app-state-message
+          variant="error"
+          title="No se pudo cargar tu agenda"
+          description="Comprueba que tu usuario esté vinculado a un médico."
+          (action)="agendaResource.reload()"
+        />
+      </div>
+    } @else {
+      <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-md">
+        <div
+          #scroller
+          class="relative h-[calc(100vh-380px)] min-h-96 overflow-y-auto rounded-lg border border-slate-300"
+          [class.opacity-60]="agendaResource.isLoading()"
+        >
+          <div class="relative grid grid-cols-[4rem_minmax(0,1fr)]" [style.height.px]="gridHeight()">
+            <!-- Horas -->
+            <div class="relative border-r border-slate-200 bg-slate-50">
+              @for (slot of slots(); track slot.top) {
+                @if (slot.isHour) {
+                  <span class="absolute right-2 text-[11px] font-medium text-slate-500" [style.top.px]="slot.top + 4">
+                    {{ slot.label }}
+                  </span>
+                } @else {
+                  <span class="absolute right-2 text-[10px] text-slate-300" [style.top.px]="slot.top + 4">
+                    {{ slot.label }}
+                  </span>
+                }
+              }
+
+              <!-- Hora actual sobre la columna de horas -->
+              @if (nowTop() !== null) {
+                <span
+                  class="absolute right-1 z-20 -translate-y-1/2 rounded-full bg-(--tui-background-accent-1) px-1.5 py-0.5 text-[9px] font-semibold leading-none text-white shadow-sm"
+                  [style.top.px]="nowTop()"
+                >
+                  {{ nowLabel() }}
+                </span>
+              }
+            </div>
+
+            <!-- Día -->
+            <div class="relative">
+              <!-- Líneas de cada media hora -->
+              @for (slot of slots(); track slot.top) {
+                <div
+                  class="absolute inset-x-0 border-t"
+                  [class.border-slate-200]="slot.isHour"
+                  [class.border-dashed]="!slot.isHour"
+                  [class.border-slate-100]="!slot.isHour"
+                  [style.top.px]="slot.top"
+                ></div>
+              }
+
+              <!-- Tiempo pasado (debajo de las citas) -->
+              @if (nowTop(); as top) {
+                <div
+                  class="pointer-events-none absolute inset-x-0 top-0 z-10 bg-[repeating-linear-gradient(135deg,rgb(148_163_184/0.14)_0px,rgb(148_163_184/0.14)_1px,transparent_1px,transparent_8px)] bg-slate-50/50"
+                  [style.height.px]="top"
+                ></div>
+
+                <!-- Línea de la hora actual (encima de las citas; mismo valor en px que el rayado) -->
+                <div
+                  class="pointer-events-none absolute inset-x-0 z-30 h-0.5 -translate-y-1/2 bg-(--tui-background-accent-1) shadow-[0_0_6px_rgba(37,99,235,0.45)]"
+                  [style.top.px]="top"
+                >
+                  <span
+                    class="absolute -left-1 top-1/2 h-2.5 w-2.5 -translate-y-1/2 rounded-full bg-(--tui-background-accent-1)"
+                  ></span>
+                </div>
+              }
+
+              <!-- Citas -->
+              @for (block of blocks(); track block.appointment.id) {
+                <button
+                  type="button"
+                  class="absolute left-2 right-2 z-20 flex cursor-pointer overflow-hidden rounded-lg px-3 text-left shadow-sm transition-shadow hover:z-30 hover:shadow-md"
+                  [ngClass]="block.colorClasses"
+                  [class.opacity-50]="block.finished"
+                  [class.line-through]="block.appointment.status === 'CANCELLED'"
+                  [class.flex-col]="!block.compact"
+                  [class.items-center]="block.compact"
+                  [class.gap-2]="block.compact"
+                  [class.py-2]="!block.compact"
+                  [class.ring-2]="block.appointment.id === selection()?.appointment?.id"
+                  [class.ring-slate-900/40]="block.appointment.id === selection()?.appointment?.id"
+                  [class.ring-offset-1]="block.appointment.id === selection()?.appointment?.id"
+                  [style.top.px]="block.top + 2"
+                  [style.height.px]="block.height - 4"
+                  [attr.aria-label]="block.range + ', ' + block.patientName"
+                  [attr.aria-pressed]="block.appointment.id === selection()?.appointment?.id"
+                  (click)="onBlockClick(block.appointment)"
+                >
+                  <span class="shrink-0 text-[11px] font-semibold">{{ block.range }}</span>
+                  <span class="truncate text-xs font-medium">{{ block.patientName }}</span>
+                  @if (!block.compact) {
+                    <span class="truncate text-[11px] text-white/80">
+                      {{ block.typeTitle }} · {{ statusLabels[block.appointment.status] }}
+                    </span>
+                  }
+                </button>
+              }
+
+              @if (!blocks().length) {
+                <div class="pointer-events-none absolute inset-0 z-20 flex items-start justify-center pt-16">
+                  <p class="rounded-full border border-slate-200 bg-white px-3 py-1.5 text-xs text-slate-500 shadow-sm">
+                    No tienes citas este día
+                  </p>
+                </div>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Ficha del paciente de la cita seleccionada (lg+) -->
+  <app-agenda-patient-card
+    class="hidden lg:block"
+    [selection]="selection()"
+    [heading]="selectionHeading()"
+    (open)="openAppointment($event)"
+  />
+
+  <!-- Panel: en curso, próximas y leyenda -->
+  <app-agenda-panel
+    class="lg:col-span-2 xl:col-span-1"
+    [current]="currentAppointments()"
+    [upcoming]="upcomingAppointments()"
+    [legend]="legend()"
+    [loading]="todayResource.isLoading() || !agendaResource.hasValue()"
+    (select)="openAppointment($event)"
+  />
+</div>

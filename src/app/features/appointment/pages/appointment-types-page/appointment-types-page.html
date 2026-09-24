@@ -20,7 +20,7 @@
         {{ showInactive() ? 'Ocultar inactivos' : 'Mostrar inactivos' }}
       </button>
 
-      <button
+      <button *appHasPermission="'APPOINTMENT_TYPE_CREATE'"
         tuiButton
         type="button"
         size="s"
@@ -194,7 +194,7 @@
 
                 <td tuiTd>
                   <div class="flex items-center gap-1">
-                    <button
+                    <button *appHasPermission="'APPOINTMENT_TYPE_UPDATE'"
                       tuiIconButton
                       type="button"
                       size="xs"
@@ -206,7 +206,7 @@
                     </button>
 
                     @if (row.appointmentType.active) {
-                      <button
+                      <button *appHasPermission="'APPOINTMENT_TYPE_DELETE'"
                         tuiIconButton
                         type="button"
                         size="xs"
@@ -271,12 +271,12 @@
 
       <footer tuiFloatingContainer class="mt-auto flex flex-col gap-3">
 
-        <button tuiButton type="button" iconStart="@tui.pencil" (click)="observer.complete(); edit(row)">
+        <button *appHasPermission="'APPOINTMENT_TYPE_UPDATE'" tuiButton type="button" iconStart="@tui.pencil" (click)="observer.complete(); edit(row)">
           Editar
         </button>
 
         @if (row.appointmentType.active) {
-          <button
+          <button *appHasPermission="'APPOINTMENT_TYPE_DELETE'"
             tuiButton
             type="button"
             appearance="secondary-destructive"

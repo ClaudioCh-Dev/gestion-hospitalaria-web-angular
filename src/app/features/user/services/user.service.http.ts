@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import { environment } from '@environments/environment';
 
 import {
+  ActivateAccountRequest,
   ChangePasswordRequest,
   CreateUserRequest,
   RoleResponse,
@@ -46,5 +47,9 @@ export class UserHttpService implements UserService {
 
   changePasswordMe(request: ChangePasswordRequest): Observable<void> {
     return this.http.post<void>(`${this.apiUrl}/change-password-me`, request);
+  }
+
+  activate(request: ActivateAccountRequest): Observable<void> {
+    return this.http.post<void>(`${this.apiUrl}/activate`, request);
   }
 }

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 import {
   TuiButton,
@@ -47,6 +47,7 @@ interface Highlight {
 export class Login {
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   protected readonly year = new Date().getFullYear();
 
@@ -99,19 +100,20 @@ export class Login {
     this.loading.set(true);
     this.errorMessage.set(null);
 
-    this.authService
-      .login({ username: email, password })
-      .subscribe({
-        next: () => {
-          this.loading.set(false);
-          this.router.navigate(['/']);
-        },
-        error: (error: HttpErrorResponse) => {
-          this.loading.set(false);
-          this.form.controls.password.reset();
-          this.errorMessage.set(this.toMessage(error));
-        },
-      });
+    this.authService.login({ username: email, password }).subscribe({
+      next: () => {
+        this.loading.set(false);
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        this.router.navigateByUrl(
+          returnUrl?.startsWith('/') && !returnUrl.startsWith('//') ? returnUrl : '/',
+        );
+      },
+      error: (error: HttpErrorResponse) => {
+        this.loading.set(false);
+        this.form.controls.password.reset();
+        this.errorMessage.set(this.toMessage(error));
+      },
+    });
   }
 
   private toMessage(error: HttpErrorResponse): string {

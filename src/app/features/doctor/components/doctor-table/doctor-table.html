@@ -199,7 +199,7 @@
                 @if (loadingDoctorId() === doctor.id && loadingAction() === 'edit') {
                   <tui-loader />
                 } @else {
-                  <button
+                  <button *appHasPermission="'DOCTOR_UPDATE'"
                     appearance="action"
                     iconStart="@tui.pencil"
                     size="xs"
@@ -358,7 +358,7 @@
       Ver agenda y detalle completo
     </button>
 
-    <button tuiButton type="button" iconStart="@tui.pencil" (click)="observer.complete(); editDoctor(doctor)">
+    <button *appHasPermission="'DOCTOR_UPDATE'" tuiButton type="button" iconStart="@tui.pencil" (click)="observer.complete(); editDoctor(doctor)">
       Editar
     </button>
   </footer>

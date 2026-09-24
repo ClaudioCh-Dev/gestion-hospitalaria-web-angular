@@ -1,3 +1,4 @@
+import { HasPermission } from '@shared/directives/has-permission.directive';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -67,7 +68,7 @@ import { downloadCsv } from '@shared/utils/csv';
 
 @Component({
   selector: 'app-patient-crud',
-  imports: [
+  imports: [HasPermission, 
     StateMessage,
     FormsModule,
     PatientFiltersComponent,

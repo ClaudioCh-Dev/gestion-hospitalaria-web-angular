@@ -121,7 +121,7 @@
   } @else {
     <!-- Acciones -->
     <div class="flex flex-wrap items-center justify-end gap-2 border-t border-slate-100 pt-4">
-      @if (!availableActions().length) {
+      @if (!stateActions().length) {
         <span class="mr-auto text-xs text-slate-400">
           Esta cita está en un estado final y no admite cambios.
         </span>

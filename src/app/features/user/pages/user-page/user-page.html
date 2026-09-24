@@ -8,7 +8,7 @@
       </p>
     </div>
 
-    <button
+    <button *appHasPermission="'USER_CREATE'"
       tuiButton
       type="button"
       size="s"
@@ -204,7 +204,7 @@
                 <td tuiTd>
                   <div class="flex items-center gap-1">
                     @if (!user.active) {
-                      <button
+                      <button *appHasPermission="'USER_UPDATE'"
                         tuiIconButton
                         type="button"
                         size="xs"
@@ -219,7 +219,7 @@
                     }
 
                     @if (canEdit(user)) {
-                      <button
+                      <button *appHasPermission="'USER_UPDATE'"
                         tuiIconButton
                         type="button"
                         size="xs"
@@ -233,7 +233,7 @@
                     }
 
                     @if (canDeactivate(user)) {
-                      <button
+                      <button *appHasPermission="'USER_DELETE'"
                         tuiIconButton
                         type="button"
                         size="xs"
@@ -307,13 +307,13 @@
       <footer tuiFloatingContainer class="mt-auto flex flex-col gap-3">
 
         @if (!user.active) {
-          <button tuiButton type="button" iconStart="@tui.send" (click)="observer.complete(); resendActivation(user)">
+          <button *appHasPermission="'USER_UPDATE'" tuiButton type="button" iconStart="@tui.send" (click)="observer.complete(); resendActivation(user)">
             {{ getStatus(user) === 'pending' ? 'Reenviar activación' : 'Enviar activación' }}
           </button>
         }
 
         @if (canEdit(user)) {
-          <button
+          <button *appHasPermission="'USER_UPDATE'"
             tuiButton
             type="button"
             appearance="secondary"
@@ -325,7 +325,7 @@
         }
 
         @if (canDeactivate(user)) {
-          <button
+          <button *appHasPermission="'USER_DELETE'"
             tuiButton
             type="button"
             appearance="secondary-destructive"

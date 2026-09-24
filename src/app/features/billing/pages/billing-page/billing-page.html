@@ -142,7 +142,7 @@
 
           <div card-footer class="flex items-center gap-2">
             @if (record.status === 'PENDING') {
-              <button appearance="primary" size="s" tuiButton type="button" (click)="payBilling(record)">
+              <button *appHasPermission="'BILLING_PAY'" appearance="primary" size="s" tuiButton type="button" (click)="payBilling(record)">
                 Cobrar
                 <tui-icon icon="@tui.credit-card" />
               </button>

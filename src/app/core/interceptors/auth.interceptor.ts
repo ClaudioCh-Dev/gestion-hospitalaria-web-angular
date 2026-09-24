@@ -1,15 +1,13 @@
 import { inject } from '@angular/core';
-import {
-  HttpErrorResponse,
-  HttpInterceptorFn,
-} from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
 import { catchError, switchMap, throwError } from 'rxjs';
 
 import { AuthService } from '../services/auth.service';
+import { Router } from '@angular/router';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-
   const authService = inject(AuthService);
+  const router = inject(Router);
 
   const isAuthRequest =
     req.url.includes('/auth/login') ||
@@ -33,17 +31,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   });
 
   return next(authRequest).pipe(
-
     catchError((error: HttpErrorResponse) => {
-
       if (error.status !== 401) {
         return throwError(() => error);
       }
 
       return authService.refreshToken().pipe(
-
-        switchMap(response => {
-
+        switchMap((response) => {
           const retryRequest = req.clone({
             setHeaders: {
               Authorization: `Bearer ${response.accessToken}`,
@@ -53,9 +47,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
           return next(retryRequest);
         }),
 
-        catchError(refreshError => {
-
+        catchError((refreshError) => {
           authService.clearAccessToken();
+
+          router.navigate(['/login'], {
+            queryParams: { returnUrl: router.url }, // opcional
+          });
 
           return throwError(() => refreshError);
         }),

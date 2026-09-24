@@ -10,12 +10,13 @@ import { TuiBadge } from '@taiga-ui/kit';
 import { TuiAxes, TuiLineChart, TuiLineChartHint, TuiPieChart } from '@taiga-ui/addon-charts';
 
 import { AppointmentResponse, AppointmentStatus } from '../../../appointment/interfaces';
-import { AppointmentService } from '../../../appointment/services/appointment.service';
+import { AgendaScope } from '../../../appointment/services/agenda-scope.service';
 import { BillingRecordService } from '../../../billing/services/billing-record.service';
 import { DoctorService } from '../../../doctor/services/doctor.service';
 import { Gender, PatientDetailResponse } from '../../../patient/interfaces';
 import { PatientService } from '../../../patient/services/patient.service';
 import { StateMessage } from '@shared/components/state-message/state-message';
+import { AuthService } from '@core/services/auth.service';
 
 interface Stat {
   title: string;
@@ -59,8 +60,13 @@ const UPCOMING_LIMIT = 5;
 export class DashboardPage {
   private readonly patientService = inject(PatientService);
   private readonly doctorService = inject(DoctorService);
-  private readonly appointmentService = inject(AppointmentService);
   private readonly billingService = inject(BillingRecordService);
+  private readonly authService = inject(AuthService);
+  // Médico: solo sus citas (una petición); admin: todas
+  private readonly agendaScope = inject(AgendaScope);
+
+  // Los médicos no tienen BILLING_READ: sin permiso no se pide el resumen ni se muestra la tarjeta
+  protected readonly canViewBilling = computed(() => this.authService.hasPermission('BILLING_READ'));
 
   private readonly today = new Date();
 
@@ -95,7 +101,8 @@ export class DashboardPage {
   });
 
   protected readonly billingResource = rxResource({
-    stream: () => this.billingService.summary(),
+    params: () => ({ enabled: this.canViewBilling() }),
+    stream: ({ params }) => (params.enabled ? this.billingService.summary() : of(null)),
   });
 
   protected readonly chartDays = Array.from({ length: CHART_DAYS }, (_, index) => {
@@ -108,9 +115,7 @@ export class DashboardPage {
 
   protected readonly weekResource = rxResource({
     stream: () =>
-      forkJoin(
-        this.chartDays.map((day) => this.appointmentService.findByDate(this.toIsoDate(day))),
-      ),
+      this.agendaScope.findByDates(this.chartDays.map((day) => this.toIsoDate(day))),
   });
 
   // Las citas de hoy son el último día del gráfico
@@ -176,7 +181,7 @@ export class DashboardPage {
 
     const activeDoctors = doctors?.content.filter((doctor) => doctor.active).length ?? 0;
 
-    return [
+    const stats: Stat[] = [
       {
         title: 'Pacientes',
         value: this.formatNumber(patients?.total),
@@ -195,13 +200,18 @@ export class DashboardPage {
         description: `${activeDoctors} activos`,
         icon: '@tui.stethoscope',
       },
-      {
+    ];
+
+    if (this.canViewBilling()) {
+      stats.push({
         title: 'Ingresos del mes',
-        value: this.billingResource.hasValue() ? this.formatCurrency(income.paid) : '—',
+        value: this.billingResource.value() ? this.formatCurrency(income.paid) : '—',
         description: `${this.formatCurrency(income.pending)} por cobrar`,
         icon: '@tui.wallet',
-      },
-    ];
+      });
+    }
+
+    return stats;
   });
 
   protected readonly statsLoading = computed(

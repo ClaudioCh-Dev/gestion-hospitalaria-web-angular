@@ -22,10 +22,9 @@ import {
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 import { TuiInputDate } from '@taiga-ui/kit';
 
-import { AppointmentService } from '../../services/appointment.service';
+import { AgendaScope } from '../../services/agenda-scope.service';
 import { AppointmentTypeService } from '../../services/appointment-type.service';
 import { getAppointmentTypeColor } from '../../constants/appointment-type-colors';
-import { DoctorService } from '../../../doctor/services/doctor.service';
 
 import {
   AppointmentResponse,
@@ -66,11 +65,11 @@ import {
 })
 export class CellCalendarAdmin {
 
-  private readonly appointmentService =
-    inject(AppointmentService);
 
-  private readonly doctorService =
-    inject(DoctorService);
+
+  // Todos los médicos (admin) o solo el propio (médico)
+  private readonly agendaScope =
+    inject(AgendaScope);
 
   private readonly appointmentTypeService =
     inject(AppointmentTypeService);
@@ -226,11 +225,11 @@ export class CellCalendarAdmin {
 
       stream: ({ params }) =>
         forkJoin({
-          doctors: this.doctorService.findAll(0, 100),
+          doctors: this.agendaScope.doctors(),
           appointmentTypes:
             this.appointmentTypeService.findAll(),
           appointments:
-            this.appointmentService.findByDate(
+            this.agendaScope.findByDate(
               params.date,
             ),
         }),
@@ -255,7 +254,7 @@ export class CellCalendarAdmin {
     rxResource({
       params: () => ({ date: this.todayKey() }),
       stream: ({ params }) =>
-        this.appointmentService.findByDate(params.date),
+        this.agendaScope.findByDate(params.date),
     });
 
   private readonly todayItems =
@@ -363,7 +362,7 @@ export class CellCalendarAdmin {
 
   protected get doctors(): DoctorResponse[] {
     return this.calendarResource.value()
-      ?.doctors.content ?? [];
+      ?.doctors ?? [];
   }
 
   // =========================

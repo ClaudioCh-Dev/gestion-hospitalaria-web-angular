@@ -59,11 +59,10 @@
     </div>
   </header>
 
-  <tui-tabs class="px-4" [activeItemIndex]="activeTab()" (activeItemIndexChange)="activeTab.set($event)">
-    <button iconStart="@tui.user" tuiTab type="button">Información</button>
-    <button iconStart="@tui.calendar" tuiTab type="button">Citas</button>
-    <button iconStart="@tui.wallet" tuiTab type="button">Facturas</button>
-    <button iconStart="@tui.file-text" tuiTab type="button">Historial</button>
+  <tui-tabs class="px-4" [activeItemIndex]="activeTabIndex()" (activeItemIndexChange)="selectTab($event)">
+    @for (item of visibleTabs(); track item.tab) {
+      <button tuiTab type="button" [iconStart]="item.icon">{{ item.label }}</button>
+    }
   </tui-tabs>
 
 

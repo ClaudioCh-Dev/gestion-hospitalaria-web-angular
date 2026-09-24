@@ -11,17 +11,18 @@
     </div>
 
     <button
-      tuiButton
-      type="button"
-      iconStart="@tui.plus"
-      size="s"
-      appearance="primary"
-      class="w-full lg:w-auto"
-      [disabled]="patientsResource.isLoading()"
-      (click)="createPatientModal()"
-    >
-      Nuevo paciente
-    </button>
+        *appHasPermission="'PATIENT_CREATE'"
+        tuiButton
+        type="button"
+        iconStart="@tui.plus"
+        size="s"
+        appearance="primary"
+        class="w-full lg:w-auto"
+        [disabled]="patientsResource.isLoading()"
+        (click)="createPatientModal()"
+      >
+        Nuevo paciente
+      </button>
 
   </div>
 
@@ -50,7 +51,7 @@
           Limpiar selección
         </button>
 
-        <button
+        <button *appHasPermission="'PATIENT_DELETE'"
           tuiButton
           type="button"
           size="s"

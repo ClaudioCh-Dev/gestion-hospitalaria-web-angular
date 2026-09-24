@@ -13,7 +13,10 @@ export interface AgendaItem {
   appointment: AppointmentResponse;
   start: string;
   end: string;
-  doctorName: string;
+  // Sin médico (agenda propia del médico) no se repite su nombre
+  doctorName?: string;
+  // Si no se conoce, se muestra "Paciente #id"
+  patientName?: string;
   typeTitle: string;
   colorClasses: string;
   // En curso: minutos para terminar; próxima: minutos para empezar

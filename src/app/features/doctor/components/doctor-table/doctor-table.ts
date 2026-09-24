@@ -1,3 +1,4 @@
+import { HasPermission } from '@shared/directives/has-permission.directive';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -45,7 +46,7 @@ import { TuiAppBar, TuiFloatingContainer } from '@taiga-ui/layout';
 
 @Component({
   selector: 'app-doctor-table',
-  imports: [
+  imports: [HasPermission, 
     StateMessage,
     FormsModule,
     MobileDetail,

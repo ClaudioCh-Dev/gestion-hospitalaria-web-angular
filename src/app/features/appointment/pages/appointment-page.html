@@ -1,4 +1,4 @@
-<div class="mb-4 flex justify-end">
+<div *appHasPermission="'APPOINTMENT_CREATE'" class="mb-4 flex justify-end">
   <button
     tuiButton
     type="button"
@@ -10,4 +10,9 @@
   </button>
 </div>
 
-<app-cell-calendar-admin></app-cell-calendar-admin>
+<!-- Admin: cuadrícula de todos los médicos. Médico: su día en vertical -->
+@if (fullAgenda()) {
+  <app-cell-calendar-admin />
+} @else {
+  <app-doctor-agenda />
+}

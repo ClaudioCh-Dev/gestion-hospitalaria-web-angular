@@ -10,6 +10,7 @@ import { ProblemDetailMicroservice } from '@shared/models/problem.type';
 
 import { ROLE_ADMIN } from '../constants/user-roles';
 import {
+  ActivateAccountRequest,
   ChangePasswordRequest,
   CreateUserRequest,
   RoleResponse,
@@ -194,6 +195,24 @@ export class UserMockService extends UserService {
     this._users.update(users =>
       users.map(item => (item.id === user.id ? { ...item, activationPending: true } : item)),
     );
+
+    return of(undefined).pipe(delay(this.MOCK_DELAY));
+  }
+
+  // =====================================================
+  // ACTIVATE
+  // =====================================================
+
+  // Tokens especiales para probar los errores del backend: "invalido" y "expirado"
+  activate(request: ActivateAccountRequest): Observable<void> {
+
+    if (request.token === 'invalido') {
+      return this.handleError(400, 'Token inválido', 'Token de activación inválido', 'INVALID_ACTIVATION_TOKEN');
+    }
+
+    if (request.token === 'expirado') {
+      return this.handleError(400, 'Token expirado', 'El token de activación ha expirado', 'ACTIVATION_TOKEN_EXPIRED');
+    }
 
     return of(undefined).pipe(delay(this.MOCK_DELAY));
   }

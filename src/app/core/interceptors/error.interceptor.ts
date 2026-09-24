@@ -27,8 +27,13 @@ export const errorInterceptor: HttpInterceptorFn = (
 
     catchError((error: HttpErrorResponse) => {
 
-      // El login muestra su propio mensaje en el formulario
-      if (req.url.includes('/auth/login')) {
+      // El login y la activación de cuenta muestran su propio mensaje en la página; el refresh
+      // fallido (p. ej. al arrancar sin sesión) no es un error que deba ver el usuario
+      if (
+        req.url.includes('/auth/login') ||
+        req.url.includes('/auth/refresh-token') ||
+        req.url.includes('/users/activate')
+      ) {
         return throwError(() => error);
       }
 

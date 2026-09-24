@@ -16,6 +16,7 @@ import {
   APPOINTMENT_STATUS_LABELS,
 } from '../../../appointment/constants/appointment-status';
 import { PatientService } from '../../../patient/services/patient.service';
+import { AuthService } from '@core/services/auth.service';
 
 // Citas próximas mostradas en la agenda
 const AGENDA_LIMIT = 8;
@@ -54,6 +55,17 @@ export class DoctorDetailComponent {
   private readonly specialtyStore = inject(SpecialtyStore);
   private readonly appointmentService = inject(AppointmentService);
   private readonly patientService = inject(PatientService);
+  private readonly authService = inject(AuthService);
+
+  // La agenda de otro médico solo con APPOINTMENT_READ; un médico solo ve la suya (appointment-ms lo exige)
+  protected readonly canSeeAgenda = computed(() => {
+    const doctor = this.doctor();
+
+    return (
+      this.authService.hasPermission('APPOINTMENT_READ') ||
+      (!!doctor?.userId && doctor.userId === this.authService.currentUser()?.userId)
+    );
+  });
 
   protected readonly statusLabels = APPOINTMENT_STATUS_LABELS;
   protected readonly statusAppearances = APPOINTMENT_STATUS_APPEARANCES;
@@ -62,7 +74,7 @@ export class DoctorDetailComponent {
     params: () => {
       const doctor = this.doctor();
 
-      return doctor ? { id: doctor.id } : undefined;
+      return doctor && this.canSeeAgenda() ? { id: doctor.id } : undefined;
     },
 
     stream: ({ params }) =>

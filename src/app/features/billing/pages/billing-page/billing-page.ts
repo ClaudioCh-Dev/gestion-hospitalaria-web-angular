@@ -1,3 +1,4 @@
+import { HasPermission } from '@shared/directives/has-permission.directive';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -107,7 +108,7 @@ interface Stat {
 @Component({
   selector: 'app-billing-page',
 
-  imports: [
+  imports: [HasPermission, 
     StateMessage,
     InfoItem,
     RecordCard,

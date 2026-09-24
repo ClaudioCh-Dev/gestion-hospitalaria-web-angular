@@ -151,7 +151,7 @@
                 @if (loadingPatientId() === patient.id && loadingAction() === 'edit') {
                   <tui-loader />
                 } @else {
-                  <button
+                  <button *appHasPermission="'PATIENT_UPDATE'"
                     appearance="action"
                     iconStart="@tui.pencil"
                     size="xs"
@@ -180,7 +180,7 @@
                 }
 
                 <!-- Eliminar -->
-                <button
+                <button *appHasPermission="'PATIENT_DELETE'"
                   appearance="action-destructive"
                   iconStart="@tui.trash-2"
                   size="xs"
@@ -321,11 +321,11 @@
     </button>
 
     <div class="grid grid-cols-2 gap-3">
-      <button tuiButton type="button" appearance="secondary" iconStart="@tui.pencil" (click)="observer.complete(); editPatient(patient)">
+      <button *appHasPermission="'PATIENT_UPDATE'" tuiButton type="button" appearance="secondary" iconStart="@tui.pencil" (click)="observer.complete(); editPatient(patient)">
         Editar
       </button>
 
-      <button
+      <button *appHasPermission="'PATIENT_DELETE'"
         tuiButton
         type="button"
         appearance="secondary-destructive"

@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component, TemplateRef, inject, input, model, output, signal, viewChild } from '@angular/core';
+import { HasPermission } from '@shared/directives/has-permission.directive';
 
 import { FormsModule } from '@angular/forms';
 
@@ -38,7 +39,7 @@ import { TuiAppBar, TuiFloatingContainer } from '@taiga-ui/layout';
 
 @Component({
   selector: 'app-patient-table',
-  imports: [
+  imports: [HasPermission, 
     MobileDetail,
     TuiAppBar,
     TuiFloatingContainer,

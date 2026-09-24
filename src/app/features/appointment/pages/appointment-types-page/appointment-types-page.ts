@@ -1,4 +1,5 @@
 import { CurrencyPipe } from '@angular/common';
+import { HasPermission } from '@shared/directives/has-permission.directive';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -50,7 +51,7 @@ interface AppointmentTypeRow {
 
 @Component({
   selector: 'app-appointment-types-page',
-  imports: [
+  imports: [HasPermission, 
     MobileDetail,
     TuiAppBar,
     TuiFloatingContainer,

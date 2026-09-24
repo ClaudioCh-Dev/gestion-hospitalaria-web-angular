@@ -14,6 +14,7 @@ import { TuiBadge, TuiButtonLoading, TuiStatus } from '@taiga-ui/kit';
 import { injectContext } from '@taiga-ui/polymorpheus';
 
 import { NotificationService } from '@core/services/alert-notification.service';
+import { AuthService } from '@core/services/auth.service';
 import { withNotification } from '@shared/operators/with-notification';
 import { PatientService } from '@patients/services/patient.service';
 
@@ -54,6 +55,7 @@ export class AppointmentDetailDialog {
   private readonly appointmentService = inject(AppointmentService);
   private readonly patientService = inject(PatientService);
   private readonly notificationService = inject(NotificationService);
+  private readonly authService = inject(AuthService);
 
   protected readonly doctor = this.context.data.doctor ?? null;
 
@@ -99,8 +101,15 @@ export class AppointmentDetailDialog {
     },
   };
 
-  // Las citas completadas o canceladas son estados finales en el backend
-  protected readonly availableActions = computed<AppointmentAction[]>(() => {
+  // Permiso que exige cada acción en appointment-ms
+  private readonly actionPermissions: Record<AppointmentAction, string> = {
+    CONFIRM: 'APPOINTMENT_UPDATE_STATUS',
+    COMPLETE: 'APPOINTMENT_UPDATE_STATUS',
+    CANCEL: 'APPOINTMENT_CANCEL',
+  };
+
+  // Acciones que admite el estado; las completadas o canceladas son estados finales en el backend
+  protected readonly stateActions = computed<AppointmentAction[]>(() => {
     switch (this.appointment().status) {
       case AppointmentStatus.SCHEDULED:
         return ['CONFIRM', 'COMPLETE', 'CANCEL'];
@@ -110,6 +119,11 @@ export class AppointmentDetailDialog {
         return [];
     }
   });
+
+  // Solo las que el usuario tiene permiso de ejecutar
+  protected readonly availableActions = computed(() =>
+    this.stateActions().filter((action) => this.authService.hasPermission(this.actionPermissions[action])),
+  );
 
   protected readonly endTime = computed(() => {
     const { scheduledAt, durationMinutes } = this.appointment();

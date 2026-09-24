@@ -1,0 +1,163 @@
+<main class="relative flex min-h-screen items-center justify-center overflow-hidden p-6">
+  <!-- Fondo: la misma imagen del login con su degradado -->
+  <div class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image: url('/clinica.webp')">
+    <div class="absolute inset-0 bg-linear-to-br from-blue-950/90 via-blue-900/75 to-cyan-800/60"></div>
+  </div>
+
+  <div class="relative w-full max-w-md rounded-2xl bg-white p-8 shadow-2xl">
+    <!-- Marca: a la derecha del título en el formulario; arriba en el resto de estados -->
+    <ng-template #brand>
+      <div class="flex shrink-0 items-center gap-2 text-slate-900">
+        <tui-icon icon="@tui.heart-pulse" class="text-2xl text-(--tui-background-accent-1)" />
+        <span class="text-lg font-semibold tracking-tight">Aura</span>
+        <span class="text-[10px] font-semibold uppercase tracking-[0.25em] text-slate-400">Bioclinic</span>
+      </div>
+    </ng-template>
+
+    @if (status() !== 'form') {
+      <div class="mb-6">
+        <ng-container [ngTemplateOutlet]="brand" />
+      </div>
+    }
+
+    @switch (status()) {
+      <!-- ============================================ -->
+      <!-- FORMULARIO -->
+      <!-- ============================================ -->
+      @case ('form') {
+        <header class="mb-6">
+          <div class="flex flex-wrap items-center justify-between gap-3">
+            <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Activa tu cuenta</h1>
+            <ng-container [ngTemplateOutlet]="brand" />
+          </div>
+          <p class="mt-2 text-sm text-slate-500">Crea la contraseña con la que ingresarás al sistema.</p>
+        </header>
+
+        <!-- novalidate: la validación la hace Signal Forms; submit() marca los campos como tocados -->
+        <form class="flex flex-col gap-4" novalidate (submit)="$event.preventDefault(); activate()">
+          @if (errorMessage(); as message) {
+            <div
+              class="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              role="alert"
+            >
+              <tui-icon icon="@tui.circle-alert" class="mt-0.5 shrink-0" />
+              <span>{{ message }}</span>
+            </div>
+          }
+
+          <!-- Nueva contraseña -->
+          <div class="flex flex-col gap-1">
+            <tui-textfield iconStart="@tui.lock" [tuiTextfieldCleaner]="false">
+              <label tuiLabel>Nueva contraseña</label>
+              <input tuiInput type="password" autocomplete="new-password" [formField]="form.password" />
+              <tui-icon tuiPassword />
+            </tui-textfield>
+
+            @if (fieldError('password'); as error) {
+              <p class="text-xs text-red-500">{{ error }}</p>
+            }
+          </div>
+
+          <!-- Confirmación -->
+          <div class="flex flex-col gap-1">
+            <tui-textfield iconStart="@tui.lock-keyhole" [tuiTextfieldCleaner]="false">
+              <label tuiLabel>Confirmar contraseña</label>
+              <input tuiInput type="password" autocomplete="new-password" [formField]="form.confirmPassword" />
+              <tui-icon tuiPassword />
+            </tui-textfield>
+
+            @if (fieldError('confirmPassword'); as error) {
+              <p class="text-xs text-red-500">{{ error }}</p>
+            }
+          </div>
+
+          <!-- Requisitos en vivo: la misma regla que valida auth-server -->
+          <ul class="grid grid-cols-1 gap-1 rounded-xl bg-slate-50 px-4 py-3 sm:grid-cols-2">
+            @for (rule of rules; track rule.label) {
+              <li
+                class="flex items-center gap-1.5 text-xs transition-colors"
+                [class.text-emerald-600]="rule.test(form.password().value())"
+                [class.text-slate-400]="!rule.test(form.password().value())"
+              >
+                <tui-icon
+                  class="text-sm"
+                  [icon]="rule.test(form.password().value()) ? '@tui.circle-check' : '@tui.circle'"
+                />
+                {{ rule.label }}
+              </li>
+            }
+          </ul>
+
+          <button tuiButton type="submit" size="l" class="mt-2 w-full" [loading]="form().submitting()">
+            Activar cuenta
+          </button>
+        </form>
+
+        <p class="mt-6 text-center text-xs text-slate-400">
+          ¿Ya activaste tu cuenta?
+          <a routerLink="/login" class="font-medium text-(--tui-background-accent-1) hover:underline">Inicia sesión</a>
+        </p>
+      }
+
+      <!-- ============================================ -->
+      <!-- ACTIVADA -->
+      <!-- ============================================ -->
+      @case ('success') {
+        <div class="flex flex-col items-center gap-3 py-4 text-center">
+          <span class="flex h-14 w-14 items-center justify-center rounded-full bg-emerald-50 text-emerald-600">
+            <tui-icon icon="@tui.circle-check" class="text-3xl" />
+          </span>
+
+          <h1 class="text-xl font-semibold text-slate-900">¡Cuenta activada!</h1>
+          <p class="text-sm text-slate-500">Ya puedes iniciar sesión con tu correo y la contraseña que acabas de crear.</p>
+
+          <button tuiButton type="button" size="l" class="mt-4 w-full" (click)="goToLogin()">
+            Iniciar sesión
+          </button>
+        </div>
+      }
+
+      <!-- ============================================ -->
+      <!-- ENLACE INVÁLIDO (sin token, inexistente o ya usado) -->
+      <!-- ============================================ -->
+      @case ('invalid') {
+        <div class="flex flex-col items-center gap-3 py-4 text-center">
+          <span class="flex h-14 w-14 items-center justify-center rounded-full bg-red-50 text-red-500">
+            <tui-icon icon="@tui.link-2-off" class="text-3xl" />
+          </span>
+
+          <h1 class="text-xl font-semibold text-slate-900">Enlace no válido</h1>
+          <p class="text-sm text-slate-500">
+            El enlace de activación no existe o ya fue utilizado. Si ya activaste tu cuenta, inicia sesión;
+            si no, pide al administrador que te envíe uno nuevo.
+          </p>
+
+          <button tuiButton type="button" size="l" appearance="secondary" class="mt-4 w-full" (click)="goToLogin()">
+            Ir al inicio de sesión
+          </button>
+        </div>
+      }
+
+      <!-- ============================================ -->
+      <!-- ENLACE VENCIDO -->
+      <!-- ============================================ -->
+      @case ('expired') {
+        <div class="flex flex-col items-center gap-3 py-4 text-center">
+          <span class="flex h-14 w-14 items-center justify-center rounded-full bg-amber-50 text-amber-600">
+            <tui-icon icon="@tui.clock-alert" class="text-3xl" />
+          </span>
+
+          <h1 class="text-xl font-semibold text-slate-900">El enlace venció</h1>
+          <p class="text-sm text-slate-500">
+            Los enlaces de activación son válidos durante 24 horas. Pide al administrador que te reenvíe la
+            activación desde la gestión de usuarios.
+          </p>
+
+          <button tuiButton type="button" size="l" appearance="secondary" class="mt-4 w-full" (click)="goToLogin()">
+            Ir al inicio de sesión
+          </button>
+        </div>
+      }
+    }
+  </div>
+</main>

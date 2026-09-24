@@ -83,5 +83,6 @@ connect.lock
 
 
 src/environments/*
-# Pendientes locales
+# Pendientes y guías locales
 docs/PENDIENTES.md
+docs/GUIA-*.md

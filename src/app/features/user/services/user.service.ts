@@ -1,6 +1,7 @@
 import { Observable } from 'rxjs';
 
 import {
+  ActivateAccountRequest,
   ChangePasswordRequest,
   CreateUserRequest,
   RoleResponse,
@@ -24,4 +25,7 @@ export abstract class UserService {
   abstract resendActivation(email: string): Observable<void>;
 
   abstract changePasswordMe(request: ChangePasswordRequest): Observable<void>;
+
+  // Público (sin sesión): lo usa la página del enlace del correo de activación
+  abstract activate(request: ActivateAccountRequest): Observable<void>;
 }

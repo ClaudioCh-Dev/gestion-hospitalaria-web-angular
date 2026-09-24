@@ -1,5 +1,5 @@
 import { provideTaiga } from '@taiga-ui/core';
-import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/core';
+import { ApplicationConfig, provideAppInitializer, provideBrowserGlobalErrorListeners } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localeEsPe from '@angular/common/locales/es-PE';
 import { provideRouter, withViewTransitions } from '@angular/router';
@@ -34,6 +34,7 @@ import { AppointmentHttpService } from './features/appointment/services/impl/app
 import { UserService } from './features/user/services/user.service';
 import { UserMockService } from './features/user/services/user.service.mock';
 import { UserHttpService } from './features/user/services/user.service.http';
+import { restoreSession } from './features/auth/session.initializer';
 
 // Formato de moneda (S/) y fechas en español de Perú para los pipes con locale 'es-PE'
 registerLocaleData(localeEsPe);
@@ -52,6 +53,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withInterceptors([authInterceptor,errorInterceptor]),
     ),
+    provideAppInitializer(restoreSession), // después de provideHttpClient
 
     {
       provide: PatientService,

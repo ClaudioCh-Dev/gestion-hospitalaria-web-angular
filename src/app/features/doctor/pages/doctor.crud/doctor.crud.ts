@@ -1,3 +1,4 @@
+import { HasPermission } from '@shared/directives/has-permission.directive';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -60,7 +61,7 @@ import { NotificationService } from '@core/services/alert-notification.service';
 
 @Component({
   selector: 'app-doctor-crud',
-  imports: [
+  imports: [HasPermission, 
     StateMessage,
     TuiButtonLoading,
     DoctorFiltersComponent,

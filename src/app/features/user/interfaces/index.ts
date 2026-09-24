@@ -25,6 +25,12 @@ export interface UpdateUserRequest {
   password?: string | null;
 }
 
+// POST /users/activate (público): token del correo + contraseña que elige el usuario
+export interface ActivateAccountRequest {
+  token: string;
+  password: string;
+}
+
 export interface ChangePasswordRequest {
   currentPassword: string;
   newPassword: string;
