@@ -27,6 +27,11 @@ export const errorInterceptor: HttpInterceptorFn = (
 
     catchError((error: HttpErrorResponse) => {
 
+      // El login muestra su propio mensaje en el formulario
+      if (req.url.includes('/auth/login')) {
+        return throwError(() => error);
+      }
+
       const problemDetail =
         error.error as ProblemDetailMicroservice;
 

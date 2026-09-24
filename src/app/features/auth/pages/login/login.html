@@ -1,68 +1,160 @@
-<div
-  class="relative flex min-h-screen items-center justify-center overflow-hidden bg-cover bg-center bg-no-repeat p-6"
-  style="background-image: url('/clinica.webp')"
->
-  <!-- Fondo -->
-  <div
-    class="absolute inset-0 bg-linear-to-br from-slate-950/60 via-blue-950/40 to-cyan-900/30"
-  ></div>
+<div class="flex min-h-screen bg-slate-50">
+  <!-- ================================================= -->
+  <!-- PANEL DE MARCA (escritorio) -->
+  <!-- ================================================= -->
+<aside
+    class="relative hidden w-1/2 overflow-hidden bg-cover bg-center lg:flex lg:flex-col xl:w-3/5"
+    style="background-image: url('/clinica.webp')"
+  >
+    <!-- Overlay original -->
+    <div class="absolute inset-0 bg-linear-to-br from-blue-950/90 via-blue-900/75 to-cyan-800/60"></div>
 
-  <!-- Login -->
-  <div class="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl">
-    <!-- Imagen -->
-    <div class="relative h-64 w-full overflow-hidden">
-      <img
-        src="https://media.istockphoto.com/id/2158610739/es/foto/m%C3%A9dico-guapo-con-estetoscopio-sobre-el-cuello-trabajando-mientras-mira-a-la-c%C3%A1mara-en-la.jpg?s=612x612&w=0&k=20&c=meqU3H6FI07LqfM8Iyr8FSTwpMAjcOs6U-bQbilV8HE="
-        alt="Médico"
-        class="h-full w-full object-cover"
-      />
+    <!-- 1. Aumenté el padding general lateral y vertical (lg:p-20 xl:p-24) -->
+    <div class="relative flex h-full w-full flex-col justify-between p-12 lg:p-20 xl:p-24 font-display text-white">
+      
+      <!-- Contenido Principal (Centro) -->
+      <!-- 2. Aumenté el ancho máximo (max-w-3xl) para que respire a los lados -->
+      <div class="mb-auto mt-auto w-full max-w-3xl"> 
+        
+        <!-- Título -->
+        <h2 class="text-4xl font-bold leading-[1.2] tracking-tight xl:text-5xl">
+          La gestión de tu clínica, <br class="hidden xl:block" />
+          <span class="text-cyan-300">más simple y conectada.</span>
+        </h2>
 
-      <!-- Degradado sobre imagen -->
-      <div
-        class="absolute inset-0 bg-linear-to-t from-slate-950/80 via-slate-950/20 to-transparent"
-      ></div>
+        <!-- 3. Aumenté el margen superior (mt-8) -->
+        <p class="mt-8 max-w-xl text-lg leading-relaxed text-white/80">
+          Centraliza la información de tus pacientes, profesionales y citas desde una sola plataforma.
+        </p>
 
-      <!-- Título dentro de la imagen -->
-      <div class="absolute bottom-6 left-6 text-white">
-        <h1 class="text-3xl font-semibold">Iniciar sesión</h1>
-
-        <p class="mt-1 text-sm text-white/80">Ingresa tus credenciales para continuar</p>
+        <!-- 4. Aumenté la distancia con el título (mt-16) y la separación entre tarjetas (gap-8) -->
+        <!-- Cuadrícula de características -->
+        <!-- Cambiamos a 1 columna en 'lg' y 2 columnas en 'xl' -->
+        <div class="mt-16 grid gap-6 xl:gap-8 grid-cols-1 xl:grid-cols-2">
+          @for (item of highlights; track item.title) {
+            <!-- Cambiamos flex-col para pantallas medianas, y xl:flex-row para pantallas grandes -->
+            <div class="flex flex-col xl:flex-row items-start xl:items-center gap-4 xl:gap-6 rounded-3xl border border-white/10 bg-white/5 p-6 xl:p-7 backdrop-blur-sm transition-colors hover:bg-white/10">
+              
+              <!-- Solo en pantallas anchas: en el panel angosto el ícono lo alarga verticalmente.
+                   Se oculta el span porque tui-icon fija su propio display. -->
+              <span class="hidden shrink-0 xl:inline-flex">
+                <tui-icon [icon]="item.icon" class="text-4xl! text-cyan-300" />
+              </span>
+              
+              <div>
+                <p class="text-base font-medium text-white">{{ item.title }}</p>
+                <p class="mt-1.5 text-sm leading-relaxed text-white/60">{{ item.description }}</p>
+              </div>
+              
+            </div>
+          }
+        </div>
       </div>
+
+      <!-- Footer (Abajo) -->
+      <!-- 7. Aumenté el espacio del footer (pt-8) -->
+      <div class="border-t border-white/10 pt-8 mt-12">
+        <p class="text-sm text-white/50">© {{ year }} Gestión Hospitalaria. Todos los derechos reservados.</p>
+      </div>
+
+    </div>
+  </aside>
+
+  <!-- ================================================= -->
+  <!-- FORMULARIO -->
+  <!-- ================================================= -->
+  <main class="relative flex flex-1 items-center justify-center overflow-hidden p-6 lg:px-6 lg:py-12">
+    <!-- Fondo original (solo móvil): imagen de la clínica con degradado -->
+    <div
+      class="absolute inset-0 bg-cover bg-center bg-no-repeat lg:hidden"
+      style="background-image: url('/clinica.webp')"
+    >
+      <div class="absolute inset-0 bg-linear-to-br from-slate-950/60 via-blue-950/40 to-cyan-900/30"></div>
     </div>
 
-    <!-- Formulario -->
-    <div class="p-8">
-      <div class="flex flex-col gap-7">
-        <!-- Email -->
-        <tui-textfield [tuiTextfieldCleaner]="false" tuiTextfieldSize="s">
-          <input tuiInput type="email" placeholder="Correo electrónico" [(ngModel)]="email" />
+    <!-- Móvil: tarjeta original con la foto del médico. Escritorio (lg): formulario sin tarjeta -->
+    <div
+      class="relative w-full max-w-md overflow-hidden rounded-2xl bg-white shadow-2xl lg:max-w-sm lg:overflow-visible lg:rounded-none lg:bg-transparent lg:shadow-none"
+    >
+      <!-- Imagen (solo móvil) -->
+      <div class="relative h-64 w-full overflow-hidden lg:hidden">
+        <img
+          src="https://media.istockphoto.com/id/2158610739/es/foto/m%C3%A9dico-guapo-con-estetoscopio-sobre-el-cuello-trabajando-mientras-mira-a-la-c%C3%A1mara-en-la.jpg?s=612x612&w=0&k=20&c=meqU3H6FI07LqfM8Iyr8FSTwpMAjcOs6U-bQbilV8HE="
+          alt="Médico"
+          class="h-full w-full object-cover"
+        />
 
-          @if (email) {
-            <button tabindex="-1" tuiButtonX type="button" (click)="clearEmail()">Clear</button>
+        <!-- Degradado sobre imagen -->
+        <div class="absolute inset-0 bg-linear-to-t from-slate-950/80 via-slate-950/20 to-transparent"></div>
+
+        <!-- Título dentro de la imagen -->
+        <div class="absolute bottom-6 left-6 text-white">
+          <h1 class="text-3xl font-semibold">Iniciar sesión</h1>
+
+          <p class="mt-1 text-sm text-white/80">Ingresa tus credenciales para continuar</p>
+        </div>
+      </div>
+
+      <div class="p-8 lg:p-0">
+        <!-- Título (solo escritorio) -->
+        <header class="mb-8 hidden lg:block">
+          <h1 class="text-2xl font-semibold tracking-tight text-slate-900">Bienvenido de nuevo</h1>
+          <p class="mt-2 text-sm text-slate-500">Ingresa con tu cuenta para continuar.</p>
+        </header>
+
+        <form class="flex flex-col gap-5" [formGroup]="form" (ngSubmit)="login()">
+          <!-- Error de autenticación -->
+          @if (errorMessage(); as message) {
+            <div
+              class="flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+              role="alert"
+            >
+              <tui-icon icon="@tui.circle-alert" class="mt-0.5 shrink-0" />
+              <span>{{ message }}</span>
+            </div>
           }
-        </tui-textfield>
 
-        <!-- Password -->
-        <tui-textfield [tuiTextfieldCleaner]="false" tuiTextfieldSize="s">
-          <input tuiInput type="password" placeholder="Contraseña" [(ngModel)]="password" />
+          <!-- Correo -->
+          <div>
+            <tui-textfield iconStart="@tui.mail">
+              <label tuiLabel>Correo electrónico</label>
+              <input
+                tuiInput
+                type="email"
+                autocomplete="username"
+                placeholder="nombre@hospital.com"
+                formControlName="email"
+              />
+            </tui-textfield>
 
-          @if (password) {
-            <button tabindex="-1" tuiButtonX type="button" (click)="clearPassword()">Clear</button>
-          }
-        </tui-textfield>
+            <tui-error formControlName="email" />
+          </div>
 
-        <!-- Botón -->
-        <button
-          tuiButton
-          type="button"
-          appearance="primary"
-          size="s"
-          class="w-full"
-          (click)="login()"
-        >
-          Iniciar sesión
-        </button>
+          <!-- Contraseña -->
+          <div>
+            <tui-textfield iconStart="@tui.lock">
+              <label tuiLabel>Contraseña</label>
+              <input
+                tuiInput
+                type="password"
+                autocomplete="current-password"
+                formControlName="password"
+              />
+              <tui-icon tuiPassword />
+            </tui-textfield>
+
+            <tui-error formControlName="password" />
+          </div>
+
+          <button tuiButton type="submit" size="l" class="mt-2 w-full" [loading]="loading()">
+            Iniciar sesión
+          </button>
+        </form>
+
+        <p class="mt-8 text-center text-xs text-slate-400 lg:mt-10">
+          ¿Problemas para ingresar? Contacta al administrador del sistema.
+        </p>
       </div>
     </div>
-  </div>
+  </main>
 </div>
