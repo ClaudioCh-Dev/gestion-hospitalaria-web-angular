@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { TuiButton, TuiInput, TuiTextfield, TuiLabel } from '@taiga-ui/core';
 
 import { TuiChevron, TuiDataListWrapper, TuiSelect } from '@taiga-ui/kit';
-import { GENDERS } from '../../constans/patient-options';
+import { GENDERS } from '../../constants/patient-options';
 import { Gender } from '../../interfaces';
 
 export interface PatientFilters {

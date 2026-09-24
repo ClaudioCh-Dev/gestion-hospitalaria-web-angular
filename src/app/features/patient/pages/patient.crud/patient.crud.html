@@ -23,33 +23,49 @@
 
   </div>
 
-  <!-- Error -->
-  @if (patientsResource.error(); as error) {
-
-    <div
-      class="flex w-full items-center justify-between rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700"
+  <!-- Acciones masivas -->
+  @if (selected().length) {
+    <app-bulk-actions-bar
+      itemLabel="pacientes"
+      itemLabelSingular="paciente"
+      [count]="selected().length"
+      [busy]="bulkBusy()"
+      (clear)="selected.set([])"
     >
-      <div class="flex flex-col">
-        <span class="font-medium">
-          Error al cargar los pacientes
-        </span>
-
-        <span class="text-sm">
-          Ocurrió un problema al obtener la información.
-        </span>
-      </div>
+      <button
+        tuiButton
+        type="button"
+        size="s"
+        appearance="secondary"
+        iconStart="@tui.download"
+        [disabled]="bulkBusy()"
+        (click)="exportSelected()"
+      >
+        Exportar CSV
+      </button>
 
       <button
         tuiButton
-        size="s"
-        appearance="secondary"
         type="button"
-        (click)="patientsResource.reload()"
+        size="s"
+        appearance="secondary-destructive"
+        iconStart="@tui.trash-2"
+        [disabled]="bulkBusy()"
+        (click)="deleteSelected()"
       >
-        Reintentar
+        Eliminar
       </button>
-    </div>
+    </app-bulk-actions-bar>
+  }
 
+  <!-- Error -->
+  @if (patientsResource.error()) {
+    <app-state-message
+      variant="error"
+      title="No se pudieron cargar los pacientes"
+      description="Ocurrió un problema al obtener la información."
+      (action)="patientsResource.reload()"
+    />
   }
 
   <!-- Tabla -->

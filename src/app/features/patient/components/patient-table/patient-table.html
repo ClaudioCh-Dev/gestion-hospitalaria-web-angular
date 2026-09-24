@@ -194,6 +194,17 @@
               </span>
             </td>
           </tr>
+        } @empty {
+          <tr>
+            <td tuiTd colspan="6">
+              <app-state-message
+                [compact]="true"
+                icon="@tui.users"
+                title="No se encontraron pacientes"
+                description="Prueba con otro nombre, DNI o filtro de género."
+              />
+            </td>
+          </tr>
         }
       }
     </tbody>

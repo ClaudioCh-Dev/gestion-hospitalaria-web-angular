@@ -8,7 +8,7 @@ import { NotificationService } from '@core/services/alert-notification.service';
 import { FormField, ModalForm } from '@shared/components/modal-form/modal-form';
 import { withNotification } from '@shared/operators/with-notification';
 
-import { SpecialtyResponse } from '../../intefaces';
+import { SpecialtyResponse } from '../../interfaces';
 import { DoctorService } from '../../services/doctor.service';
 import { SpecialtyStore } from '../../store/specialty.store';
 

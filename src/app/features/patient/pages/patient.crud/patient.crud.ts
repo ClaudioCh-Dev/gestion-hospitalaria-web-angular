@@ -32,7 +32,7 @@ import {
   type TuiConfirmData,
 } from '@taiga-ui/kit';
 
-import { catchError, filter, of, switchMap } from 'rxjs';
+import { catchError, filter, forkJoin, map, of, switchMap } from 'rxjs';
 
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 
@@ -51,10 +51,15 @@ import {
 } from '../../components/patient-filters/patient-filters';
 
 import { PatientTableComponent } from '../../components/patient-table/patient-table';
+import { StateMessage } from '@shared/components/state-message/state-message';
+import { BulkActionsBar } from '@shared/components/bulk-actions-bar/bulk-actions-bar';
+import { downloadCsv } from '@shared/utils/csv';
 
 @Component({
   selector: 'app-patient-crud',
   imports: [
+    StateMessage,
+    BulkActionsBar,
     FormsModule,
     PatientFiltersComponent,
     PatientTableComponent,
@@ -86,6 +91,8 @@ export class PatientCrud {
   // ============================
 
   protected readonly selected = signal<PatientResponse[]>([]);
+
+  protected readonly bulkBusy = signal(false);
 
   protected readonly selectedPatient =
     signal<PatientDetailResponse | null>(null);
@@ -248,6 +255,7 @@ export class PatientCrud {
   // ============================
 
   protected onFiltersChange(filters: PatientFilters): void {
+    this.selected.set([]);
     this.search.set(filters.search);
 
     if (filters.gender !== this.gender()) {
@@ -305,6 +313,7 @@ export class PatientCrud {
   // ============================
 
   protected changePage(page: number): void {
+    this.selected.set([]);
     this.page.set(page);
   }
 
@@ -313,7 +322,90 @@ export class PatientCrud {
   // ============================
 
   protected changeSize(size: number): void {
+    this.selected.set([]);
     this.size.set(size);
     this.page.set(0);
+  }
+
+  // ============================
+  // Acciones masivas
+  // ============================
+
+  protected exportSelected(): void {
+    const genders: Record<string, string> = {
+      [Gender.MALE]: 'Masculino',
+      [Gender.FEMALE]: 'Femenino',
+    };
+
+    downloadCsv(
+      `pacientes-seleccionados-${this.selected().length}.csv`,
+      ['DNI', 'Nombres', 'Apellidos', 'Género', 'Nacimiento', 'Teléfono', 'Correo', 'Estado'],
+      this.selected().map((patient) => [
+        patient.documentNumber,
+        patient.firstName,
+        patient.lastName,
+        genders[patient.gender ?? ''] ?? '',
+        patient.birthDate,
+        patient.phone,
+        patient.email,
+        patient.active ? 'Activo' : 'Inactivo',
+      ]),
+    );
+  }
+
+  protected deleteSelected(): void {
+    const patients = this.selected();
+
+    const data: TuiConfirmData = {
+      content: `Se eliminarán <strong>${patients.length} pacientes</strong>. Esta acción no se puede deshacer.`,
+      yes: 'Eliminar',
+      no: 'Cancelar',
+      appearance: 'primary-destructive',
+    };
+
+    this.dialogs
+      .open<boolean>(TUI_CONFIRM, {
+        label: '¿Eliminar pacientes seleccionados?',
+        size: 's',
+        data,
+      })
+      .pipe(
+        filter(Boolean),
+        switchMap(() => {
+          this.bulkBusy.set(true);
+          this.notificationService.showLoading();
+
+          // Cada eliminación es independiente: un fallo no detiene las demás
+          return forkJoin(
+            patients.map((patient) =>
+              this.patientService.delete(patient.id).pipe(
+                map(() => true),
+                catchError(() => of(false)),
+              ),
+            ),
+          );
+        }),
+      )
+      .subscribe((results) => {
+        const deleted = results.filter(Boolean).length;
+
+        this.bulkBusy.set(false);
+        this.selected.set([]);
+        this.selectedPatient.set(null);
+        this.patientsResource.reload();
+
+        if (deleted === patients.length) {
+          this.notificationService.showSuccess(
+            `${deleted} ${deleted === 1 ? 'paciente eliminado' : 'pacientes eliminados'} correctamente`,
+          );
+          return;
+        }
+
+        this.notificationService.showError({
+          status: 500,
+          title: 'Eliminación incompleta',
+          detail: `Se eliminaron ${deleted} de ${patients.length} pacientes. Revisa los que quedaron.`,
+        });
+      });
   }
 }

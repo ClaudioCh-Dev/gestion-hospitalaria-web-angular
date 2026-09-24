@@ -48,8 +48,10 @@ import {
   MedicalRecordService,
 } from '../../services/medical-record.service';
 import { MedicalRecordResponse } from '../../interfaces/medical-record-response';
+import { downloadCsv } from '@shared/utils/csv';
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 import { MedicalRecordDetailDialog } from '../../components/medical-record-detail-dialog/medical-record-detail-dialog';
+import { StateMessage } from '@shared/components/state-message/state-message';
 
 // Registros usados para calcular el resumen y las categorías
 const SUMMARY_SIZE = 1000;
@@ -80,6 +82,7 @@ interface Stat {
 @Component({
   selector: 'app-medical-records',
   imports: [
+    StateMessage,
     CommonModule,
     ReactiveFormsModule,
     TuiButton,
@@ -230,33 +233,19 @@ export class MedicalRecords {
   }
 
   protected download(): void {
-    const header = ['Cita', 'Fecha', 'Paciente', 'Médico', 'Especialidad', 'Motivo', 'Estado', 'Monto'];
-
-    const escape = (value: string | number) => `"${String(value ?? '').replace(/"/g, '""')}"`;
-
-    const rows = this.filteredRecords().map((record: MedicalRecordResponse) => [
-      record.appointmentId,
-      record.scheduledAt,
-      record.patientName,
-      record.doctorName,
-      record.specialty,
-      record.reason,
-      this.statusLabel(record.status),
-      record.amount,
-    ]);
-
-    const csv = [header, ...rows]
-      .map(row => row.map(escape).join(','))
-      .join('\n');
-
-    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-
-    const link = document.createElement('a');
-
-    link.href = url;
-    link.download = `historial-pagina-${this.page() + 1}.csv`;
-    link.click();
-
-    URL.revokeObjectURL(url);
+    downloadCsv(
+      `historial-pagina-${this.page() + 1}.csv`,
+      ['Cita', 'Fecha', 'Paciente', 'Médico', 'Especialidad', 'Motivo', 'Estado', 'Monto'],
+      this.filteredRecords().map((record: MedicalRecordResponse) => [
+        record.appointmentId,
+        record.scheduledAt,
+        record.patientName,
+        record.doctorName,
+        record.specialty,
+        record.reason,
+        this.statusLabel(record.status),
+        record.amount,
+      ]),
+    );
   }
 }

@@ -9,7 +9,7 @@ import {
   DoctorResponse,
   CreateSpecialtyRequest,
   SpecialtyResponse,
-} from '../intefaces';
+} from '../interfaces';
 
 import { DoctorService } from './doctor.service';
 import { environment } from '@environments/environment';

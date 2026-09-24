@@ -6,7 +6,7 @@ import { TuiDataList, TuiTitle } from '@taiga-ui/core';
 import { TuiCardMedium } from '@taiga-ui/layout';
 
 @Component({
-  selector: 'app-cell-callendar',
+  selector: 'app-cell-calendar',
   imports: [
     FormsModule,
     TuiChevron,
@@ -18,10 +18,10 @@ import { TuiCardMedium } from '@taiga-ui/layout';
     TuiAvatar,
     TuiAvatarStack,
   ],
-  templateUrl: './cell-callendar.html',
+  templateUrl: './cell-calendar.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CellCallendar {
+export class CellCalendar {
 
   days = [
     { name: 'Lun', date: 17 },

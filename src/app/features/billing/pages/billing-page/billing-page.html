@@ -131,24 +131,13 @@
 
     <!-- Error -->
     @else if (billingResource.error()) {
-      <div class="col-span-full flex flex-col items-center justify-center py-12 text-center">
-        <tui-icon icon="@tui.circle-x" class="mb-3 text-red-400" />
-
-        <h3 class="text-sm font-semibold text-slate-800">No se pudo cargar la facturación</h3>
-
-        <p class="mt-1 text-sm text-slate-500">Ocurrió un error al obtener los registros.</p>
-
-        <button
-          class="mt-4"
-          appearance="secondary"
-          size="s"
-          tuiButton
-          type="button"
-          (click)="billingResource.reload()"
-        >
-          Reintentar
-        </button>
-      </div>
+      <app-state-message
+        class="col-span-full"
+        variant="error"
+        title="No se pudo cargar la facturación"
+        description="Ocurrió un error al obtener los registros."
+        (action)="billingResource.reload()"
+      />
     }
 
     <!-- Data -->
@@ -319,17 +308,12 @@
           </footer>
         </div>
       } @empty {
-        <div appearance="floating" tuiCardLarge class="col-span-full py-12!">
-          <section class="flex flex-col items-center justify-center text-center">
-            <tui-icon icon="@tui.wallet" class="mb-3 text-slate-400" />
-
-            <h3 class="text-sm font-semibold text-slate-800">No hay registros de facturación</h3>
-
-            <p class="mt-1 text-sm text-slate-500">
-              No se encontraron facturas con los filtros aplicados.
-            </p>
-          </section>
-        </div>
+        <app-state-message
+          class="col-span-full"
+          icon="@tui.wallet"
+          title="No hay registros de facturación"
+          description="No se encontraron facturas con los filtros aplicados."
+        />
       }
     }
   </div>

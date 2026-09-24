@@ -36,6 +36,54 @@
 
   </div>
 
+  <!-- Acciones masivas -->
+  @if (selected().length) {
+    <app-bulk-actions-bar
+      itemLabel="médicos"
+      itemLabelSingular="médico"
+      [count]="selected().length"
+      [busy]="bulkBusy()"
+      (clear)="selected.set([])"
+    >
+      <button
+        tuiButton
+        type="button"
+        size="s"
+        appearance="secondary"
+        iconStart="@tui.download"
+        [disabled]="bulkBusy()"
+        (click)="exportSelected()"
+      >
+        Exportar CSV
+      </button>
+
+      <button
+        tuiButton
+        type="button"
+        size="s"
+        appearance="secondary-destructive"
+        iconStart="@tui.ban"
+        [disabled]="bulkBusy() || !selectedActive().length"
+        (click)="deactivateSelected()"
+      >
+        Desactivar
+        @if (selectedActive().length !== selected().length) {
+          ({{ selectedActive().length }} activos)
+        }
+      </button>
+    </app-bulk-actions-bar>
+  }
+
+  <!-- Error -->
+  @if (doctorsResource.error()) {
+    <app-state-message
+      variant="error"
+      title="No se pudieron cargar los médicos"
+      description="Ocurrió un problema al obtener la información."
+      (action)="doctorsResource.reload()"
+    />
+  } @else {
+
   <!-- Tabla -->
   <app-doctor-table
     [doctors]="filteredDoctors()"
@@ -61,5 +109,7 @@
     (sizeChange)="changeSize($event)"
     class="h-full"
   />
+
+  }
 
 </div>

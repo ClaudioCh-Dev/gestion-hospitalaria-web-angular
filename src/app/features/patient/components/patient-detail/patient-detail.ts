@@ -19,11 +19,14 @@ import {
   APPOINTMENT_STATUS_LABELS,
 } from '../../../appointment/constants/appointment-status';
 import { AppointmentService } from '../../../appointment/services/appointment.service';
-import { BillingStatus } from '../../../billing/interfaces';
 import { BillingRecordService } from '../../../billing/services/billing-record.service';
 import { DoctorService } from '../../../doctor/services/doctor.service';
 import { MedicalRecordService } from '../../../medical-history/services/medical-record.service';
 import { PatientDetailResponse } from '../../interfaces';
+import {
+  BILLING_STATUS_APPEARANCES,
+  BILLING_STATUS_LABELS,
+} from '../../../billing/constants/billing-status';
 
 // Registros mostrados por pestaña
 const TAB_PAGE_SIZE = 20;
@@ -80,17 +83,9 @@ export class PatientDetailComponent {
   protected readonly appointmentStatusLabels = APPOINTMENT_STATUS_LABELS;
   protected readonly appointmentStatusAppearances = APPOINTMENT_STATUS_APPEARANCES;
 
-  protected readonly billingStatusLabels: Record<BillingStatus, string> = {
-    PENDING: 'Pendiente',
-    PAID: 'Pagado',
-    CANCELLED: 'Cancelado',
-  };
+  protected readonly billingStatusLabels = BILLING_STATUS_LABELS;
 
-  protected readonly billingStatusAppearances: Record<BillingStatus, string> = {
-    PENDING: 'warning',
-    PAID: 'positive',
-    CANCELLED: 'negative',
-  };
+  protected readonly billingStatusAppearances = BILLING_STATUS_APPEARANCES;
 
   // =====================================================
   // RESOURCES (cada pestaña carga solo cuando se abre)

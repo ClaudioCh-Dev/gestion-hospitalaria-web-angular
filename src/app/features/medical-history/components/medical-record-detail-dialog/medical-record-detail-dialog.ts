@@ -13,12 +13,15 @@ import {
   APPOINTMENT_STATUS_LABELS,
 } from '../../../appointment/constants/appointment-status';
 import { AppointmentStatus } from '../../../appointment/interfaces';
-import { BillingStatus } from '../../../billing/interfaces';
 import { BillingRecordService } from '../../../billing/services/billing-record.service';
 import { DoctorService } from '../../../doctor/services/doctor.service';
-import { BLOOD_TYPES } from '../../../patient/constans/patient-options';
+import { BLOOD_TYPES } from '../../../patient/constants/patient-options';
 import { PatientService } from '../../../patient/services/patient.service';
 import { MedicalRecordResponse } from '../../interfaces/medical-record-response';
+import {
+  BILLING_STATUS_APPEARANCES,
+  BILLING_STATUS_LABELS,
+} from '../../../billing/constants/billing-status';
 
 const STEPS = 3;
 
@@ -67,17 +70,9 @@ export class MedicalRecordDetailDialog {
 
   protected readonly statusAppearance = APPOINTMENT_STATUS_APPEARANCES[this.status] ?? 'neutral';
 
-  protected readonly billingStatusLabels: Record<BillingStatus, string> = {
-    PENDING: 'Pendiente',
-    PAID: 'Pagado',
-    CANCELLED: 'Cancelado',
-  };
+  protected readonly billingStatusLabels = BILLING_STATUS_LABELS;
 
-  protected readonly billingStatusAppearances: Record<BillingStatus, string> = {
-    PENDING: 'warning',
-    PAID: 'positive',
-    CANCELLED: 'negative',
-  };
+  protected readonly billingStatusAppearances = BILLING_STATUS_APPEARANCES;
 
   protected readonly patientResource = rxResource({
     stream: () => this.patientService.findById(this.record.patientId),

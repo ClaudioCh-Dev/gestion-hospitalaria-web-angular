@@ -1,5 +1,5 @@
 import { PageResponse } from '../../../shared/models/page.type';
-import { DoctorResponse } from '../intefaces';
+import { DoctorResponse } from '../interfaces';
 
 export const DOCTORS_MOCK: PageResponse<DoctorResponse> = {
   content: [

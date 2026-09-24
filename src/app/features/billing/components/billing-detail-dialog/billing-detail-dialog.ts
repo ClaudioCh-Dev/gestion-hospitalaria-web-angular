@@ -16,7 +16,12 @@ import {
 } from '../../../appointment/constants/appointment-status';
 import { AppointmentService } from '../../../appointment/services/appointment.service';
 import { DoctorService } from '../../../doctor/services/doctor.service';
-import { BillingRecordResponse, BillingStatus } from '../../interfaces';
+import { BillingRecordResponse } from '../../interfaces';
+import {
+  BILLING_STATUS_APPEARANCES,
+  BILLING_STATUS_ICONS,
+  BILLING_STATUS_LABELS,
+} from '../../constants/billing-status';
 
 @Component({
   selector: 'app-billing-detail-dialog',
@@ -61,23 +66,11 @@ export class BillingDetailDialog {
       ),
   });
 
-  protected readonly statusLabels: Record<BillingStatus, string> = {
-    PENDING: 'Pendiente',
-    PAID: 'Pagado',
-    CANCELLED: 'Cancelado',
-  };
+  protected readonly statusLabels = BILLING_STATUS_LABELS;
 
-  protected readonly statusAppearances: Record<BillingStatus, string> = {
-    PENDING: 'warning',
-    PAID: 'positive',
-    CANCELLED: 'negative',
-  };
+  protected readonly statusAppearances = BILLING_STATUS_APPEARANCES;
 
-  protected readonly statusIcons: Record<BillingStatus, string> = {
-    PENDING: '@tui.clock',
-    PAID: '@tui.circle-check',
-    CANCELLED: '@tui.circle-x',
-  };
+  protected readonly statusIcons = BILLING_STATUS_ICONS;
 
   protected readonly appointmentStatusLabels = APPOINTMENT_STATUS_LABELS;
   protected readonly appointmentStatusAppearances = APPOINTMENT_STATUS_APPEARANCES;

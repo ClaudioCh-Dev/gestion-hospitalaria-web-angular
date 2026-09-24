@@ -17,7 +17,7 @@ import { NotificationService } from '@core/services/alert-notification.service';
 import { withNotification } from '@shared/operators/with-notification';
 import { PatientService } from '@patients/services/patient.service';
 
-import { DoctorResponse } from '../../../doctor/intefaces';
+import { DoctorResponse } from '../../../doctor/interfaces';
 import { AppointmentResponse, AppointmentStatus } from '../../interfaces';
 import { AppointmentService } from '../../services/appointment.service';
 import {

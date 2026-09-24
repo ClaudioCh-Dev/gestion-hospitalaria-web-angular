@@ -229,6 +229,17 @@
               </span>
             </td>
           </tr>
+        } @empty {
+          <tr>
+            <td tuiTd colspan="7">
+              <app-state-message
+                [compact]="true"
+                icon="@tui.stethoscope"
+                title="No se encontraron médicos"
+                description="Prueba con otro nombre o especialidad."
+              />
+            </td>
+          </tr>
         }
       }
     </tbody>

@@ -29,16 +29,18 @@ import {
   TuiTableControl,
 } from '@taiga-ui/addon-table';
 
-import { DoctorResponse } from '../../intefaces';
+import { DoctorResponse } from '../../interfaces';
 
 import { DoctorDetailComponent } from '../doctor-detail/doctor-detail';
 
 import { TimeRangePipe } from '@shared/pipes/time-range-pipe';
 import { AvatarDefaultDoctorPipe } from '@shared/pipes/avatar-default-doctor-pipe';
+import { StateMessage } from '@shared/components/state-message/state-message';
 
 @Component({
   selector: 'app-doctor-table',
   imports: [
+    StateMessage,
     FormsModule,
     TuiAvatar,
     TuiButton,

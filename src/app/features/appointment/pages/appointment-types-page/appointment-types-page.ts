@@ -34,6 +34,7 @@ import {
   AppointmentTypeModal,
   AppointmentTypeModalData,
 } from '../../components/appointment-type-modal/appointment-type-modal';
+import { StateMessage } from '@shared/components/state-message/state-message';
 
 interface AppointmentTypeRow {
   appointmentType: AppointmentTypeResponse;
@@ -43,6 +44,7 @@ interface AppointmentTypeRow {
 @Component({
   selector: 'app-appointment-types-page',
   imports: [
+    StateMessage,
     CurrencyPipe,
     TuiBadge,
     TuiButton,

@@ -19,7 +19,7 @@ import {
   CreateDoctorRequest,
   DoctorResponse,
   UpdateDoctorRequest,
-} from '../../intefaces';
+} from '../../interfaces';
 
 import { DoctorService } from '../../services/doctor.service';
 

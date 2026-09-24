@@ -11,7 +11,7 @@ import {
   DoctorResponse,
   CreateSpecialtyRequest,
   SpecialtyResponse,
-} from '../intefaces';
+} from '../interfaces';
 
 import { DoctorService } from './doctor.service';
 

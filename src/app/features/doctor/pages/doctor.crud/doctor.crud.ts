@@ -8,6 +8,8 @@ import {
 
 import { rxResource } from '@angular/core/rxjs-interop';
 
+import { catchError, filter, forkJoin, map, of, switchMap } from 'rxjs';
+
 import {
   TuiButton,
   TuiDialogService,
@@ -20,11 +22,13 @@ import {
 
 import { PolymorpheusComponent } from '@taiga-ui/polymorpheus';
 
+import { TUI_CONFIRM, type TuiConfirmData } from '@taiga-ui/kit';
+
 import {
   DoctorResponse,
   CreateDoctorRequest,
   UpdateDoctorRequest,
-} from '../../intefaces';
+} from '../../interfaces';
 
 import { DoctorService } from '../../services/doctor.service';
 
@@ -40,10 +44,16 @@ import {
 import { DoctorTableComponent } from '../../components/doctor-table/doctor-table';
 
 import { SpecialtyModal } from '../../components/specialty-modal/specialty-modal';
+import { StateMessage } from '@shared/components/state-message/state-message';
+import { BulkActionsBar } from '@shared/components/bulk-actions-bar/bulk-actions-bar';
+import { downloadCsv } from '@shared/utils/csv';
+import { NotificationService } from '@core/services/alert-notification.service';
 
 @Component({
   selector: 'app-doctor-crud',
   imports: [
+    StateMessage,
+    BulkActionsBar,
     DoctorFiltersComponent,
     DoctorTableComponent,
     TuiTable,
@@ -63,6 +73,9 @@ export class DoctorCrud {
   private readonly dialogs =
     inject(TuiDialogService);
 
+  private readonly notificationService =
+    inject(NotificationService);
+
   // =====================================================
   // LOADING DE ACCIONES
   // =====================================================
@@ -79,6 +92,14 @@ export class DoctorCrud {
 
   protected readonly selected =
     signal<DoctorResponse[]>([]);
+
+  protected readonly bulkBusy =
+    signal(false);
+
+  // Solo los activos se pueden desactivar
+  protected readonly selectedActive = computed(() =>
+    this.selected().filter((doctor) => doctor.active),
+  );
 
   protected readonly page =
     signal(0);
@@ -278,6 +299,7 @@ export class DoctorCrud {
   protected onFiltersChange(
     filters: DoctorFilters,
   ): void {
+    this.selected.set([]);
     this.search.set(filters.search);
 
     if (filters.specialtyId !== this.specialtyId()) {
@@ -311,6 +333,7 @@ export class DoctorCrud {
   protected changePage(
     page: number,
   ): void {
+    this.selected.set([]);
     this.page.set(page);
   }
 
@@ -321,7 +344,105 @@ export class DoctorCrud {
   protected changeSize(
     size: number,
   ): void {
+    this.selected.set([]);
     this.size.set(size);
     this.page.set(0);
+  }
+
+  // =====================================================
+  // ACCIONES MASIVAS
+  // =====================================================
+
+  protected exportSelected(): void {
+    downloadCsv(
+      `medicos-seleccionados-${this.selected().length}.csv`,
+      [
+        'Colegiatura',
+        'Nombres',
+        'Apellidos',
+        'Especialidad',
+        'Teléfono',
+        'Correo',
+        'Horario',
+        'Estado',
+      ],
+      this.selected().map((doctor) => [
+        doctor.licenseNumber,
+        doctor.firstName,
+        doctor.lastName,
+        doctor.specialtyName,
+        doctor.phone,
+        doctor.email,
+        `${doctor.scheduleStart?.slice(0, 5) ?? ''} - ${doctor.scheduleEnd?.slice(0, 5) ?? ''}`,
+        doctor.active ? 'Activo' : 'Inactivo',
+      ]),
+    );
+  }
+
+  // El backend no permite eliminar médicos: se desactivan con el update existente
+  protected deactivateSelected(): void {
+    const doctors = this.selectedActive();
+
+    const data: TuiConfirmData = {
+      content: `Se desactivarán <strong>${doctors.length} médicos</strong>. Dejarán de estar disponibles para nuevas citas.`,
+      yes: 'Desactivar',
+      no: 'Cancelar',
+      appearance: 'primary-destructive',
+    };
+
+    this.dialogs
+      .open<boolean>(TUI_CONFIRM, {
+        label: '¿Desactivar médicos seleccionados?',
+        size: 's',
+        data,
+      })
+      .pipe(
+        filter(Boolean),
+        switchMap(() => {
+          this.bulkBusy.set(true);
+          this.notificationService.showLoading();
+
+          // Cada actualización es independiente: un fallo no detiene las demás
+          return forkJoin(
+            doctors.map((doctor) =>
+              this.doctorService
+                .update(doctor.id, {
+                  firstName: doctor.firstName,
+                  lastName: doctor.lastName,
+                  email: doctor.email,
+                  phone: doctor.phone,
+                  specialtyId: doctor.specialtyId,
+                  scheduleStart: doctor.scheduleStart,
+                  scheduleEnd: doctor.scheduleEnd,
+                  active: false,
+                })
+                .pipe(
+                  map(() => true),
+                  catchError(() => of(false)),
+                ),
+            ),
+          );
+        }),
+      )
+      .subscribe((results) => {
+        const updated = results.filter(Boolean).length;
+
+        this.bulkBusy.set(false);
+        this.selected.set([]);
+        this.doctorsResource.reload();
+
+        if (updated === doctors.length) {
+          this.notificationService.showSuccess(
+            `${updated} ${updated === 1 ? 'médico desactivado' : 'médicos desactivados'} correctamente`,
+          );
+          return;
+        }
+
+        this.notificationService.showError({
+          status: 500,
+          title: 'Desactivación incompleta',
+          detail: `Se desactivaron ${updated} de ${doctors.length} médicos. Revisa los que quedaron.`,
+        });
+      });
   }
 }

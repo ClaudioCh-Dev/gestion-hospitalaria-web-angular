@@ -7,7 +7,7 @@ import { TuiButton, TuiIcon, TuiPopup, TuiTitle, TuiAppearance } from '@taiga-ui
 
 import { TuiAvatar, TuiBadge, TuiDrawer, TuiInitialsPipe, TuiTabs } from '@taiga-ui/kit';
 
-import { DoctorResponse } from '../../intefaces';
+import { DoctorResponse } from '../../interfaces';
 import { SpecialtyStore } from '../../store/specialty.store';
 import { AppointmentResponse, AppointmentStatus } from '../../../appointment/interfaces';
 import { AppointmentService } from '../../../appointment/services/appointment.service';

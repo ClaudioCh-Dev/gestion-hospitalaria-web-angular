@@ -34,12 +34,14 @@ import {
 
 import {
   DoctorResponse,
-} from '../../../doctor/intefaces';
+} from '../../../doctor/interfaces';
 import { AvatarDefaultDoctorPipe } from '@shared/pipes/avatar-default-doctor-pipe';
+import { StateMessage } from '@shared/components/state-message/state-message';
 
 @Component({
-  selector: 'app-cell-callendar-admin',
+  selector: 'app-cell-calendar-admin',
   imports: [
+    StateMessage,
     FormsModule,
     NgClass,
     TuiButton,
@@ -49,10 +51,10 @@ import { AvatarDefaultDoctorPipe } from '@shared/pipes/avatar-default-doctor-pip
     TuiInputDate,
     AvatarDefaultDoctorPipe,
   ],
-  templateUrl: './cell-callendar-admin.html',
+  templateUrl: './cell-calendar-admin.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class CellCallendarAdmin {
+export class CellCalendarAdmin {
 
   private readonly appointmentService =
     inject(AppointmentService);

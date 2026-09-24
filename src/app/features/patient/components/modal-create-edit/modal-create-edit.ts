@@ -6,7 +6,7 @@ import { TuiDialogContext } from '@taiga-ui/core';
 
 import { injectContext } from '@taiga-ui/polymorpheus';
 
-import { BLOOD_TYPES, GENDERS } from '../../constans/patient-options';
+import { BLOOD_TYPES, GENDERS } from '../../constants/patient-options';
 
 import { PatientDetailResponse, PatientRequest } from '../../interfaces';
 

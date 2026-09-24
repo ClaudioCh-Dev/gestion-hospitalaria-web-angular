@@ -107,31 +107,13 @@
 
 @else if (calendarResource.error()) {
 
-  <div
-    class="flex min-h-80 items-center justify-center rounded-xl border border-red-200 bg-white shadow-sm"
-  >
-    <div class="text-center">
-
-      <p class="text-sm font-semibold text-slate-700">
-        No se pudo cargar la agenda
-      </p>
-
-      <p class="mt-1 text-xs text-slate-400">
-        Ocurrió un error al obtener los médicos y las citas.
-      </p>
-
-      <button
-        tuiButton
-        type="button"
-        appearance="outline"
-        size="s"
-        class="mt-4"
-        (click)="calendarResource.reload()"
-      >
-        Reintentar
-      </button>
-
-    </div>
+  <div class="flex min-h-80 items-center rounded-xl border border-slate-300 bg-white shadow-sm">
+    <app-state-message
+      variant="error"
+      title="No se pudo cargar la agenda"
+      description="Ocurrió un error al obtener los médicos y las citas."
+      (action)="calendarResource.reload()"
+    />
   </div>
 
 }

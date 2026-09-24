@@ -51,6 +51,8 @@ import {
 } from '../../interfaces';
 
 import { BillingRecordService } from '../../services/billing-record.service';
+import { BILLING_STATUS_LABELS } from '../../constants/billing-status';
+import { downloadCsv } from '@shared/utils/csv';
 import { PatientService } from '@patients/services/patient.service';
 import { withNotification } from '@shared/operators/with-notification';
 import { NotificationService } from '@core/services/alert-notification.service';
@@ -60,6 +62,7 @@ import {
   BillingPayDialog,
   BillingPayDialogData,
 } from '../../components/billing-pay-dialog/billing-pay-dialog';
+import { StateMessage } from '@shared/components/state-message/state-message';
 
 const ALL_STATUSES = 'Todos los estados';
 
@@ -83,6 +86,7 @@ interface Stat {
   selector: 'app-billing-page',
 
   imports: [
+    StateMessage,
     CommonModule,
     ReactiveFormsModule,
 
@@ -342,16 +346,7 @@ export class BillingPage {
   protected getStatusLabel(
     status: BillingStatus,
   ): string {
-    const labels: Record<
-      BillingStatus,
-      string
-    > = {
-      PENDING: 'Pendiente',
-      PAID: 'Pagado',
-      CANCELLED: 'Cancelado',
-    };
-
-    return labels[status];
+    return BILLING_STATUS_LABELS[status];
   }
 
   protected getStatusClass(
@@ -418,43 +413,20 @@ export class BillingPage {
   // --------------------------------------------------
 
   protected download(): void {
-    const header = [
-      'Factura',
-      'Cita',
-      'Paciente',
-      'Monto',
-      'Moneda',
-      'Estado',
-      'Emitida',
-      'Pagada',
-    ];
-
-    const rows = this.filteredRecords().map(record => [
-      record.id,
-      record.appointmentId,
-      `"${this.patientName(record.patientId)}"`,
-      record.amount.toFixed(2),
-      record.currency,
-      this.getStatusLabel(record.status),
-      record.issuedAt,
-      record.paidAt ?? '',
-    ]);
-
-    const csv = [header, ...rows]
-      .map(row => row.join(','))
-      .join('\n');
-
-    const url = URL.createObjectURL(
-      new Blob([csv], { type: 'text/csv;charset=utf-8' }),
+    downloadCsv(
+      `facturacion-pagina-${this.page() + 1}.csv`,
+      ['Factura', 'Cita', 'Paciente', 'Monto', 'Moneda', 'Estado', 'Emitida', 'Pagada'],
+      this.filteredRecords().map(record => [
+        record.id,
+        record.appointmentId,
+        this.patientName(record.patientId),
+        record.amount.toFixed(2),
+        record.currency,
+        this.getStatusLabel(record.status),
+        record.issuedAt,
+        record.paidAt,
+      ]),
     );
-
-    const link = document.createElement('a');
-
-    link.href = url;
-    link.download = `facturacion-pagina-${this.page() + 1}.csv`;
-    link.click();
-
-    URL.revokeObjectURL(url);
   }
 
   // --------------------------------------------------

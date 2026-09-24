@@ -1,0 +1,33 @@
+<div
+  class="flex w-full flex-col items-center justify-center text-center"
+  [class.py-12]="!compact()"
+  [class.py-6]="compact()"
+  [attr.role]="variant() === 'error' ? 'alert' : 'status'"
+>
+  <div
+    [tuiAvatar]="resolvedIcon()"
+    [appearance]="variant() === 'error' ? 'negative' : 'secondary'"
+    [size]="compact() ? 's' : 'm'"
+    class="mb-3"
+  ></div>
+
+  <h3 class="text-sm font-semibold text-slate-800">{{ title() }}</h3>
+
+  @if (description()) {
+    <p class="mt-1 max-w-sm text-sm text-slate-500">{{ description() }}</p>
+  }
+
+  @if (resolvedActionLabel(); as label) {
+    <button
+      tuiButton
+      type="button"
+      size="s"
+      class="mt-4"
+      [appearance]="variant() === 'error' ? 'secondary' : 'outline'"
+      [iconStart]="variant() === 'error' ? '@tui.refresh-cw' : ''"
+      (click)="action.emit()"
+    >
+      {{ label }}
+    </button>
+  }
+</div>

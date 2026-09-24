@@ -67,13 +67,12 @@
       @if (weekResource.isLoading()) {
         <div class="h-50 animate-pulse rounded bg-slate-100"></div>
       } @else if (weekResource.error()) {
-        <div class="flex h-50 flex-col items-center justify-center gap-2 text-center">
-          <p class="text-sm text-slate-500">No se pudieron cargar las citas.</p>
-
-          <button tuiButton type="button" size="s" appearance="secondary" (click)="weekResource.reload()">
-            Reintentar
-          </button>
-        </div>
+        <app-state-message
+          [compact]="true"
+          variant="error"
+          title="No se pudieron cargar las citas"
+          (action)="weekResource.reload()"
+        />
       } @else {
         <!-- Una columna por día: cada punto queda centrado en su columna, lejos de los bordes.
              La altura va inline: el :host de tui-axes (block-size: 100%) gana a las utilidades de Tailwind -->
@@ -112,7 +111,12 @@
       @if (patientsResource.isLoading()) {
         <div class="mx-auto h-32 w-32 animate-pulse rounded-full bg-slate-100"></div>
       } @else if (patientsResource.error()) {
-        <p class="py-10 text-center text-sm text-slate-500">No se pudieron cargar los pacientes.</p>
+        <app-state-message
+          [compact]="true"
+          variant="error"
+          title="No se pudieron cargar los pacientes"
+          (action)="patientsResource.reload()"
+        />
       } @else {
         <div class="flex justify-center">
           <tui-pie-chart size="l" [value]="genderValues()" />
@@ -197,11 +201,11 @@
             </div>
           </div>
         } @empty {
-          <div class="flex flex-col items-center justify-center gap-1 py-8 text-center">
-            <tui-icon icon="@tui.calendar-check" class="text-slate-400" />
-
-            <p class="text-sm text-slate-500">No hay citas pendientes para hoy.</p>
-          </div>
+          <app-state-message
+            [compact]="true"
+            icon="@tui.calendar-check"
+            title="No hay citas pendientes para hoy"
+          />
         }
       }
     </div>

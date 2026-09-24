@@ -138,29 +138,13 @@
         </div>
       }
     } @else if (medicalRecordsResource.error()) {
-      <!-- Error -->
-      <div appearance="floating" tuiCardLarge class="col-span-full py-12!">
-        <section class="flex flex-col items-center justify-center text-center">
-          <tui-icon icon="@tui.circle-alert" class="mb-3 text-red-400" />
-
-          <h3 class="text-sm font-semibold text-slate-800">No se pudo cargar el historial</h3>
-
-          <p class="mt-1 text-sm text-slate-500">
-            Ocurrió un error al obtener los registros médicos.
-          </p>
-
-          <button
-            appearance="secondary"
-            size="s"
-            tuiButton
-            type="button"
-            class="mt-4!"
-            (click)="medicalRecordsResource.reload()"
-          >
-            Reintentar
-          </button>
-        </section>
-      </div>
+      <app-state-message
+        class="col-span-full"
+        variant="error"
+        title="No se pudo cargar el historial"
+        description="Ocurrió un error al obtener los registros médicos."
+        (action)="medicalRecordsResource.reload()"
+      />
     } @else if (medicalRecordsResource.value(); as page) {
       @for (record of filteredRecords(); track record.id) {
 <div
@@ -258,16 +242,12 @@
           </footer>
         </div>
       } @empty {
-        <!-- Sin registros -->
-        <div appearance="floating" tuiCardLarge class="col-span-full py-12!">
-          <section class="flex flex-col items-center justify-center text-center">
-            <tui-icon icon="@tui.file-text" class="mb-3 text-slate-400" />
-
-            <h3 class="text-sm font-semibold text-slate-800">No hay registros médicos</h3>
-
-            <p class="mt-1 text-sm text-slate-500">No se encontraron registros para mostrar.</p>
-          </section>
-        </div>
+        <app-state-message
+          class="col-span-full"
+          icon="@tui.file-text"
+          title="No hay registros médicos"
+          description="No se encontraron registros con los filtros aplicados."
+        />
       }
     }
   </div>

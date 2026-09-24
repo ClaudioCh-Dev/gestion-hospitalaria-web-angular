@@ -15,6 +15,7 @@ import { BillingRecordService } from '../../../billing/services/billing-record.s
 import { DoctorService } from '../../../doctor/services/doctor.service';
 import { Gender, PatientDetailResponse } from '../../../patient/interfaces';
 import { PatientService } from '../../../patient/services/patient.service';
+import { StateMessage } from '@shared/components/state-message/state-message';
 
 interface Stat {
   title: string;
@@ -42,6 +43,7 @@ const UPCOMING_LIMIT = 5;
 @Component({
   selector: 'app-dashboard-page',
   imports: [
+    StateMessage,
     DatePipe,
     DecimalPipe,
     RouterLink,

@@ -18,7 +18,7 @@ import { PATIENTS_MOCK } from '../mocks/patient.mocks';
 import { PATIENT_DETAILS_MOCK } from '../mocks/patient.detail.mocks';
 
 import { ErrorHandlerService } from '@core/services/error-handler.service';
-import { GENDERS } from '@patients/constans/patient-options';
+import { GENDERS } from '@patients/constants/patient-options';
 import { ProblemDetailMicroservice } from '@shared/models/problem.type';
 
 @Injectable()

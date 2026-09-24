@@ -31,10 +31,12 @@ import { PatientDetailComponent } from '../patient-detail/patient-detail';
 import { PatientDetailResponse, PatientResponse } from '../../interfaces';
 import { AvatarDefaultPatientPipe } from '@shared/pipes/avatar-default-patient-pipe';
 import { DatePipe, I18nSelectPipe } from '@angular/common';
+import { StateMessage } from '@shared/components/state-message/state-message';
 
 @Component({
   selector: 'app-patient-table',
   imports: [
+    StateMessage,
     FormsModule,
 
     // Taiga UI
