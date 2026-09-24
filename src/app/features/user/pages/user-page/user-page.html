@@ -303,7 +303,8 @@
         </div>
       </app-mobile-detail>
 
-      <footer tuiFloatingContainer class="mt-auto flex flex-col gap-3">
+      <!-- Siempre en columna y a todo el ancho: Taiga los pone en fila y con ancho automático fuera de móvil -->
+      <footer tuiFloatingContainer class="mt-auto flex flex-col! gap-3 *:w-full!">
 
         @if (!user.active) {
           <button *appHasPermission="'USER_UPDATE'" tuiButton type="button" iconStart="@tui.send" (click)="observer.complete(); resendActivation(user)">
