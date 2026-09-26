@@ -12,6 +12,10 @@ import { DoctorService } from '../../features/doctor/services/doctor.service';
 import { DoctorMockService } from '../../features/doctor/services/doctor.service.mock';
 import { MedicalRecordMockService } from '../../features/medical-history/services/medical-record-mock.service';
 import { MedicalRecordService } from '../../features/medical-history/services/medical-record.service';
+import { NotificationApiService } from '../../features/notification/services/notification-api.service';
+import { NotificationApiMockService } from '../../features/notification/services/notification-api.service.mock';
+import { NotificationStream } from '../../features/notification/services/notification-stream.service';
+import { NotificationStreamMockService } from '../../features/notification/services/notification-stream.service.mock';
 import { PatientService } from '../../features/patient/services/patient.service';
 import { PatientMockService } from '../../features/patient/services/patient.service.mock';
 import { UserService } from '../../features/user/services/user.service';
@@ -32,6 +36,11 @@ export const DATA_PROVIDERS: Provider[] = [
   { provide: BillingTariffService, useClass: BillingTariffMockService },
   { provide: MedicalRecordService, useClass: MedicalRecordMockService },
   { provide: UserService, useClass: UserMockService },
+
+  // Una sola instancia: el stream simulado añade a la lista del mock las citas que inventa
+  NotificationApiMockService,
+  { provide: NotificationApiService, useExisting: NotificationApiMockService },
+  { provide: NotificationStream, useClass: NotificationStreamMockService },
 
   // auth-server simulado: AuthService lo usa a través del token (login, logout, refresh)
   // y UserMockService directamente (cambio de contraseña)

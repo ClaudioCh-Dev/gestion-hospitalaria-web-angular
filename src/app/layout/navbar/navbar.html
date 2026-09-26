@@ -53,27 +53,110 @@
   </span>
 
   <div class="flex items-center gap-2">
-    <!-- Notificaciones: pendiente del stream SSE (docs/GUIA-SSE.md) -->
-    <button
-      iconStart="@tui.bell"
-      tuiIconButton
-      type="button"
-      aria-label="Notificaciones"
-      [attr.aria-expanded]="notificationsOpen()"
-      [tuiDropdown]="notificationsDropdown"
-      [tuiDropdownManual]="notificationsOpen()"
-      [tuiObscuredEnabled]="notificationsOpen()"
-      (click)="toggle(notificationsOpen)"
-      (tuiActiveZoneChange)="closeWhen(notificationsOpen, !$event)"
-      (tuiObscured)="closeWhen(notificationsOpen, $event)"
-    >
-      <ng-template #notificationsDropdown>
-        <div class="flex w-64 flex-col items-center gap-2 px-4 py-6 text-center">
-          <tui-icon icon="@tui.bell-off" class="text-2xl text-slate-300" />
-          <p class="text-sm text-slate-500">No tienes notificaciones</p>
-        </div>
-      </ng-template>
-    </button>
+    <!-- Notificaciones: solo con NOTIFICATION_READ_DOCTOR o NOTIFICATION_READ_ADMIN -->
+    @if (notifications.enabled()) {
+      <button
+        iconStart="@tui.bell"
+        tuiIconButton
+        type="button"
+        aria-label="Notificaciones"
+        [attr.aria-expanded]="notificationsOpen()"
+        [tuiDropdown]="notificationsDropdown"
+        [tuiDropdownManual]="notificationsOpen()"
+        [tuiObscuredEnabled]="notificationsOpen()"
+        (click)="toggle(notificationsOpen)"
+        (tuiActiveZoneChange)="closeWhen(notificationsOpen, !$event)"
+        (tuiObscured)="closeWhen(notificationsOpen, $event)"
+      >
+        @if (notifications.unreadCount() > 0) {
+          <tui-badge-notification size="s">{{ unreadLabel() }}</tui-badge-notification>
+        }
+
+        <ng-template #notificationsDropdown>
+          <div class="flex w-96 max-w-[calc(100vw-2rem)] flex-col gap-1 p-2">
+            <header tuiHeader="body-l" class="px-2 pt-1">
+              <h2 tuiTitle>
+                Notificaciones
+                <span tuiSubtitle>
+                  @if (notifications.unreadCount() > 0) {
+                    {{ notifications.unreadCount() }} sin leer
+                  } @else {
+                    Estás al día
+                  }
+                </span>
+              </h2>
+
+              @if (notifications.unreadCount() > 0) {
+                <aside tuiAccessories>
+                  <button
+                    tuiButton
+                    type="button"
+                    size="xs"
+                    appearance="flat"
+                    iconStart="@tui.check-check"
+                    (click)="notifications.markAllAsRead()"
+                  >
+                    Marcar todas
+                  </button>
+                </aside>
+              }
+            </header>
+
+            @if (notifications.items().length === 0) {
+              <div tuiCell class="px-2">
+                <div appearance="secondary" tuiAvatar="@tui.bell-off"></div>
+                <div tuiTitle>
+                  No tienes notificaciones
+                  <div tuiSubtitle>Aquí verás las citas nuevas y sus cambios de estado</div>
+                </div>
+              </div>
+            } @else {
+              <tui-scrollbar class="max-h-96">
+                <tui-data-list size="l">
+                  @for (item of notifications.items(); track item.id) {
+                    <button
+                      tuiOption
+                      type="button"
+                      class="gap-3 items-start!"
+                      (click)="onNotification(item)"
+                    >
+                      <div
+                        tuiAvatar
+                        size="s"
+                        class="shrink-0"
+                        [appearance]="typeAppearances[item.type]"
+                        [tuiAvatar]="typeIcons[item.type]"
+                      ></div>
+
+                      <span tuiTitle class="min-w-0 flex-1">
+                        <span [class.font-semibold]="!item.read">{{ item.title }}</span>
+                        <span tuiSubtitle>{{ item.message }}</span>
+
+                        @if (item.scheduledAt) {
+                          <span tuiSubtitle class="flex items-center gap-1">
+                            <tui-icon icon="@tui.calendar" class="text-xs" />
+                            {{ item.scheduledAt | date: "d 'de' MMMM · HH:mm" : undefined : 'es-PE' }}
+                          </span>
+                        }
+
+                        <span tuiSubtitle class="text-xs! opacity-70">
+                          {{ item.createdAt | date: "d MMM · HH:mm" : undefined : 'es-PE' }}
+                        </span>
+                      </span>
+
+                      <!-- Punto de no leída -->
+                      @if (!item.read) {
+                        <tui-badge-notification size="xs" class="mt-2 shrink-0" />
+                      }
+                    </button>
+                  }
+                </tui-data-list>
+              </tui-scrollbar>
+            }
+          </div>
+        </ng-template>
+      </button>
+    }
 
     <!-- Usuario -->
     <button

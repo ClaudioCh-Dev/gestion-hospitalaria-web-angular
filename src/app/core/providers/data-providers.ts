@@ -12,6 +12,10 @@ import { DoctorService } from '../../features/doctor/services/doctor.service';
 import { DoctorHttpService } from '../../features/doctor/services/doctor.service.http';
 import { MedicalRecordHttpService } from '../../features/medical-history/services/medical-record-http.service';
 import { MedicalRecordService } from '../../features/medical-history/services/medical-record.service';
+import { NotificationApiService } from '../../features/notification/services/notification-api.service';
+import { NotificationApiHttpService } from '../../features/notification/services/notification-api.service.http';
+import { NotificationStream } from '../../features/notification/services/notification-stream.service';
+import { NotificationStreamHttpService } from '../../features/notification/services/notification-stream.service.http';
 import { PatientService } from '../../features/patient/services/patient.service';
 import { PatientHttpService } from '../../features/patient/services/patient.service.http';
 import { UserService } from '../../features/user/services/user.service';
@@ -33,4 +37,6 @@ export const DATA_PROVIDERS: Provider[] = [
   { provide: BillingTariffService, useClass: BillingTariffHttpService },
   { provide: MedicalRecordService, useClass: MedicalRecordHttpService },
   { provide: UserService, useClass: UserHttpService },
+  { provide: NotificationApiService, useClass: NotificationApiHttpService },
+  { provide: NotificationStream, useClass: NotificationStreamHttpService },
 ];
